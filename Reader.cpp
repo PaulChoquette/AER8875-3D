@@ -139,9 +139,7 @@ void Reader::read_file(string filename) {
 							for (unsigned inode = 0; inode < vtklookup[elem2vtk[ielem]][1]; inode++)
 							{		
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
-								cout << elem2node[ielem][inode]; cout << "\t"; 
 							}
-							cout << "\n";
 						}
 
 						int imelem = 0;
@@ -153,13 +151,10 @@ void Reader::read_file(string filename) {
 								elem2node[nelem + imelem] = new unsigned[vtklookup[elem2vtk[nelem + imelem]][1]];
 
 								for (unsigned j = 0; j < vtklookup[elem2vtk[nelem + imelem]][1]; j++)
-								{
-									
+								{									
 									elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
-									cout << elem2node[nelem+imelem][j]; cout << "\t";
 								}
 								imelem++;
-								cout << "\n";
 							}
 						}
 					}
@@ -167,8 +162,23 @@ void Reader::read_file(string filename) {
 			}
 
 		}
+		for (int i = 0; i < nelem;  i++) {
+			delete[] elem2node_nh[i];
+		}
+		delete[] elem2node_nh;
+
+		for (int i = 0; i < nbc; i++) {
+			for ( int j = 0; j < bc_nelemv[i]; j++) {
+				delete[] bc_elem2node[i][j];
+			}
+			delete[] bc_elem2node[i];
+		}
+		delete[] bc_elem2node;
+
+		delete[] bc_elem2vtk;
+		delete[] elem2vtk_nh;
+
 		file.close();
-		cout << elem2node[0][1];
 	}
 	else {
 		//ERROR 1 : File could not be opened

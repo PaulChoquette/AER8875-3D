@@ -11,7 +11,7 @@
 using namespace std;
 
 int main() {
-	string File_Name = "17x17.su2";
+	string File_Name = "mesh_ONERAM6_inv_ffd.su2";
 
 	Reader FileContents;
 
