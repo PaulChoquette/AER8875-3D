@@ -13,7 +13,7 @@ using namespace std;
 int main() {
 	cout << "Starting ..." << endl;
 	string File_Name = "mesh_ONERAM6_inv_ffd.su2";
-		
+
 	Reader FileContents;
 
 	FileContents.read_file(File_Name);
