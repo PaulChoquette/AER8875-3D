@@ -1,13 +1,11 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <string> 
-#include "Reader.h" 
+#include <string>
 #include "main.h"
 using namespace std;
 
 void Reader::read_file(string filename) {
-
 	//Initialize mesh constants
 	ndime = 0; nelem = 0; npoint = 0; nhalo = 0;
 
@@ -15,7 +13,7 @@ void Reader::read_file(string filename) {
 	elem = 0; point = 0; line = ""; bc = 0;
 
 	//Open the file and continue if file is succesfully opened
-	if (OpenFile(filename)) 
+	if (OpenFile(filename))
 	{
 		//Read file line by line
 		while (getline(file, line))
@@ -47,10 +45,10 @@ void Reader::read_file(string filename) {
 			}
 
 			//If elem2node definition line has been defined
-			if (nelemlinen) 
+			if (nelemlinen)
 			{
 				//Check if line defines the element
-				if (linen > nelemlinen&& linen <= nelemlinen + nelem) 
+				if (linen > nelemlinen&& linen <= nelemlinen + nelem)
 				{
 					Fill_E2N_VTK(cline);
 					continue;
@@ -64,7 +62,7 @@ void Reader::read_file(string filename) {
 				npoint = Readcnst(line,"NPOIN= ");
 
 				//Define coordinate matrix if number of points has been defined
-				if (npoint) 
+				if (npoint)
 				{
 					npointlinen = linen;
 					coord = new double* [npoint];
@@ -77,7 +75,7 @@ void Reader::read_file(string filename) {
 			}
 
 			//If number of point definition line has been found
-			if (npointlinen) 
+			if (npointlinen)
 			{
 				if (linen > npointlinen&& linen <= npointlinen + npoint) {
 					Fill_coord(cline);
@@ -137,7 +135,7 @@ void Reader::read_file(string filename) {
 							elem2node[ielem] = new unsigned[vtklookup[elem2vtk[ielem]][1]];
 
 							for (unsigned inode = 0; inode < vtklookup[elem2vtk[ielem]][1]; inode++)
-							{		
+							{
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 							}
 						}
@@ -151,7 +149,7 @@ void Reader::read_file(string filename) {
 								elem2node[nelem + imelem] = new unsigned[vtklookup[elem2vtk[nelem + imelem]][1]];
 
 								for (unsigned j = 0; j < vtklookup[elem2vtk[nelem + imelem]][1]; j++)
-								{									
+								{
 									elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
 								}
 								imelem++;
@@ -220,7 +218,7 @@ void Reader::Fill_E2N_VTK(const char* cline) {
 	{
 		cline = end;
 
-		//Where j is the integer counter. 0 is the vtk index and the rest is the 
+		//Where j is the integer counter. 0 is the vtk index and the rest is the
 		if (j == 0) {
 			elem2vtk_nh[elem] = c;
 			elem2node_nh[elem] = new unsigned [vtklookup[c][1]];
@@ -251,7 +249,7 @@ void Reader::Fill_BC_E2N_VTK(const char* cline, unsigned bc) {
 	{
 		cline = end;
 
-		//Where j is the integer counter. 0 is the vtk index and the rest is the 
+		//Where j is the integer counter. 0 is the vtk index and the rest is the
 		if (j == 0) {
 			bc_elem2vtk[bc][bc_e2n_counter] = c;
 			bc_elem2node[bc][bc_e2n_counter] = new unsigned[vtklookup[c][1]];

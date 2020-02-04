@@ -1,5 +1,5 @@
 using namespace std;
-
+#include "Reader.h"
 
 static unsigned vtklookup[15][2]{
 	//First column is number of faces per shape and second column is number of points
@@ -20,3 +20,5 @@ static unsigned vtklookup[15][2]{
 	{0,0},
 	{0,0},
 };
+
+void part(Reader FileContents);

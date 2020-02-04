@@ -7,9 +7,8 @@
 #include "omp.h"
 #include <chrono>
 #include "main.h"
-#include "Reader.h"
 using namespace std;
-
+hhh
 
 int main() {
 	string File_Name = "mesh_ONERAM6_inv_ffd.su2";
@@ -17,6 +16,6 @@ int main() {
 	Reader FileContents;
 
 	FileContents.read_file(File_Name);
-
+	part(FileContents);
 	return 0;
 }
