@@ -38,41 +38,35 @@ int main()
 
     // Real Code
     // Allocate Variables
-    bool AnyTx = 1;
-    int Rnd = 0;
-    bool * isBusy;
+    bool AnyTx = 1;bool * isBusy;
     isBusy = new bool[nzone];
-    int Zone2;
+    int Rnd = 0;int Zone2;
     ofstream file;
     file.open(FileName);
 
     while (AnyTx) {
-        
-        // Reset is buzy
-        for (int i=0;i<nzone;++i) {
+        for (int i=0;i<nzone;++i) {// Reset isBuzy
             isBusy[i] = 0;
         }
-        AnyTx = 0;
-
+        AnyTx = 0;              // Reset activity log
         for (int i=0;i<nzone;++i) {
             for (int j=0;j<ConctMax;++j) {
                 Zone2 = Zone2Zone[i][j];
-                if ((0==isBusy[i])&&(Zone2!=-1)&&(0==isBusy[Zone2])) {
-                    if (!AnyTx) {
-                        file<<"RND "<<Rnd<<endl;
+                if ((0==isBusy[i])&&(Zone2!=-1)&&(0==isBusy[Zone2])) {  //if not busy and valid
+                    if (!AnyTx) {                   // If nothing happened this round
+                        file<<"RND "<<Rnd<<endl;    // Mark start of nre round
                         AnyTx = 1;
                     }
-                    isBusy[i] = 1;
-                    isBusy[Zone2] = 1;
-                    Zone2Zone[i][j] = -1;
+                    isBusy[i] = 1;          // Log that is busy
+                    isBusy[Zone2] = 1;      // Log that is busy
+                    Zone2Zone[i][j] = -1;   // Remove from talk queue
                     for (int j2=0;j2<ConctMax;++j2){
                         if (Zone2Zone[Zone2][j2]==i) {
-                            Zone2Zone[Zone2][j2]=-1;
+                            Zone2Zone[Zone2][j2]=-1;    // Remove from talk queue
                             break;
                         }
                     }
-                    // Output to file
-                    file<<i<<" "<<Zone2<<endl;
+                    file<<i<<" "<<Zone2<<endl;  // Output to file
                     break;
                 }
             }

@@ -7,7 +7,7 @@ class supposed_metric_n_connec {
     std::string Registre_file;  //file for communication register
     double convergeCrit;        // convergence criterion  
     double cfl,mach,AoA;
-    int iterMax;                // Max iteration number  
+    int iterMax,Order;                // Max iteration number  
     // from reader
     int ndime;
     int nelem;                  // real cells
