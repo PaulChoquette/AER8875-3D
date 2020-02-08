@@ -1,7 +1,7 @@
 using namespace std;
 
 
-static unsigned vtklookup[15][2]{
+static int vtklookup[15][2]{
 	//First column is number of faces per shape and second column is number of points
 	//The array is the size of the SU2 VTK allowed indexes
 	{0,0},

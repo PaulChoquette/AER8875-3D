@@ -11,10 +11,7 @@
 using namespace std;
 
 int main() {
-	string File_Name = "naca0012_euler_65x65_O_1B.su2";
-	cout << "Starting ..." << endl;
-
-
+	string File_Name = "mesh_ONERAM6_inv_ffd.su2";
 
 	Reader FileContents;
 
