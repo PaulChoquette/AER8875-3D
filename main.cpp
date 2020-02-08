@@ -8,6 +8,7 @@
 #include <chrono>
 #include "main.h"
 #include "Reader.h"
+#include "include/TECIO.h"
 using namespace std;
 
 int main() {
