@@ -1,3 +1,5 @@
+#ifndef READER_H // include guard
+#define READER_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +13,7 @@
 #include <functional> // std::divides
 using namespace std;
 
-class Reader {
+class Reader_c {
 	public:
 		ifstream file;
 		unsigned linen;
@@ -36,3 +38,5 @@ class Reader {
 		void Fill_BC_E2N_VTK(const char* cline, unsigned bc);
 		double** Fill_coord(const char* cline);
 };
+
+#endif 

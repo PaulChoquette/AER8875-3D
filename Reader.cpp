@@ -4,9 +4,10 @@
 #include <string> 
 #include "Reader.h" 
 #include "main.h"
+
 using namespace std;
 
-void Reader::read_file(string filename) {
+void Reader_c::read_file(string filename) {
 
 	//Initialize mesh constants
 	ndime = 0; nelem = 0; npoint = 0; nhalo = 0;
@@ -185,7 +186,7 @@ void Reader::read_file(string filename) {
 	}
 }
 
-bool Reader::OpenFile(string filename)
+bool Reader_c::OpenFile(string filename)
 {
 	file.open(filename);
 
@@ -197,7 +198,7 @@ bool Reader::OpenFile(string filename)
 	}
 }
 
-unsigned Reader::Readcnst(const string& line, const string& tofind)
+unsigned Reader_c::Readcnst(const string& line, const string& tofind)
 {
 	size_t cnstpos = line.find(tofind);
 	unsigned cnst = 0;
@@ -212,7 +213,7 @@ unsigned Reader::Readcnst(const string& line, const string& tofind)
 	return cnst;
 }
 
-void Reader::Fill_E2N_VTK(const char* cline) {
+void Reader_c::Fill_E2N_VTK(const char* cline) {
 	//This function reads a character line and extracts VTK index as well as allocating and storing elem2node rows
 	char* end;
 	unsigned j = 0;
@@ -243,7 +244,7 @@ void Reader::Fill_E2N_VTK(const char* cline) {
 }
 
 
-void Reader::Fill_BC_E2N_VTK(const char* cline, unsigned bc) {
+void Reader_c::Fill_BC_E2N_VTK(const char* cline, unsigned bc) {
 	//This function reads a character line and extracts VTK index as well as allocating and storing elem2node rows
 	char* end;
 	unsigned j = 0;
@@ -271,7 +272,7 @@ void Reader::Fill_BC_E2N_VTK(const char* cline, unsigned bc) {
 	bc_e2n_counter++;
 }
 
-double** Reader::Fill_coord(const char* cline) {
+double** Reader_c::Fill_coord(const char* cline) {
 	char* end;
 	unsigned j = 0;
 	for (long double c = strtod(cline, &end); cline != end; c = strtod(cline, &end))
