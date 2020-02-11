@@ -160,6 +160,7 @@ void Connect_c::Zone2Elements() {
 		zone2elem[izone][idz] = ielem;
 		indexzone[izone] += 1;
 	}
+	delete[] indexzone;
 }
 void Connect_c::NodeGlobal2Local() {
 	for (int izone = 0; izone < nzone; izone++) {
@@ -192,8 +193,88 @@ void Connect_c::Zone2Coord(Reader_c& read) {
 	}
 
 }
-void Connect_c::Element2Nodes() {
+void Connect_c::Element2Nodes(Reader_c& read) {
+	
+	// Initialization:
+	int* indexzone; 
+	int** izone2jzone;
+	indexzone = new int[nzone];
+	zone2markelem = new int*[nzone];
+	zone2idmark.resize(nzone);
+	izone2jzone = new int* [nzone];
+	elem2node = new int**[nzone];
 
+	for (int izone = 0; izone < nzone; izone++) {
+		indexzone[izone] = 0;
+		zone2markelem[izone] = new int[nzone - 1];;
+		zone2idmark[izone].resize(nzone - 1);
+		izone2jzone[izone] = new int[nzone];
+
+		int idz = 0;
+		for (int jzone = 0; jzone < nzone; jzone++) {
+			if (izone != jzone) {
+				izone2jzone[izone][jzone] = idz;
+				idz += 1;
+			}
+			else {
+				izone2jzone[izone][jzone] = -1;
+			}
+		}
+
+		elem2node[izone] = new int* [zone2nelem[izone]];
+		for (int ielem = 0; ielem < zone2nelem[izone]; ielem++) {
+			int nnoel = 999999;
+			elem2node[izone][ielem] = new int[nnoel];
+		}
+
+		for (int ijzone = 0; ijzone < nzone - 1; ijzone++) {
+			zone2markelem[izone][ijzone] = 0;
+		}
+	}
+
+	// Debut du calcul:
+	for (int ielem_g = 0; ielem_g < nelem_g; ielem_g++) {
+		int ielem_z = elemglobal2local[ielem_g][0];
+		int izone = elemglobal2local[ielem_g][1];
+		int nnoel = 999999;
+		int nfael = 999999;
+
+		for (int inoel = 0; inoel < nnoel; inoel++) {
+			int inode_g = read.elem2node[ielem_g][inoel];
+			int inode_z = nodeglobal2local[inode_g][izone];
+			elem2node[izone][ielem_z][inoel] = inode_z;
+		}
+
+		for (int ifael = 0; ifael < nfael; ifael++) {
+			int jelem_g = elem2elem_g[ielem_g][ifael];
+
+			// Si jelem nest pas un ghostcell:
+			if (jelem_g <= nelem_g) {
+				int jzone = elem2zone[jelem_g];
+				int jelem_z = elemglobal2local[jelem_g][0];
+				
+				// Detection d'une frontiere auvec une autre zone:
+				if (jzone != izone) {
+					int idz = indexzone[izone];
+					int nnofa = 999999;
+					belem2node[izone][idz].resize(nnofa + 2);
+					belem2node[izone][idz][0] = 999999; // vtk de la face
+					belem2node[izone][idz][nnofa + 1] = jelem_z;
+					int ijzone = izone2jzone[izone][jzone];
+					zone2markelem[izone][ijzone] += 1;
+					zone2idmark[izone][ijzone].push_back(idz);
+
+					for (int inofa = 0; inofa < nnofa; inofa++) {
+						int inoel = 999999; // Getlpofa()
+						int inode_g = read.elem2node[ielem_g][inoel];
+						int inode_z = nodeglobal2local[inode_g][izone];
+						belem2node[izone][idz][inofa + 1] = inode_z;
+					}
+					indexzone[izone] += 1;
+				}
+			}
+		}
+	}	
 }
 void Connect_c::Zone2Zones() {
 
