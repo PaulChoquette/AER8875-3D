@@ -4,7 +4,6 @@
 #include <string> 
 #include "Reader.h" 
 #include "main.h"
-
 using namespace std;
 
 void Reader_c::read_file(string filename) {
@@ -40,8 +39,8 @@ void Reader_c::read_file(string filename) {
 				//Define elem2node matrix row size if nelem has been defined
 				//Store line where elem2node definitions start
 				if (nelem) {
-					elem2node_nh = new unsigned* [nelem];
-					elem2vtk_nh = new unsigned[nelem];
+					elem2node_nh = new int* [nelem];
+					elem2vtk_nh = new int[nelem];
 					nelemlinen = linen;
 				}
 				continue;
@@ -69,7 +68,7 @@ void Reader_c::read_file(string filename) {
 				{
 					npointlinen = linen;
 					coord = new double* [npoint];
-					for (unsigned i = 0; i < npoint; i++) {
+					for (int i = 0; i < npoint; i++) {
 						coord[i] = new double[ndime];
 					}
 				}
@@ -90,11 +89,11 @@ void Reader_c::read_file(string filename) {
 				nbc = Readcnst(line, "NMARK= ");
 				if (nbc != 0) {
 					bclinen = linen;
-					BoundIndex = new unsigned[nbc + 1];
+					BoundIndex = new int[nbc + 1];
 					BoundIndex[0] = nelem + 1;
-					bc_elem2node = new unsigned** [nbc];
-					bc_elem2vtk = new unsigned* [nbc];
-					bc_nelemv = new unsigned[nbc];
+					bc_elem2node = new int** [nbc];
+					bc_elem2vtk = new int* [nbc];
+					bc_nelemv = new int[nbc];
 					bcnl = 2 * nbc; //2 lines per marker for marker name and elemn
 					bc = 0;
 					step = 0;
@@ -113,8 +112,8 @@ void Reader_c::read_file(string filename) {
 						bc_nelemv[bc] = bc_nelem;
 						BoundIndex[bc + 1] =BoundIndex[bc]+ bc_nelem;
 						bcnl += bc_nelem; //add nelem since each elem has 1 line
-						bc_elem2vtk[bc] = new unsigned [bc_nelem];
-						bc_elem2node[bc] = new unsigned* [bc_nelem];
+						bc_elem2vtk[bc] = new int [bc_nelem];
+						bc_elem2node[bc] = new int* [bc_nelem];
 
 						bc_e2n_counter = 0; //counter for marker element number used in FillMarker
 						step++;
@@ -130,28 +129,28 @@ void Reader_c::read_file(string filename) {
 						nhalo = bcnl - 2 * nbc;
 						ncell = nelem + nhalo;
 
-						elem2node = new unsigned* [ncell];
-						elem2vtk = new unsigned [ncell];
-						for (unsigned ielem = 0; ielem < nelem; ielem++)
+						elem2node = new int* [ncell];
+						elem2vtk = new int [ncell];
+						for (int ielem = 0; ielem < nelem; ielem++)
 						{
 							elem2vtk[ielem] = elem2vtk_nh[ielem];
-							elem2node[ielem] = new unsigned[vtklookup[elem2vtk[ielem]][1]];
+							elem2node[ielem] = new int[vtklookup[elem2vtk[ielem]][1]];
 
-							for (unsigned inode = 0; inode < vtklookup[elem2vtk[ielem]][1]; inode++)
+							for (int inode = 0; inode < vtklookup[elem2vtk[ielem]][1]; inode++)
 							{		
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 							}
 						}
 
 						int imelem = 0;
-						for (unsigned ibc = 0; ibc < nbc; ibc++)
+						for (int ibc = 0; ibc < nbc; ibc++)
 						{
-							for (unsigned ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
+							for (int ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
 							{
 								elem2vtk[nelem + imelem] = bc_elem2vtk[ibc][ibcen];
-								elem2node[nelem + imelem] = new unsigned[vtklookup[elem2vtk[nelem + imelem]][1]];
+								elem2node[nelem + imelem] = new int[vtklookup[elem2vtk[nelem + imelem]][1]];
 
-								for (unsigned j = 0; j < vtklookup[elem2vtk[nelem + imelem]][1]; j++)
+								for (int j = 0; j < vtklookup[elem2vtk[nelem + imelem]][1]; j++)
 								{									
 									elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
 								}
@@ -198,10 +197,10 @@ bool Reader_c::OpenFile(string filename)
 	}
 }
 
-unsigned Reader_c::Readcnst(const string& line, const string& tofind)
+int Reader_c::Readcnst(const string& line, const string& tofind)
 {
 	size_t cnstpos = line.find(tofind);
-	unsigned cnst = 0;
+	int cnst = 0;
 	if (cnstpos != string::npos) {
 		cnstpos = line.find_last_of(" ") + 1;
 
@@ -216,15 +215,15 @@ unsigned Reader_c::Readcnst(const string& line, const string& tofind)
 void Reader_c::Fill_E2N_VTK(const char* cline) {
 	//This function reads a character line and extracts VTK index as well as allocating and storing elem2node rows
 	char* end;
-	unsigned j = 0;
-	for (unsigned c = strtoul(cline, &end, 10); cline != end; c = strtoul(cline, &end, 10))
+	int j = 0;
+	for (int c = strtoul(cline, &end, 10); cline != end; c = strtoul(cline, &end, 10))
 	{
 		cline = end;
 
 		//Where j is the integer counter. 0 is the vtk index and the rest is the 
 		if (j == 0) {
 			elem2vtk_nh[elem] = c;
-			elem2node_nh[elem] = new unsigned [vtklookup[c][1]];
+			elem2node_nh[elem] = new int [vtklookup[c][1]];
 		}
 
 		else if(j > 0 && j <= vtklookup[elem2vtk_nh[elem]][1])
@@ -244,18 +243,18 @@ void Reader_c::Fill_E2N_VTK(const char* cline) {
 }
 
 
-void Reader_c::Fill_BC_E2N_VTK(const char* cline, unsigned bc) {
+void Reader_c::Fill_BC_E2N_VTK(const char* cline, int bc) {
 	//This function reads a character line and extracts VTK index as well as allocating and storing elem2node rows
 	char* end;
-	unsigned j = 0;
-	for (unsigned c = strtoul(cline, &end, 10); cline != end; c = strtoul(cline, &end, 10))
+	int j = 0;
+	for (int c = strtoul(cline, &end, 10); cline != end; c = strtoul(cline, &end, 10))
 	{
 		cline = end;
 
 		//Where j is the integer counter. 0 is the vtk index and the rest is the 
 		if (j == 0) {
 			bc_elem2vtk[bc][bc_e2n_counter] = c;
-			bc_elem2node[bc][bc_e2n_counter] = new unsigned[vtklookup[c][1]];
+			bc_elem2node[bc][bc_e2n_counter] = new int[vtklookup[c][1]];
 		}
 
 		else if (j > 0 && j <= vtklookup[bc_elem2vtk[bc][bc_e2n_counter]][1])
@@ -274,7 +273,7 @@ void Reader_c::Fill_BC_E2N_VTK(const char* cline, unsigned bc) {
 
 double** Reader_c::Fill_coord(const char* cline) {
 	char* end;
-	unsigned j = 0;
+	int j = 0;
 	for (long double c = strtod(cline, &end); cline != end; c = strtod(cline, &end))
 	{
 		if (j < ndime) {

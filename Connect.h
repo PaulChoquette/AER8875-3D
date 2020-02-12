@@ -14,11 +14,9 @@ class Reader_c;
 
 class Connect_c
 {
-private:
+public:
 	// Exemple d'entrer pour tester le code :
 	int elem2zone[16] = { 0,0,1,1,0,0,1,1,2,2,3,3,2,2,3,3 };
-	int nzone = 4;
-	int ndime = 3;
 
 public:
 	// ================================================= INITIALIZATION ====================================================
@@ -28,15 +26,18 @@ public:
 
 
 	// Integrer :
-	int nelem_g, nnode_g;
+	int nzone, ndime, mesup1, mpsup;
+	int nelem_g, nnode_g, ncell_g;
 	// 1D Array of Integrer :
-	int* esup2; int* esup1; 
-	int* zone2nelem; int* zone2nnode; int* checkzone; 
+	int* esup2; int* esup1; int* psup1; int* psup2; int* lpoin;
+	int* zone2nelem; int* zone2nnode; int* checkzone;  int* zone2nbelem;
 	// 2D Array of Integrer :
+	int** vtk2nnofa; int** vtk2facevtk;
 	int** elem2elem_g;
 	int** zone2node; int** zone2elem; int** elemglobal2local; int** nodeglobal2local; int** zone2markelem; vector<vector<vector<int>>> zone2idmark;
+
 	// 3D Array of Integrer :
-	int*** elem2node; 
+	int*** elem2node; int*** vtk2lpofa; int*** belem2node;
 	// Double :
 
 	// 1D Array of Double :
@@ -47,17 +48,18 @@ public:
 	double*** zone2coord;
 
 	// Vector
-	vector<vector<vector<int>>> belem2node;
+	
 
 	// =========================================== CONNECTIVITY FUNCTION MEMBERS ============================================
 	// ELEMENTS CONNECTIVITY:
-	void DataTransferExemple(Reader_c& read);
+	void ConnectExemple(Reader_c& read);
 	void InitializeGlobal(Reader_c& read);
-	void Node2Elements();
-	void Node2Nodes();
-	void Element2Elements();
+	void Node2Elements(Reader_c& read);
+	void Node2Nodes(Reader_c& read);
+	void Element2Elements(Reader_c& read);
 	int GetnelemArNode(int inode);
 	int GetielemArNode(int inode, int ielno);
+
 	// FACES CONNECTIVITY:
 	void Compute_nface();
 	void Face2ElementsNodes();
@@ -75,7 +77,11 @@ public:
 	void Element2Nodes(Reader_c& read);
 	void Zone2Zones();
 
-
+	// OTHER FUNCTION MEMBER
+	void Display1DArray(int V[], int size, string name);
+	void Display2DArray(int* V[], int nLine, int nColomn, string name);
+	void Display2DArray(double* V[], int nLine, int nColomn, string name);
+	void Display3DArray(int** V[], int ix, int nLine, int nColomn, string name);
 };
 
 #endif 
