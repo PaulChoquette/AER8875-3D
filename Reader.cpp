@@ -12,7 +12,7 @@ void Reader_c::read_file(string filename) {
 	ndime = 0; nelem = 0; npoint = 0; nhalo = 0;
 
 	//Initialize information reading counters;
-	elem = 0; point = 0; line = ""; bc = 0;
+	elem = 0; point = 0; line = ""; bc = 0; nbc = 0;
 
 	//Open the file and continue if file is succesfully opened
 	if (OpenFile(filename)) 
@@ -90,7 +90,7 @@ void Reader_c::read_file(string filename) {
 				if (nbc != 0) {
 					bclinen = linen;
 					BoundIndex = new int[nbc + 1];
-					BoundIndex[0] = nelem + 1;
+					BoundIndex[0] = nelem;
 					bc_elem2node = new int** [nbc];
 					bc_elem2vtk = new int* [nbc];
 					bc_nelemv = new int[nbc];
