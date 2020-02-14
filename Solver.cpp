@@ -13,6 +13,9 @@
 
 using namespace std;
 
-void Solver_c::exemple(int input) {
+void Solver_c::SolverExemple() {
 
+	cout << "from Solver: nelem = " << nelem_g << endl;
+	
 }
+

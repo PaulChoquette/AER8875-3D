@@ -2,8 +2,8 @@
 #define METRIC_H
 
 #include <iostream>
-
-class Metric_c
+#include "Connect.h"
+class Metric_c : public Connect_c
 {
 public:
 	// ================================================= INITIALIZATION ====================================================
@@ -27,7 +27,7 @@ public:
 
 
 	// =========================================== FUNCTION MEMBERS ============================================
-	void exemple(int input);
+	void MetricExemple(int input);
 
 };
 

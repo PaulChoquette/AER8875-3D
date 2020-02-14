@@ -2,8 +2,9 @@
 #define SOLVER_H
 
 #include <iostream>
+#include "Metric.h"
 
-class Solver_c
+class Solver_c: public Metric_c
 {
 public:
 	// ================================================= INITIALIZATION ====================================================
@@ -27,7 +28,7 @@ public:
 
 
 	// =========================================== FUNCTION MEMBERS ============================================
-	void exemple(int input);
+	void SolverExemple();
 
 };
 

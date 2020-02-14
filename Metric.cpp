@@ -13,7 +13,8 @@
 
 using namespace std;
 
-void Metric_c::exemple(int input) {
+void Metric_c::MetricExemple(int input) {
+	cout << "from Metric: nelem = " << nelem_g << endl;
 
 }
 
