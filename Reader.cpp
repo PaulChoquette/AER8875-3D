@@ -134,9 +134,9 @@ void Reader_c::read_file(string filename) {
 						for (int ielem = 0; ielem < nelem; ielem++)
 						{
 							elem2vtk[ielem] = elem2vtk_nh[ielem];
-							elem2node[ielem] = new int[vtklookup[elem2vtk[ielem]][1]];
+							elem2node[ielem] = new int[vtklookup[ndime-2][elem2vtk[ielem]][1]];
 
-							for (int inode = 0; inode < vtklookup[elem2vtk[ielem]][1]; inode++)
+							for (int inode = 0; inode < vtklookup[ndime-2][elem2vtk[ielem]][1]; inode++)
 							{		
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 							}
@@ -148,9 +148,9 @@ void Reader_c::read_file(string filename) {
 							for (int ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
 							{
 								elem2vtk[nelem + imelem] = bc_elem2vtk[ibc][ibcen];
-								elem2node[nelem + imelem] = new int[vtklookup[elem2vtk[nelem + imelem]][1]];
+								elem2node[nelem + imelem] = new int[vtklookup[ndime-2][elem2vtk[nelem + imelem]][1]];
 
-								for (int j = 0; j < vtklookup[elem2vtk[nelem + imelem]][1]; j++)
+								for (int j = 0; j < vtklookup[ndime-2][elem2vtk[nelem + imelem]][1]; j++)
 								{									
 									elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
 								}
@@ -209,6 +209,9 @@ int Reader_c::Readcnst(const string& line, const string& tofind)
 		cnstch = line.substr(cnstpos, line.length() - cnstpos);
 		cnst = stoul(cnstch);
 	}
+	else {
+		return 0;
+	}
 	return cnst;
 }
 
@@ -223,12 +226,12 @@ void Reader_c::Fill_E2N_VTK(const char* cline) {
 		//Where j is the integer counter. 0 is the vtk index and the rest is the 
 		if (j == 0) {
 			elem2vtk_nh[elem] = c;
-			elem2node_nh[elem] = new int [vtklookup[c][1]];
+			elem2node_nh[elem] = new int [vtklookup[ndime-2][c][1]];
 		}
 
-		else if(j > 0 && j <= vtklookup[elem2vtk_nh[elem]][1])
+		else if(j > 0 && j <= vtklookup[ndime-2][elem2vtk_nh[elem]][1])
 		{
-			elem2node_nh[elem][j - 1] = c + 1;
+			elem2node_nh[elem][j - 1] = c;
 		}
 
 		else {
@@ -254,12 +257,12 @@ void Reader_c::Fill_BC_E2N_VTK(const char* cline, int bc) {
 		//Where j is the integer counter. 0 is the vtk index and the rest is the 
 		if (j == 0) {
 			bc_elem2vtk[bc][bc_e2n_counter] = c;
-			bc_elem2node[bc][bc_e2n_counter] = new int[vtklookup[c][1]];
+			bc_elem2node[bc][bc_e2n_counter] = new int[vtklookup[ndime-2][c][1]];
 		}
 
-		else if (j > 0 && j <= vtklookup[bc_elem2vtk[bc][bc_e2n_counter]][1])
+		else if (j > 0 && j <= vtklookup[ndime-2][bc_elem2vtk[bc][bc_e2n_counter]][1])
 		{
-			bc_elem2node[bc][bc_e2n_counter][j - 1] = c + 1;
+			bc_elem2node[bc][bc_e2n_counter][j - 1] = c;
 		}
 
 		else {

@@ -20,7 +20,9 @@ using namespace std;
 
 int main() {
 	cout << "Starting ..." << endl;
-	string File_Name = "block.su2";
+	//string File_Name = "block.su2";
+	//string File_Name = "test_justSquare.su2";
+	string File_Name = "2cube.su2";
 	//string File_Name = "naca0012_euler_65x65x2_O_1B.su2";
 	Reader_c FileContents;
 
@@ -28,7 +30,13 @@ int main() {
 
 	// CONNECTIVITY
 	Solver_c solve;
+	solve.Display2DArray(FileContents.elem2node, FileContents.ncell, 9, "elem2node_g");
 	solve.ComputeGlobalConnectivity(FileContents);
+	solve.Display1DArray(solve.esup1, solve.mesup1, "esup1");
+	solve.Display1DArray(solve.esup2, solve.nnode_g+1, "esup2");
+	solve.Display1DArray(solve.psup1, solve.mpsup, "psup1");
+	solve.Display1DArray(solve.psup2, solve.nnode_g+1, "psup2");
+	solve.Display2DArray(solve.elem2elem_g, solve.ncell_g, 9, "elem2elem_g");
 	solve.ComputeZoneConnectivity(FileContents);
 	solve.ComputeLocalConnectivity();
 
