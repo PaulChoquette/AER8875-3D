@@ -28,26 +28,37 @@ void Connect_c::InitializeGlobal(Reader_c& read) {
 	vtk2facevtk = new int* [16];
 
 	// nnofa : number of node per face of shape
-	
+	// vtk2lpofa[vtk][ifael][inoel] = 
+	// vtk2fael2noel 
 	
 
 	// =================== Bar (vtk = 3) ===================
 	//							0 - 1
-	vtk2nnofa[3] = new int[2]{ 2,2 };
-	vtk2lpofa[3] = new int* [2];
-	vtk2lpofa[3][0] = new int[2]{ 0,1 };
-	vtk2lpofa[3][1] = new int[2]{ 1,0 };
-    vtk2facevtk[3] = new int[4]{ 3,3,3};
+	vtk2nnofa[3] = new int[1]{ 2 };
+	vtk2lpofa[3] = new int* [1];
+	vtk2lpofa[3][0] = new int[2]{ 0,1 }; // face 0
+	
+
 
 	// ================= Triangle (vtk = 5) =================
 	//						     2
 	//						    / \	
 	//					       0 _ 1
-	vtk2nnofa[5] = new int[3]{ 2,2,2 };
-	vtk2lpofa[5] = new int* [2];
-	vtk2lpofa[5][0] = new int[3]{ 0,1,2 };
-	vtk2lpofa[5][1] = new int[3]{ 1,2,0 };
+	if (ndime == 2) {
+		vtk2nnofa[5] = new int[3]{ 2,2,2 };
+		vtk2facevtk[5] = new int[3]{ 3,3,3 };
 
+		vtk2lpofa[5] = new int* [3];
+		vtk2lpofa[5][0] = new int[2]{ 0,1 }; // face 0
+		vtk2lpofa[5][1] = new int[2]{ 1,2 }; // face 1
+		vtk2lpofa[5][2] = new int[2]{ 2,0 }; // face 2
+	}
+	else { // 3D
+		vtk2nnofa[5] = new int[1]{ 3 };
+
+		vtk2lpofa[5] = new int* [1];
+		vtk2lpofa[5][0] = new int[3]{ 0,1,2 }; // face 0
+	}
 
 	// =================== Quad (vtk = 9) ===================
 	//						    3 - 2
@@ -55,20 +66,35 @@ void Connect_c::InitializeGlobal(Reader_c& read) {
 	//						    0 - 1
 	if (ndime == 2) {
 		vtk2nnofa[9] = new int[4]{ 2,2,2,2 };
-		vtk2lpofa[9] = new int* [2];
-	    vtk2lpofa[9][0] = new int[4]{ 0,1,2,3 };
-	    vtk2lpofa[9][1] = new int[4]{ 1,2,3,0 };
-	}
-	else {
-		vtk2nnofa[9] = new int[1]{ 4 };   
-		vtk2lpofa[9] = new int* [4]; 
-		vtk2lpofa[9][0] = new int[1]{ 0 };
-		vtk2lpofa[9][1] = new int[1]{ 1 };
-		vtk2lpofa[9][2] = new int[1]{ 2 };
-		vtk2lpofa[9][3] = new int[1]{ 3 };
 		vtk2facevtk[9] = new int[4]{ 3,3,3,3 };
+
+		vtk2lpofa[9] = new int* [4];
+		vtk2lpofa[9][0] = new int[2]{ 0, 1 }; // face 0
+		vtk2lpofa[9][1] = new int[2]{ 1, 2 }; // face 1
+		vtk2lpofa[9][2] = new int[2]{ 2, 3 }; // face 2
+		vtk2lpofa[9][3] = new int[2]{ 3, 0 }; // face 3
 	}
-	
+	else { // 3D
+		vtk2nnofa[9] = new int[1]{ 4 };  
+
+		vtk2lpofa[9] = new int* [1];
+		vtk2lpofa[9][0] = new int[4]{ 0, 1, 2, 3 }; // face 0
+		
+	}
+	// =============== Tetrahedral (vtk = 10) ================
+	//						  3 _ 2
+	//						 / \ |
+	//						0 __ 1
+
+	vtk2nnofa[10] = new int[4]{ 3,3,3,3 };
+	vtk2facevtk[10] = new int[4]{ 5,5,5,5 };
+
+	vtk2lpofa[10] = new int* [4];
+	vtk2lpofa[10][0] = new int[3]{ 0,1,3 }; // face 0
+	vtk2lpofa[10][1] = new int[3]{ 1,2,3 }; // face 1
+	vtk2lpofa[10][2] = new int[3]{ 0,3,2 }; // face 2
+	vtk2lpofa[10][3] = new int[3]{ 0,2,1 }; // face 3
+
 	// ================ Hexahedron (vtk = 12) ================
 	//					      7 ___ 6
 	//					     /|    /|
@@ -76,12 +102,32 @@ void Connect_c::InitializeGlobal(Reader_c& read) {
 	//						| /   | /
 	//						0 ___ 1
 	vtk2nnofa[12] = new int[6]{ 4,4,4,4,4,4 };
-	vtk2lpofa[12] = new int* [4];
-	vtk2lpofa[12][0] = new int[6]{ 0,4,1,2,0,0 };
-	vtk2lpofa[12][1] = new int[6]{ 3,5,2,3,4,1 };
-	vtk2lpofa[12][2] = new int[6]{ 2,6,6,7,7,5 };
-	vtk2lpofa[12][3] = new int[6]{ 1,7,5,6,3,4 };
-	vtk2facevtk[12]	 = new int[6]{ 9,9,9,9,9,9 };
+	vtk2facevtk[12] = new int[6]{ 9,9,9,9,9,9 };
+
+	vtk2lpofa[12] = new int* [6];
+	vtk2lpofa[12][0] = new int[4]{ 0,3,2,1}; // face 0
+	vtk2lpofa[12][1] = new int[4]{ 4,5,6,7}; // face 1
+	vtk2lpofa[12][2] = new int[4]{ 1,2,6,5}; // face 2
+	vtk2lpofa[12][3] = new int[4]{ 2,3,7,6}; // face 3
+	vtk2lpofa[12][4] = new int[4]{ 0,4,7,3}; // face 4
+	vtk2lpofa[12][5] = new int[4]{ 0,1,5,4}; // face 5
+
+	// ================ Pyramid (vtk = 14) ================		     
+	//					   3 __ 4__ 2
+	//				    	|  /\  |
+	//	                    | /  \ |
+	//	                    |/____\|
+	//                     0        1
+
+	vtk2nnofa[14] = new int[5]{ 3,3,3,3,4 };
+	vtk2facevtk[14] = new int[5]{ 5,5,5,5,9 };
+
+	vtk2lpofa[14] = new int* [5];
+	vtk2lpofa[14][0] = new int[3]{ 0,1,4 }; // face 0
+	vtk2lpofa[14][1] = new int[3]{ 1,2,4 }; // face 1
+	vtk2lpofa[14][2] = new int[3]{ 2,3,4 }; // face 2
+	vtk2lpofa[14][3] = new int[3]{ 3,0,4 }; // face 3
+	vtk2lpofa[14][4] = new int[4]{ 0,3,2,1 }; // face 4
 
 }
 void Connect_c::Node2Elements(Reader_c& read) {
@@ -181,7 +227,7 @@ void Connect_c::Element2Elements(Reader_c& read) {
 
 			for (int inofa = 0; inofa <= nnofa - 1; inofa++) {
 			
-				ilpofa = vtk2lpofa[vtk][inofa][ifael]+1;
+				ilpofa = vtk2lpofa[vtk][ifael][inofa]+1;
 				lhelp[inofa] = read.elem2node[ielem][ilpofa - 1] + 1;	// elem2node en 0 base
 				lpoin[lhelp[inofa] - 1] = 1;
 			}
@@ -198,12 +244,11 @@ void Connect_c::Element2Elements(Reader_c& read) {
 							icoun = 0;
 							for (int jnofa = 0; jnofa <= nnofa - 1; jnofa++) {
 								//jpoin = read.elem2node[jelem - 1][Getlpofa(jelem - 1, jnofa, jfael) + 1 - 1];
-								jpoin = read.elem2node[jelem - 1][vtk2lpofa[jvtk][jnofa][jfael] + 1 - 1] + 1;  // ICI
+								jpoin = read.elem2node[jelem - 1][vtk2lpofa[jvtk][jfael][jnofa] + 1 - 1] + 1;  // ICI
 								icoun = icoun + lpoin[jpoin - 1];
 							}
 							if (icoun == nnofa) {
 								elem2elem_g[ielem][ifael] = jelem - 1;
-
 							}
 						}
 					}
@@ -237,6 +282,7 @@ void Connect_c::ComputeGlobalConnectivity(Reader_c& read) {
 	Connect_c::Node2Nodes(read);
 	Connect_c::Element2Elements(read);
 }
+
 // ============================================= ZONE ELEMENTS CONNECTIVITY ================================================
 // === ELEMENT === 
 void Connect_c::Node2Elements(int izone) {
@@ -279,8 +325,6 @@ void Connect_c::Node2Elements(int izone) {
 	}
 	zone2esup2[izone][0] = 0;
 
-	Display1DArray(zone2esup1[izone], mesup1, "esup1");
-	Display1DArray(zone2esup2[izone], zone2nnode[izone] + 1, "esup2");
 }
 void Connect_c::Node2Nodes(int izone) {
 	zone2lpoin[izone] = new int[zone2nnode[izone]]();
@@ -335,7 +379,7 @@ void Connect_c::Element2Elements(int izone) {
 			lhelp.resize(nnofa);															// vecteur a enlever
 
 			for (int inofa = 0; inofa <= nnofa - 1; inofa++) {
-				int ilpofa = vtk2lpofa[vtk][inofa][ifael] + 1;
+				int ilpofa = vtk2lpofa[vtk][ifael][inofa] + 1;
 				lhelp[inofa] = elem2node[izone][ielem][ilpofa - 1] + 1;	// elem2node en 0 base 
 				zone2lpoin[izone][lhelp[inofa] - 1] = 1;
 			}
@@ -350,7 +394,7 @@ void Connect_c::Element2Elements(int izone) {
 						if (nnofj == nnofa) {
 							int icoun = 0;
 							for (int jnofa = 0; jnofa <= nnofa - 1; jnofa++) {
-								int jpoin = elem2node[izone][jelem - 1][vtk2lpofa[jvtk][jnofa][jfael] + 1 - 1] + 1; // elem2node en 0 base 
+								int jpoin = elem2node[izone][jelem - 1][vtk2lpofa[jvtk][jfael][jnofa] + 1 - 1] + 1; // elem2node en 0 base 
 								icoun = icoun + zone2lpoin[izone][jpoin - 1];
 							}
 							if (icoun == nnofa) {
@@ -421,7 +465,7 @@ void Connect_c::Face2ElementsNodes(int izone) {
 					LeftCheck = 1;
 					
 					for (int inofa = 0; inofa < nnofa; inofa++) {	
-						int inoel = vtk2lpofa[vtk][inofa][ifael];
+						int inoel = vtk2lpofa[vtk][ifael][inofa];
 						face2node[izone][iface][inofa] = elem2node[izone][ielem][inoel];
 					}
 					face2elem[izone][iface][0] = ielem;
@@ -433,7 +477,7 @@ void Connect_c::Face2ElementsNodes(int izone) {
 					LeftCheck = 0;
 
 					for (int inofa = 0; inofa < nnofa; inofa++) {
-						int inoel = vtk2lpofa[vtk][inofa][ifael];
+						int inoel = vtk2lpofa[vtk][ifael][inofa];
 						face2node[izone][iface][inofa] = elem2node[izone][ielem][inoel];
 					}
 					face2elem[izone][iface][0] = jelem;
@@ -506,7 +550,6 @@ void Connect_c::ComputeLocalConnectivity()
 		Connect_c::Node2Elements(izone);
 		Connect_c::Node2Nodes(izone);
 		Connect_c::Element2Elements(izone);
-		Connect_c::Display3DArray(elem2elem, izone, zone2ncell[izone], 6, "elem2elem");
 		Connect_c::Findnface(izone);
 		Connect_c::Face2ElementsNodes(izone);
 		Connect_c::Element2Faces(izone);
@@ -518,9 +561,9 @@ void Connect_c::ComputeLocalConnectivity()
 	delete[] zone2psup2;
 	delete[] zone2lpoin;
 
-	Display3DArray(face2node, 0, zone2nface[0], 5, "face2node");
+	/*Display3DArray(face2node, 0, zone2nface[0], 5, "face2node");
 	Display3DArray(face2elem, 0, zone2nface[0], 2, "face2elem");
-	Display3DArray(face2fael, 0, zone2nface[0], 2, "face2fael");
+	Display3DArray(face2fael, 0, zone2nface[0], 2, "face2fael");*/
 }
 
 
@@ -706,7 +749,6 @@ void Connect_c::InitializeElem2Node(Reader_c& read) {
 		}
 	}
 	
-	
 	// Calcul de Taille de boundary --> zone2nbound:
 	for (int ibc = 1; ibc < read.nbc + 1; ibc++) {
 		int ielem1 = read.BoundIndex[ibc - 1];
@@ -719,13 +761,6 @@ void Connect_c::InitializeElem2Node(Reader_c& read) {
 		for (int izone = 0; izone < nzone; izone++) {
 			zone2boundIndex[izone][ibc] = zone2nelem[izone] + zone2nbound[izone];
 		}	
-	}
-
-	for (int izone = 0; izone < nzone; izone++) {
-		cout << "zone2nbound = " << zone2nbound[izone] << endl;
-	}
-	for (int izone = 0; izone < nzone; izone++) {
-		cout << "zone2boundIndex = " << zone2boundIndex[izone][0] << " " << zone2boundIndex[izone][1] << " " <<  zone2boundIndex[izone][2] <<  endl;
 	}
 
 	// ============================= Initialization ============================================
@@ -744,8 +779,6 @@ void Connect_c::InitializeElem2Node(Reader_c& read) {
 			elem2vtk[izone][ielem] = vtk;
 		}
 	}
-
-
 }
 void Connect_c::Zone2Bound(Reader_c& read) {
 	// VOir avec Paul, BoundIndex est en 1 based mais pk
@@ -855,7 +888,7 @@ void Connect_c::Element2Nodes(Reader_c& read)
 					//zone2idmark[izone][ijzone].push_back(idz);
 
 					for (int inofa = 0; inofa < nnofa; inofa++) {
-						int inoel = vtk2lpofa[vtk][inofa][ifael]; // Getlpofa()
+						int inoel = vtk2lpofa[vtk][ifael][inofa]; // Getlpofa()
 						int inode_g = read.elem2node[ielem_g][inoel]; // 
 						int inode_z = nodeglobal2local[inode_g][izone];
 						belem2node[izone][idz][inofa + 1] = inode_z;
@@ -905,6 +938,7 @@ void Connect_c::Zone2Zones()
 
 
 void Connect_c::ComputeZoneConnectivity(Reader_c& read) {
+	elem2zone = new int[nelem_g](); // Doit etre supprimer quand metis marche
 	Connect_c::Findnzone();
 	Connect_c::InitializeLocal();
 	Connect_c::Zone2nnode();
