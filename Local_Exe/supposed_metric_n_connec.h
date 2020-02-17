@@ -7,7 +7,7 @@ class supposed_metric_n_connec {
     std::string Registre_file;  //file for communication register
     double convergeCrit;        // convergence criterion  
     double cfl,mach,AoA;
-    int iterMax,Order;                // Max iteration number  
+    int iterMax,Order,RK_step;                // Max iteration number, Scheme order and Runge-Kutta stages
     // from reader
     int ndime;
     int nelem;                  // real cells
@@ -29,10 +29,10 @@ class supposed_metric_n_connec {
     int**   face2point;
     int**   local2ZoneLocal;    //local element number TO other zone's local index
     // from Metric
-    double*     face2norm;
+    double**     face2norm;
     double**    cent2face;
     double*     face2area;
     double*     elem2vol;
     double**    elem2spectral;
-    double*     face2norm;
+    //double*     face2norm;
 };
