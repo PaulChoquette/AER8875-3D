@@ -5,7 +5,7 @@
 #  include <string>
 #include "ThirdPartyHeadersEnd.h"
 
-#include "TecGUIGlobal.h"
+#include "StandardIntegralTypes.h"
 #include "tecgui_Exports.h"
 #include "ClassMacros.h"
 
@@ -17,7 +17,7 @@ class TecGUIMenuActionAbstract
 {
 public:
     TecGUIMenuActionAbstract(
-        GUIInt_t           parent,
+        LgIndex_t           parent,
         std::string const&  label);
 
     virtual ~TecGUIMenuActionAbstract();

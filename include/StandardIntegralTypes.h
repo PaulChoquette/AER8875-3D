@@ -6,12 +6,10 @@
     #define __STDC_CONSTANT_MACROS
 #endif
 
-// Provide access to c99 format macros in inttypes.h
-#if !defined __STDC_FORMAT_MACROS
-    #define __STDC_FORMAT_MACROS
-#endif
-
-#if defined _WIN32 && _MSC_VER < 1800 // Visual Studio 2013 has inttypes.h
+#if defined MSWIN
+#if _MSC_VER >= 1600 // Visual Studio 10 has stdint.h
+#include <stdint.h>
+#else
     /*
      * Since Microsoft Visual Studio releases earlier than Visual Studio 10 didn't
      * supply stdint.h we downloaded it from Google Code:
@@ -278,52 +276,47 @@
     
     #endif // _MSC_STDINT_H_ ]
 
-   /**
-    * Excerpt from inttypes.h
-    */
-    #define PRId32 "I32d"
-    #define PRIu32 "I32u"
-    #define PRIx32 "I32x"
-    #define PRIu64 "I64u"
-    #define PRIx64 "I64x"
-
-#else // Newer Windows or not Windows
-    #include <inttypes.h>
 #endif
+#else // Not Windows
+    #include <stdint.h>
+#endif
+
+/*
+ * Specific entity integral types.
+ */
+typedef int32_t Node_t;
+typedef int32_t Element_t;
+typedef int32_t Face_t;
+typedef int32_t Strand_t;
+typedef int32_t Zone_t;
+typedef int32_t Var_t;
 
 /*
  * Types for indexing many integral types.
  */
 typedef int32_t EntIndex_t;
 /* CORE SOURCE CODE REMOVED */
-    typedef  int64_t         LgIndex_t;
+    typedef  int32_t         LgIndex_t;
 /* CORE SOURCE CODE REMOVED */
-
-
-/*
- * Used by some enums outside of the engine that also use VALID_ENUM
+typedef short   SmInteger_t;
+/**
+ * HgIndex_t is used for counting node maps and other things that may individually be LgIndex_t, but
+ * in total exceed 32-bit.
  */
-static int const InvalidEnumValue = 255;
-
-
-/*
- * Printing integers without producing compiler warnings
- * These types are "convenient" to use (unlike the PRI defines) for formatting integers in print statements.
- *
- * For some crazy reason mac and linux require specifically the use of "long int" when using %ld even though
- * long long and long long int are equivalent in size.  Windows needs long long when printing using %ld
- *
- * printing any integer should use:
- *
- *     printf("blah blah %ld blah\n",(lding_t)myInteger);
- *
- */
-#if defined MSWIN
-  typedef long long          ldfmt_t;
-  typedef unsigned long long lufmt_t;
-#else 
-  typedef long int          ldfmt_t;
-  typedef unsigned long int lufmt_t;
+#if defined (_WIN64) || (__WORDSIZE == 64)
+    typedef int64_t HgIndex_t;
+#else
+    typedef int32_t HgIndex_t; // ...no point in 64 bit addressing on a 32 bit machine
 #endif
+
+/*
+ * Specific entity integral type constants.
+ */
+int const InvalidEnumValue = 255;
+
+// callbacks
+    typedef void (*TecGUIVoidCallback_pf)(void);
+    typedef void (*TecGUIIntCallback_pf)(const LgIndex_t *Data);
+
 
 #endif

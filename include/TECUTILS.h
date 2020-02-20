@@ -835,8 +835,8 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilFrameSetPlotType(PlotType_e NewP
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFrameSetDataSet(sourceDataSetID,
  *   &                                          targetFrameID)
- *    INTEGER*8 sourceDataSetID
- *    INTEGER*8 targetFrameID
+ *    INTEGER*4 sourceDataSetID
+ *    INTEGER*4 targetFrameID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -911,31 +911,6 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilFrameSetName(const char *Name);
  *
  */
 LINKTOADDON SetValueReturnCode_e STDCALL TecUtilPageSetName(const char *Name);
-
-
-
-
-
-/**
- * Indicates that the add-on is beginning a series of zone solution time or zone strandid changes.
- * This will suspend the solution time related state changes (active frames changed) until End is
- * called.
- *
- * @since 17.3
- * @sa TecUtilZoneSolutionTimeModificationEnd
- * @ingroup Zone
- */
-LINKTOADDON void STDCALL TecUtilZoneSolutionTimeModificationBegin(void);
-
-/**
- * Indicates that the add-on is finished with a series of zone solution time or zone strandid changes.
- * This will broadcast one final (active frames changed) to let listeners who care about active frames know.
- *
- * @since 17.3
- * @sa TecUtilZoneSolutionTimeModificationBegin
- * @ingroup Zone
- */
-LINKTOADDON void STDCALL TecUtilZoneSolutionTimeModificationEnd(void);
 
 /**
  * Assign a time value to the specified zone. For this value to be used, the zone
@@ -1031,12 +1006,6 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilZoneSetActive(Set_pa     ZoneSet
  *
  * @param ZoneSet
  *   Set of zones for which to perform the style settings. Must not be NULL.
- *
- *
- * @pre <em>VALID_REF(appendedZoneSet)</em>
- *   Pointer must be a valid address and non-NULL.
- * @pre Current frame must have a data set with at least one zone.
- *
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilZoneStyleApplyAuto(
@@ -1290,7 +1259,7 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilLinePlotLayerSetIsActive(const c
  * Name:
  *   SV_CONTOURGROUP
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Required:
@@ -1359,7 +1328,7 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilLinePlotLayerSetIsActive(const c
  *      TecUtilArgListClear(ArgList);
  *      TecUtilArgListAppendInt(ArgList, SV_CONTOURGROUP, 2);
  *      TecUtilArgListAppendInt(ArgList, SV_VAR, 4);
- *      TecUtilArgListAppendInt(ArgList, SV_LEVELINITMODE,
+ *      TecUtilArgListAppendInt(ArgList, SV_LEVELINITMODE, 
  *         ContourLevelsInitializationMode_DontResetLevels);
  *      SVRC = TecUtilContourSetVariableX(ArgList);
  *      TecUtilArgListDealloc(&ArgList);
@@ -2878,19 +2847,19 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilCurveSetExtendedSettings(EntInde
         Attribute                  I or D Value     Type
         -----------------------------------------------------------------
         SV_PRINTFNAME                IValue         (char *)
-        SV_PRECISION                 IValue         (int32_t)
+        SV_PRECISION                 IValue         (SmInteger_t)
         SV_SENDPRINTTOFILE           IValue         (Boolean_t)
-        SV_NUMHARDCOPYCOPIES         IValue         (int32_t)
+        SV_NUMHARDCOPYCOPIES         IValue         (SmInteger_t)
         SV_MAKEROUGHDRAFT            IValue         (Boolean_t)
         SV_LARGEPAPEROK              IValue         (Boolean_t)
         SV_DRIVER                    IValue         (PrinterDriver_e)
         SV_PALETTE                   IValue         (Palette_e)
-        SV_PENSPEED                  IValue         (int32_t)
+        SV_PENSPEED                  IValue         (SmInteger_t)
         SV_PLOTTERUNITSPERINCH       DValue         (double)
         SV_WINPRINTERSMAPCOLORTOMONO IValue         (Boolean_t)
         SV_SPOOLER                   ------         Base on SubAttribute
         SV_JOBCONTROL                ------         Base on SubAttribute
-        SV_NUMLIGHTSOURCESHADES      IValue         (int32_t)
+        SV_NUMLIGHTSOURCESHADES      IValue         (SmInteger_t)
         SV_FORCEEXTRA3DSORTING       IValue         (Boolean_t)
         SV_PRINTRENDERTYPE           IValeu         (PrintRenderType_e)
         SV_IMAGERESOLUTION           IValue         (LgIndex_t)
@@ -3032,21 +3001,20 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilPrintSetup(const char *Attribute
            SV_SUNRASTERFORMAT             IValue      SunRaster_e             SunRaster only.
            SV_EXPORTREGION                IValue      ExportRegion_e          ExportRegion_WorkArea is not available for WindowsMetafile
            SV_EPSPREVIEWIMAGE             IValue      See SubAttribute        EPS only.
-           SV_GRAYSCALEDEPTH              IValue      int32_t                 TIFF only.
-           SV_IMAGEWIDTH                  IValue      int32_t                 Image formats only.
+           SV_GRAYSCALEDEPTH              IValue      SmInteger_t             TIFF only.
+           SV_IMAGEWIDTH                  IValue      ScreenDim_t             Image formats only.
            SV_CONVERTTO256COLORS          IValue      Boolean_t               TIFF, BMP, and PNG only
            SV_ANIMATIONSPEED              DValue      double                  Animation formats only.
            SV_USEMULTIPLECOLORTABLES      IValue      Boolean_t               Animation formats only.
            SV_EXTRASORTFOR3DPLOTS         IValue      Boolean_t               Vector formats only.
            SV_USESUPERSAMPLEANTIALIASING  IValue      Boolean_t               Image formats only.
-           SV_SUPERSAMPLEFACTOR           IValue      int32_t                 Only applies if SV_USESUPERSAMPLEANTIALIASING is TRUE
+           SV_SUPERSAMPLEFACTOR           IValue      SmInteger_t             Only applies if SV_USESUPERSAMPLEANTIALIASING is TRUE
            SV_TIFFBYTEORDER               IValue      TIFFByteOrder_e         TIFF only.
            SV_JPEGENCODING                IValue      JPEGEncoding_e          JPEG only.
            SV_QUALITY                     DValue      double                  JPEG only.
            SV_FLASHIMAGETYPE              IValue      FlashImageType_e        Flash only.
            SV_FLASHCOMPRESSIONTYPE        IValue      FlashCompressionType_e  Flash only.
            SV_RESIZEFILTER                IValue      ImageResizeFilter_e
-           AV_AVICOMPRESSION              IValue      AVICompression_e        AVI only.
    @endverbatim
 
 
@@ -3306,11 +3274,11 @@ LINKTOADDON SetValueReturnCode_e STDCALL TecUtilSolutionTimeSetCurrent(double Ne
  * #internalattributes exclude_python, exclude_sdkdoc
  */
 LINKTOADDON void STDCALL TecUtilDialogSetLaunchPosition(Widget            W,
-                                                        int32_t           DialogWidth,
-                                                        int32_t           DialogHeight,
+                                                        int               DialogWidth,
+                                                        int               DialogHeight,
                                                         AnchorAlignment_e DialogAnchor,
-                                                        int32_t           IOffset,
-                                                        int32_t           JOffset);
+                                                        LgIndex_t         IOffset,
+                                                        LgIndex_t         JOffset);
 
 
 /**
@@ -3348,45 +3316,8 @@ LINKTOADDON void STDCALL TecUtilDialogSetLaunchPosition(Widget            W,
  * @ingroup Zone
  *
  */
-LINKTOADDON SetValueReturnCode_e STDCALL TecUtilZoneSetStrandID(EntIndex_t Zone,
-                                                                EntIndex_t StrandID);
-
-/**
- * Sets the StrandID associated with the specified zone within a specific
- * dataset. Data loader add-ons should specify the strand ID when creating
- * the zone by using TecUtilDataSetAddZoneX().
- *
- * @since 2017.3
- *
- * @param dataSetID
- *   The dataset holding the zone to be set.
- *
- * @param zone
- *   A zone number for an enabled zone within the dataset.
- *
- * @param strandID
- *   The strand ID to assign. Use a strand ID of zero to specify the zone as
- *   static (non-transient). Values greater than zero are used to associate
- *   zones with a particular strand.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneSetStrandID(
- *   &                   dataSetID
- *   &                   zone,
- *   &                   strandID)
- *    INTEGER*8       dataSetID
- *    INTEGER*4       zone
- *    INTEGER*4       strandID
- * </FortranSyntax>
- *
- * @sa TecUtilZoneSetStrandID()
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON SetValueReturnCode_e STDCALL TecUtilZoneSetStrandIDByDataSetID(UniqueID_t dataSetID,
-                                                                           EntIndex_t zone,
-                                                                           EntIndex_t strandID);
+LINKTOADDON SetValueReturnCode_e STDCALL TecUtilZoneSetStrandID(EntIndex_t  Zone,         /*IN*/
+                                                                Strand_t    StrandID);    /*IN*/
 
 /**
  * Auto assign strand IDs for the specified set of zones. Tecplot examines the

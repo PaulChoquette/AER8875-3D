@@ -30,8 +30,8 @@
 #define SV_PROBEATFIELDPOSITIONRESULT "PROBEATFIELDPOSITIONRESULT"
 #endif
 
-/*{{<windows_only>
-   TecUtilInterfaceWinAddPreMsgFn             PreTranslateMessage_pf
+/*{{<windows_only> 
+   TecUtilInterfaceWinAddPreMsgFn             PreTranslateMessage_pf 
    TecEngWinPrintImageRegisterCallback        WinPrintImageCallback_pf
    TecEngWinPrinterGetContextRegisterCallback WinPrinterGetContextCallback_pf
 </windows_only> }}*/
@@ -102,10 +102,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilInterfaceWinAddPreMsgFn(PreTranslateMessage
     TecEngPageNewCurrentRegisterCallback
     TecEngPolarCacheGetInnerGridRadiusAndDelta
     TecAppPolarCacheGetInnerGridRadiusAndDelta
-    TecEngIsInitialized
     TecEngInit
     TecAppGetAddonHelpAbout
     TecAppUpdateDefaultGeom
+    TecEngGetHelpAbout
+    TecAppGetHelpAbout
     TecEngRenderDestRegisterCallback RenderDestCallback_pf
     TecEngRenderQueryRegisterCallback RenderQueryCallback_pf
     TecEngRenderDestSizeRegisterCallback RenderDestSizeCallback_pf
@@ -116,34 +117,28 @@ LINKTOADDON Boolean_t STDCALL TecUtilInterfaceWinAddPreMsgFn(PreTranslateMessage
     TecEngCursorStyleRegisterCallback BaseCursorStyleCallback_pf
     TecEngProcessBusyEventsRegisterCallback ProcessBusyEventsCallback_pf
     TecEngEngineNotBusyRegisterCallback EngineNotBusyCallback_pf
-    TecEngDotPitchRegisterCallback DotPitchCallback_pf
+    TecEngDotPitchRegisterCallback DotPitchCallback_pf    
     TecEngScreenSizeRegisterCallback ScreenSizeCallback_pf
     TecEngDialogMessageBoxRegisterCallback DialogMessageBoxCallback_pf
     TecEngStartup
     TecEngCleanupOnAbnormalShutdown
-    TecEngClearInterrupted
     TecEngInitiateShutdown
     TecEngFinalizeShutdown
     TecEngProcessTasksOnIdle
     TecEngPageDamaged
     TecEngSetLicenseIsValid
-    TecEngOffscreenImageCreateRegisterCallback OffscreenImageCreateCallback_pf
-    TecEngOffscreenImageDestroyRegisterCallback OffscreenImageDestroyCallback_pf
-    TecEngOffscreenImageGetRGBRowRegisterCallback OffscreenImageGetRGBRowCallback_pf
-    TecEngOffscreenImageClearCacheRegisterCallback OffscreenImageClearCacheCallback_pf
+    TecUtilParentLockStart
+    TecUtilParentLockFinish
+    TecEngOffscreenImageCreateRegisterCallback TecEngOffscreenImageCreate_pf
+    TecEngOffscreenImageDestroyRegisterCallback TecEngOffscreenImageDestroy_pf
     TecEngRenderOffscreenImage
+    TecEngOffscreenImageGetRGBRowRegisterCallback TecEngOffscreenImageGetRGBRow_pf
     TecEngWinPrintImageRegisterCallback WinPrintImageCallback_pf
     TecEngWinPrinterGetContextRegisterCallback WinPrinterGetContextCallback_pf
     TecEngStatusLineRegisterCallback TecEngStatusLineCallback_pf
     TecEngPercentDoneRegisterCallback TecEngPercentDoneCallback_pf
     TecEngMRULayoutFilenameRegisterCallback TecEngMRULayoutFilenameCallback_pf
     TecEngOpenGLVersionStringRegisterCallback TecEngOpenGLVersionStringCallback_pf
-    TecEngMatchVariablesRegisterCallback TecEngMatchVariablesCallback_pf
-    TecAppStartupFileGetPath
-    TecAppStartupFileOpen
-    TecAppVarNameListCreateDefault
-    TecAppVarNameListAddVarName
-    TecAppVarNameListGetVarOffset
 
 
     TecGUICreateDialogBar
@@ -160,11 +155,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilInterfaceWinAddPreMsgFn(PreTranslateMessage
     TecAppDiagnosticMacroRecordStart
     TecAppDiagnosticMacroRecordEnd
     TecAppDiagnosticMacroRecordIsEnabled
-
-    TecAppGetVectorExportMaxDPI
-
-    TecUtilStartInteractiveViewChange
-    TecUtilFinishInteractiveViewChange
  </exclude_all> }}*/
 
 /*{{<exclude_python>
@@ -207,9 +197,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilInterfaceWinAddPreMsgFn(PreTranslateMessage
 </exclude_python>}}*/
 
 /*{{<exclude_fglue>
-                    TecUtilArrayAlloc
-                    TecUtilArrayDealloc
                     TecUtilDataFEPolyGetCellNodesSizeAndCenter
+                    TecUtilTimerAddCallback AddOnTimerCallback_pf
+                    TecUtilDataSetAddVar
                     TecUtilStringAlloc
                     TecUtilStringDealloc
                     TecUtilStringListGetRawStringPtr
@@ -219,7 +209,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilInterfaceWinAddPreMsgFn(PreTranslateMessage
                     StateChangeAddOnCallback_pf
                     StateChangeAddOnCallbackV2_pf
                     TecUtilCheckActiveAllocs
-                    TecUtilMainlineInvoke
                     TecUtilStateChangeGetName
                     TecUtilThreadCreateDetached ThreadFunction_pf
                     TecUtilThreadMutexAlloc
@@ -241,13 +230,13 @@ LINKTOADDON Boolean_t STDCALL TecUtilInterfaceWinAddPreMsgFn(PreTranslateMessage
                     TecUtilThreadPoolWait
                     TecUtilThreadPoolGetNumConcurrentJobs
                     TecUtilDataSetGetSZLRegistration
-                    TecUtilProbePerform
   </exclude_fglue> }}*/
 
 /*{{<exclude_tcl>
                     TecUtilStringAlloc
                     TecUtilStringDealloc
                     TecUtilInterfaceWinAddPreMsgFn
+                    TecUtilTimerAddCallback
                     TecUtilOnIdleQueueAddCallback
                     TecUtilOnIdleQueueRemoveCallback
                     TecUtilProbeInstallCallback
@@ -299,6 +288,85 @@ LINKTOADDON Boolean_t STDCALL TecUtilInterfaceWinAddPreMsgFn(PreTranslateMessage
                     TecUtilThreadPoolGetNumConcurrentJobs
                     TecUtilDataSetGetSZLRegistration
   </exclude_tcl> }}*/
+
+/**
+ * Adds a timer callback, a function which is called by Tecplot at a set
+ * interval of time.
+ *
+ * @par Note:
+ *   In your timer callback you must check to see if Tecplot is locked before
+ *   calling any TecUtil functions, as illustrated in the source code example.
+ *
+ * @param Interval
+ *   Timeout interval in milliseconds.
+ *
+ * @param ClientData
+ *   This can be any 32-bit value and will be passed to the timer callback.
+ *   Typically this is a pointer to a structure
+ *
+ * @param TimerCallback
+ *   Function to be called at each timeout interval. This function should
+ *   return TRUE to continue the timer, or FALSE to stop it.
+ *
+ * @return
+ *   TRUE if the callback was successfully added, FALSE otherwise. This
+ *   function returns FALSE only if Tecplot is unable to obtain a timer from
+ *   the operating system.
+ *
+ * <FortranSyntax>
+ *    INTEGER*4 FUNCTION TecUtilTimerAddCallback(
+ *   &                   Interval,
+ *   &                   ClientDataPtr,
+ *   &                   TimerCallback)
+ *    INTEGER*4          Interval
+ *    POINTER            (ClientDataPtr, ClientData)
+ *    EXTERNAL           TimerCallback
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ *   Set up a timer with an interval of one second.
+ *
+ * @code
+ *   static Boolean_t STDCALL MyTimerCallback(ArbParam_t MyData)
+ *   {
+ *     if (!TecUtilLockIsOn())
+ *       {
+ *         // Tecplot isn't currently locked, so it's safe to call TecUtil functions
+ *         TecUtilLockStart(AddOnID); // Lock Tecplot for ourselves
+ *
+ *         // ... Do processing with TecUtil functions
+ *
+ *         // Release Tecplot for other addons
+ *         TecUtilLockFinish(AddOnID);
+ *       }
+ *     else
+ *       {
+ *         // Another add-on has locked Tecplot. It is NOT safe to
+ *         // call any TecUtil functions, so do nothing.
+ *       }
+ *
+ *     // Return TRUE to continue the timer, return FALSE to stop the timer.
+ *     return TRUE;
+ *   }
+ *   // Make the above function called every second.
+ *   TecUtilTimerAddCallback(1000,NULL,MyTimerCallback);
+ * @endcode
+ *
+ * @par Note:
+ *   For a complete example of an add-on which uses timers, see the timetest
+ *   sample add-on.
+ *
+ * @sa TecUtilOnIdleQueueAddCallback()
+ *
+ * @ingroup Utilities
+ *
+ * #internalattributes exclude_fglue, exclude_sdkdoc, exclude_tcl
+ */
+LINKTOADDON Boolean_t STDCALL TecUtilTimerAddCallback(UInt32_t               Interval,
+                                                      ArbParam_t             ClientData,
+                                                      AddOnTimerCallback_pf  TimerCallback);
 
 /**
  * Adds the function to a list of functions that Tecplot calls only one time
@@ -407,49 +475,129 @@ LINKTOADDON Boolean_t STDCALL TecUtilOnIdleQueueAddCallback(OnIdleCallback_pf Ca
 LINKTOADDON Boolean_t STDCALL TecUtilOnIdleQueueRemoveCallback(OnIdleCallback_pf Callback,
                                                                ArbParam_t        ClientData);
 
+
 /**
- *   Allocate an array. Use TecUtilArrayDealloc() to deallocate arrays allocated
- *   using TecUtilArrayAlloc().
- *   This function is \ref threadsafe.
+ * Download a file given a valid URL.
  *
- * @param size
- *   The size of the array. It must be greater than zero
+ * @param SourceURL
+ *   A string representing the URL for the file to download. Must be valid URL syntax
  *
- * @param debugInfo
- *   Character string identifying the reason why the array is being allocated.
- *   This parameter is not yet enabled, but you still must supply a string
+ * @param LocalDestinationFile
+ *   A string representing a local filename where the data is to be stored
  *
- * @return
- *   Returns the address of the array or NULL if the memory cannot be allocated.
+ * @param IsAscii
+ *   Set to TRUE if the file is to be treated as an ASCII file during the
+ *   download. Set to FALSE if it is to be treated as a Binary file during the
+ *   download
+ *
+ * @param ConfirmOverwrite
+ *   Set to TRUE if you want the user to be prompted with a message and options
+ *   if LocalDestinationFile exists. The user can then choose to cancel the
+ *   operation. If set to FALSE and LocalDestinationFile exists it will be
+ *   overwritten with no warning
+ *
+ *
+ * @pre <em>SourceURL</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
+ * @pre <em>LocalDestinationFile</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
+ *
+ * <FortranSyntax>
+ *    INTEGER*4 FUNCTION TecUtilFileDownloadURL(
+ *   &                   SourceURL,
+ *   &                   LocalDestinationFile,
+ *   &                   IsAscii,
+ *   &                   ConfirmOverwrite)
+ *    CHARACTER*(*)   SourceURL
+ *    CHARACTER*(*)   LocalDestinationFile
+ *    INTEGER*4       IsAscii
+ *    INTEGER*4       ConfirmOverwrite
+ * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
  *
- *   The following example will allocate an array for storing some values and
- *   then deallocate it.
+ * @ingroup Utilities
  *
- * @code
- *   float *values;
- *   int    numValues = 10;
- *   values = reinterpret_cast<float*>(TecUtilArrayAlloc(numValues * sizeof(float), "values"));
- *   if (values != 0)
- *   {
- *       for (int i = 0; i < numValues; i++)
- *       {
- *           // do something with the values
- *       }
- *       TecUtilArrayDealloc((void**)&values);
- *   }
- * @endcode
+ * #internalattributes exclude_sdkdoc
+ */
+LINKTOADDON Boolean_t STDCALL TecUtilFileDownloadURL(const char  *SourceURL,
+                                                     const char  *LocalDestinationFile,
+                                                     Boolean_t    IsAscii,
+                                                     Boolean_t    ConfirmOverwrite);
+/**
+ *   Upload a file given a valid URL.
+ *
+ * @param LocalSourceFile
+ *   A string representing the local file to upload
+ *
+ * @param DestinationURL
+ *   A string representing the remote filename where the data is to be stored. Must be valid URL
+ *   syntax,
+ *
+ * @param IsAscii
+ *   Set to TRUE if the file is to be treated as an ASCII file during the upload. Set to FALSE if it is
+ *   to be treated as a Binary file during the upload
+ *
+ * @param ConfirmOverwrite
+ *   Set to TRUE if you want the user to be prompted with a message and options if exists. The user can
+ *   then choose to cancel the operation. If set to FALSE and DestinationURL exists it will be
+ *   overwritten with no warning
+ *
+ *
+ * @pre <em>LocalSourceFile</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
+ * @pre <em>DestinationURL</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
+ *
+ * <FortranSyntax>
+ *    INTEGER*4 FUNCTION TecUtilFileUploadURL(
+ *   &                   LocalSourceFile,
+ *   &                   DestinationURL,
+ *   &                   IsAscii,
+ *   &                   ConfirmOverwrite)
+ *    CHARACTER*(*)   LocalSourceFile
+ *    CHARACTER*(*)   DestinationURL
+ *    INTEGER*4       IsAscii
+ *    INTEGER*4       ConfirmOverwrite
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
  *
  * @ingroup Utilities
  *
- * @since 14.3
- *
- * #internalattributes exclude_fglue, exclude_tcl
+ * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON TP_ARRAY_GIVES void* STDCALL TecUtilArrayAlloc(LgIndex_t   size,
-                                                           const char* debugInfo);
+LINKTOADDON Boolean_t STDCALL TecUtilFileUploadURL(const char *LocalSourceFile,
+                                                   const char *DestinationURL,
+                                                   Boolean_t   IsAscii,
+                                                   Boolean_t   ConfirmOverwrite);
+/**
+ * Convenience function that will determine if a supplied string uses valid URL
+ * syntax.
+ *
+ * @param *URLFName
+ *   A string containing the URL to test
+ *
+ * @return
+ *   Returns TRUE if URL is valid, FALSE otherwise
+ *
+ * <FortranSyntax>
+ *    INTEGER*4 FUNCTION TecUtilFileIsURL(URLFName)
+ *    CHARACTER*(*) URLFName
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ * @ingroup Utilities
+ */
+LINKTOADDON Boolean_t STDCALL TecUtilFileIsURL(const char *URLFName);
 
 /**
  * Deallocates an array that was allocated and given to an add-on by Tecplot and
@@ -521,7 +669,7 @@ LINKTOADDON MouseButtonMode_e STDCALL TecUtilMouseGetCurrentMode(void);
  * @ingroup Mouse
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilMouseIsValidMode(MouseButtonMode_e MouseMode);
+LINKTOADDON Boolean_t STDCALL TecUtilMouseIsValidMode(MouseButtonMode_e MouseMode);
 
 /**
  * Sets Tecplot's mouse mode to the one specified. This service request behaves
@@ -530,10 +678,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilMouseIsValidMode(MouseButtonMode_e
  *
  * @param MouseMode
  *   Desired mouse mode.
- *
- * @pre
- *   The mouse mode must be valid for the current context. To check, use
- *   TecUtilMouseIsValidMode.
  *
  * @return
  *    TRUE if the requested mouse mode was set, otherwise FALSE.
@@ -545,14 +689,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilMouseIsValidMode(MouseButtonMode_e
  *
  * <PythonSyntax>
  * </PythonSyntax>
- *
- * @code
- *  MouseButtonMode_e mouseMode = ...some mouse mode...
- *  if (TecUtilMouseIsValidMode(mouseMode))
- *      TecUtilMouseSetMode(mouseMode);
- *  else
- *      TecUtilMouseSetMode(MouseButtonMode_Select); // Select is always valid
- * @endcode
  *
  * @ingroup Mouse
  *
@@ -1034,9 +1170,9 @@ LINKTOADDON void STDCALL TecUtilProbeAtLineIndexX(ArgList_pa ArgList);
  *   {
  *     FrameMode_e FrameMode;
  *     TecUtilLockStart(AddOnID);
- *     FrameMode = TecUtilFrameGetPlotType();
+ *     FrameMode = TecUtilFrameGetMode();
  *
- *     if (FrameMode == FrameMode_XY)
+ *     if (FrameMode == Frame_XY)
  *       {
  *         printf("XY Probe, Independent value is: %G\n",
  *                TecUtilProbeLinePlotGetIndValue());
@@ -1166,24 +1302,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilProbeInstallCallback(ProbeDestination_pf Pr
  * Notes:
  *   Client data to be sent to the callback as a parameter.
  *
- * Name:
- *  SV_FORCENEARESTPOINT
- * Type:
- *  Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *  FALSE
- * Required:
- *  No
- * Notes:
- *  Set to TRUE to force the probe to use "nearest point" mode, irrespective of whether
- *  the user has pressed the CTRL key when clicking to probe.
- *
- *  NOTE:
- *      If this parameter is TRUE, the SHIFT key is ignored,
- *      thus CTRL+SHIFT "nearest point ignoring cells" probe mode will not be available.
- *
  * </ArgListTable>
  *
  * @return
@@ -1216,7 +1334,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilProbeInstallCallbackX(ArgList_pa ArgList);
 
 /**
  * Unregister an installed probe callback. For addons this will revert 360 back to
- * using the default probe callback. Parent applications may also want to use this
+ * using the default probe callback. Parent applications may also want to use this 
  * to put the engine back into a known state where no probe callback is registered.
  *
  * <FortranSyntax>
@@ -1447,7 +1565,7 @@ LINKTOADDON char STDCALL TecUtilProbeLinePlotGetIndAxisKind(void);
  * @ingroup Probe
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilProbeLinePlotGetIndAxisNumber(void);
+LINKTOADDON int STDCALL TecUtilProbeLinePlotGetIndAxisNumber(void);
 
 /**
  * Call this function from a probe destination callback to get the point index
@@ -1523,109 +1641,32 @@ LINKTOADDON PlotType_e STDCALL TecUtilProbeGetPlotType(void);
  *
  */
 LINKTOADDON CZType_e STDCALL TecUtilProbeFieldGetCZType(void);
-
-/**
- * Call this function from a probe destination callback to determine if a particular
- * variable value in the probe info structure is valid or not.   Validity most often
- * means that the variable was loaded into memory and thus available to retrieve a
- * value.
- *
- * @param Var
- *   The variable number for which to get the field value.
- *
- * @return
- *   TRUE if valid.
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
- *
- * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilProbeFieldIsVarValid(Var)
- *    INTEGER*4 Var
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @since 14.3
- *
- * @ingroup Probe
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilProbeFieldIsVarValid(EntIndex_t Var);
-
-
 /**
  * Call this function from a probe destination callback to get a field variable
  * value from the previous probe event in a field plot.
  *
- * @param Var
- *   The variable number for which to get the field value.  You are ONLY allowed to call
- *   this function for variables that are "valid" in the current probe state.  Use
- *   TecUtilProbeFieldIsVarValid() to determine which variables are  valid.
+ * @param VarNum
+ *   The variable number for which to get the field value.
  *
  * @return
- *   The value for variable Var at the previous probe data point.
+ *   The value for variable VarNum at the previous probe data point.
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilProbeFieldGetValue(Var)
- *    INTEGER*4 Var
+ *    REAL*8 FUNCTION TecUtilProbeFieldGetValue(VarNum)
+ *    INTEGER*4 VarNum
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilProbeFieldIsVarValid
- *
  * @ingroup Probe
  *
  */
-LINKTOADDON double STDCALL TecUtilProbeFieldGetValue(EntIndex_t Var);
-
-/**
- * Call this function from a probe destination callback to get a cell centered field variable value
- * from the previous probe event in a field plot.
- *
- * @param Var
- *   The variable number for which to get the field value. You are ONLY allowed to call this
- *   function if the current probe state had a successful cell probe. A successful cell probe
- *   in one where the value of TecUtilProbeFieldGetCell() is greater than zero.
- *
- * @param CCValue
- *   A non-NULL pointer indicating where the resulting cell centered value should be placed.
- *
- * @return
- *   TRUE if the cell centered value was retrieved, FALSE otherwise. This function can fail for a
- *   variety of reasons such as unable to read the values from disk or interruption. To
- *   differentiate failure from interruption, check the result of TecUtilInterruptIsSet().
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilProbeFieldGetValue(
- *   &                   Var,
- *   &                   CCValue)
- *    INTEGER*4       Var
- *    REAL*8          CCValue
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilProbeFieldIsVarValid
- *
- * @ingroup Probe
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilProbeFieldGetCCValue(EntIndex_t     Var,
-                                                          TP_OUT double* CCValue);
+LINKTOADDON double STDCALL TecUtilProbeFieldGetValue(EntIndex_t VarNum);
 /**
  * Call this function from a probe destination callback to get the zone number
  * from the previous probe event in a field plot.
@@ -1700,7 +1741,7 @@ LINKTOADDON IJKPlanes_e STDCALL TecUtilProbeFieldGetPlane(void);
  * @ingroup Probe
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilProbeFieldGetFaceNumber(void);
+LINKTOADDON SmInteger_t STDCALL TecUtilProbeFieldGetFaceNumber(void);
 
 /**
  * Call this function from a probe destination callback to get the cell from
@@ -1812,7 +1853,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilProbeFieldGetName(TP_GIVES char** Name);
  * the data readable; if data access is needed, use TecUtilProbeFieldGetReadableNativeRef
  * instead. This method can be used to query for information about the variable without
  * causing the data to be loaded.
- *
+ * 
  * This function is \ref threadsafe.
  *
  * @param Var
@@ -2055,7 +2096,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilExtractInstallCallback(ExtractDestination_p
  *
  * @param ResetStyle
  *   Clears out all style information for the current frame before creating the
- *   data set. 
+ *   data set. It is highly recommended that you always pass TRUE for this
+ *   parameter.
  *
  * @return
  *   Returns TRUE if a data set could be allocated and attached.
@@ -2101,128 +2143,16 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetCreate(const char    *DataSetTitle,
                                                    StringList_pa VarNames,
                                                    Boolean_t     ResetStyle);
 
-
-
-
-
 /**
- * Create a new data set and attach it to the current frame. This only
- * allocates space for a data set specification. You must immediately begin to
- * add zones to the data set by calling functions like TecUtilDataSetAddZone() 
- * or TecUtilDataSetAddZoneX() after creating a data set.
- *
- * @param ArgList
- *   Set of Arglist entries.  This is built using calls to
- *   TecUtilArgListAppendXXXX functions.
- * <ArgListTable>
- *
- * Name:
- *   SV_DATASETTITLE
- * Type:
- *   char *
- * Arg Function:
- *   TecUtilArgListAppendString()
- * Required:
- *   Yes
- * Notes:
- *   The name of the dataset.
- *
- * Name:
- *   SV_LOADERNAME
- * Type:
- *   char *
- * Arg Function:
- *   TecUtilArgListAppendString()
- * Required:
- *   No
- * Default:
- *   NULL
- * Notes:
- *   The name of the loader responsible for creating the dataset.  If NULL this loader
- *   will only be able to load data if all data loading restrictions are turned off.
- *
- * Name:
- *   SV_VARNAMES
- * Type:
- *   StringList_pa
- * Arg Function:
- *   TecUtilArgListAppendStringList()
- * Required:
- *   No
- * Default:
- *   NULL
- * Notes:
- *   StringList contianing list of variable names for the dataset.  Set to NULL if the
- *   dataset is to be initially created without variable names assigned.  You can add
- *   variables later using TecUtilDataSetAddVarX().
- *
- * Name:
- *   SV_RESETSTYLE
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   TRUE
- * Required:
- *   No
- * Notes:
- *   Clears out all style information for the current frame before creating the
- *   data set. 
- *
- * </ArgListTable>
- *
  *
  * @pre Must have one or more frames.
  *
- * @pre <em>ArgList</em>
- *   Argument list must be valid.
+ * @pre <em>VALID_NON_ZERO_LEN_STR(LoaderName)</em>
+ *   String must have a valid address and non-zero length.
  *
+ * @pre <em>VALID_REF(DataSetTitle)</em>
+ *   Pointer must be a valid address and non-NULL.
  *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataSetCreateX(ArgListPtr)
- *    POINTER (ArgListPtr, ArgList)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * Create a Dataset
- *
- * @code
- *
- * // myLoaderName, a char const*, supplied.
- * // varNames, a StringList_pa, is supplied.  This contains the list of variable names.
- *
- * ArgList_pa     argList  = TecUtilArgListAlloc();
- * Boolean_t      Result   = argList != NULL;
- *
- * if (Result)
- * {
- *     Result = TecUtilArgListAppendString(ArgList, SV_DATASETTITLE, "Some dataset title") &&
- *              TecUtilArgListAppendString(ArgList, SV_LOADERNAME, myLoaderName)           &&
- *              TecUtilArgListAppendStringList(argList, SV_VARNAMES, varNames)             &&
- *              TecUtilArgListAppendInt(argList, SV_RESETSTYLE, TRUE)                      &&
- *              TecUtilDataSetCreateX(argList);
- * }
- *
- * TecUtilArgListDealloc(&argList);
- *
- * @endcode
- *
- *
- * @sa TecUtilDataSetAddVarX()
- * @sa TecUtilDataSetAddZoneX()
- *
- * @ingroup DataServices
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetCreateX(ArgList_pa ArgList);
-
-
-/**
- * @deprecated
- *    Use TecutilDataSetCreateX instead.
  *
  * @ingroup DataCreate
  *
@@ -2343,13 +2273,12 @@ LINKTOADDON Boolean_t STDCALL TecUtiltDataSetDefVarLoadFinish(Boolean_t IsDataSe
  *   JMax is the total number of element.
  *
  * @param KMax
- *   K-Dimension of the zone. If the zone is a finite-element polyhedral or
- *   polygon, KMax is the number of unique faces. KMax is not used for other
- *   finite-element zone types. If you do not know the number of faces for a
- *   polytope zone, you may specify 0 for this parameter and later call
- *   TecUtilDataFaceMapSetDeferredMetadata() prior to assigning
- *   face map nodal data inside the load callback registered via
- *   TecUtilDataFaceMapCustomLOD().
+ *   K-Dimension of the zone. If the zone is a finite-element polyhedral or polygon,
+ *   KMax is the number of faces.  KMax is not used for other finite-element zone types.
+ *   If you do not know the number of faces for a finite-element zone, you may specify
+ *   0 for this parameter and later call TecUtilDataFaceMapAssignElemToNodeMap() inside
+ *   a TecUtilDataFaceMapCustomLOD() callback to set this value and generate the zone's
+ *   face map.
  *
  * @param ZoneType
  *   The possible values are: \ref ZoneType_Ordered, \ref ZoneType_FETriangle,
@@ -2429,12 +2358,12 @@ LINKTOADDON Boolean_t STDCALL TecUtiltDataSetDefVarLoadFinish(Boolean_t IsDataSe
  *
  * #internalattributes exclude_fglue
  */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddZone(const char*            Name,
-                                                    LgIndex_t              IMax,
-                                                    LgIndex_t              JMax,
-                                                    LgIndex_t              KMax,
-                                                    ZoneType_e             ZoneType,
-                                                    const FieldDataType_e* VarDataType_Array);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddZone(const char      *Name,
+                                                    LgIndex_t        IMax,
+                                                    LgIndex_t        JMax,
+                                                    LgIndex_t        KMax,
+                                                    ZoneType_e       ZoneType,
+                                                    FieldDataType_e *VarDataType_Array);
 
 
 
@@ -2494,11 +2423,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddZone(const char*            Name,
  * Required:
  *   No
  * Notes:
- *   If 0 (aka static) no strand ID is assigned to the zone otherwise values greater than zero are
- *   used to associate zones with a particular strand. For V3 loaders a strand ID of -1 may be
- *   assigned which instructs Tecplot 360 to let the $!READDATASET command control how strand ID's
- *   are assigned based on the value of the $!READDATASET command's ASSIGNSTRANDIDS and
- *   ADDZONESTOEXISTINGSTRANDS settings.
+ *   If 0 no strand ID is assigned to the zone otherwise values greater than
+ *   zero are used to assoicated zones with a particular strand.
  *
  * Name:
  *   SV_SOLUTIONTIME
@@ -2605,12 +2531,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddZone(const char*            Name,
  * Notes:
  *   For an ordered zone, SV_KMAX is the number of data points in the K
  *   dimension, and for a polytope zones it is the total number of faces.
- *   If you do not know the number of faces for a
- *   polytope zone, do not specify this argument. Instead it should be supplied
- *   in a later call to TecUtilDataFaceMapSetDeferredMetadata()
- *   prior to assigning face map nodal data inside the load callback registered
- *   via TecUtilDataFaceMapCustomLOD(). For a classic FE zone, if the value is
- *   supplied, it is ignored.
+ *   If the number of polytope faces is unknown, do not supply this 
+ *   argument - the number of faces will be determined later by calling
+ *   TecUtilDataFaceMapAssignElemToNodeMap() inside a TecUtilDataFaceMapCustomLOD()
+ *   callback.  For a classic FE zone, if the value is supplied, it is ignored.
  *
  * Name:
  *   SV_VARDATATYPE
@@ -2689,7 +2613,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddZone(const char*            Name,
  *   mutually exclusive with SV_VARSHAREZONELIST.
  *
  * Name:
- *   SV_DEFERCONNECTCREATION
+ *   SV_DEFERNODEMAPCREATION
  * Type:
  *   Boolean_t
  * Arg Function:
@@ -2699,11 +2623,29 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddZone(const char*            Name,
  * Required:
  *   No
  * Notes:
- *   Indicates if the creation of the face or node map should be deferred until the
- *   face or node map data is ready to be populated or the connectivity shared. A data
+ *   Indicates if the creation of the node map should be deferred until the
+ *   node map data is ready to be populated or the connectivity shared. A data
  *   loader must allocate, share, auto or custom load the node map with
  *   TecUtilDataNodeAlloc(), TecUtilDataConnectShare(), TecUtilDataNodeAutoLOD(),
  *   or TecUtilDataNodeCustomLOD() before returning control to Tecplot.
+ *   This option is mutually exclusive with SV_CONNECTSHAREZONE.
+ *
+ * Name:
+ *   SV_DEFERFACENBRCREATION
+ * Type:
+ *   Boolean_t
+ * Arg Function:
+ *   TecUtilArgListAppendInt()
+ * Default:
+ *   FALSE
+ * Required:
+ *   No
+ * Notes:
+ *   Indicates if the creation of the face neighbor should be deferred until the
+ *   face neighbor data is ready to be populated or the connectivity shared. A data
+ *   loader must allocate, share, or custom load the face neighbor data with
+ *   TecUtilDataConnectShare(), or TecUtilDataFaceNbrCustomLOD() before
+ *   returning control to Tecplot.
  *   This option is mutually exclusive with SV_CONNECTSHAREZONE.
  *
  * Name:
@@ -2717,10 +2659,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddZone(const char*            Name,
  * Required:
  *   No
  * Notes:
- *   Number of the zone to use for sharing of connectivity information. If not supplied the
- *   connectivity will not be shared. This option is mutually exclusive with
- *   SV_DEFERCONNECTCREATION.
- *   To use node map sharing with SV_DEFERCONNECTCREATION you must use TecUtilDataConnectShare().
+ *   Number of the zone to use for sharing of connectivity information. If not
+ *   supplied the connectivity will not be shared. This option is mutually
+ *   exclusive with SV_DEFERNODEMAPCREATION and SV_DEFERFACENBRCREATION.
+ *   To use node map sharing with SV_DEFERNODEMAPCREATION and/or
+ *   SV_DEFERFACENBRCREATION you must use TecUtilDataConnectShare().
  *
  * Name:
  *   SV_AUTOASSIGNFN
@@ -3154,8 +3097,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneRealloc(EntIndex_t Zone,
  *
  * #internalattributes exclude_fglue
  */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddVar(const char*            VarName,
-                                                   const FieldDataType_e* FieldDataType_Array);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddVar(const char      *VarName,
+                                                   FieldDataType_e *FieldDataType_Array);
 
 
 /**
@@ -3851,7 +3794,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetIndex(TP_OUT LgIndex_t* Index
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilStateChangeGetPageUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -3889,7 +3832,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetPageUniqueID(TP_OUT UniqueID_
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilStateChangeGetFrameUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -3927,7 +3870,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetFrameUniqueID(TP_OUT UniqueID
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilStateChangeGetDataSetUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -3964,7 +3907,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetDataSetUniqueID(TP_OUT Unique
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilStateChangeGetUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -4012,7 +3955,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetUniqueID(TP_OUT UniqueID_t* U
  *   Take action if the view type was \ref View_Zoom
  *
  * @code
- *     int32_t ArbEnumValue;
+ *     LgIndex_t ArbEnumValue;
  *     TecUtilStateChangeGetArbEnum(&ArbEnumValue);
  *     if ((View_e)ArbEnumValue == View_Zoom)
  *        {
@@ -4023,7 +3966,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetUniqueID(TP_OUT UniqueID_t* U
  * @ingroup StateChange
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetArbEnum(TP_OUT int32_t* ArbEnum);
+LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetArbEnum(TP_OUT LgIndex_t* ArbEnum);
 
 /**
  * Retrieve a reference to the set of zones associated with the previous state
@@ -4163,7 +4106,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetVarSet(TP_OUT Set_pa* VarSetR
  * Take action if it was "COMMON.TIME" auxiliary data associated with zone 2.
  *
  * @code
- *     int32_t   ArbEnumValue;
+ *     LgIndex_t   ArbEnumValue;
  *     EntIndex_t  Zone;
  *     char       *Name;
  *     if ((TecUtilStateChangeGetArbEnum(&ArbEnumValue) &&
@@ -4240,7 +4183,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetMap(TP_OUT EntIndex_t* Map);
  * Take action if it was auxiliary data associated with zone 2.
  *
  * @code
- *     int32_t  ArbEnumValue;
+ *     LgIndex_t  ArbEnumValue;
  *     EntIndex_t Zone;
  *     if ((TecUtilStateChangeGetArbEnum(&ArbEnumValue) &&
  *          ((AuxDataLocation_e)ArbEnumValue == AuxDataLocation_Zone)) &&
@@ -4327,7 +4270,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetVar(TP_OUT EntIndex_t* Var);
  * @ingroup StateChange
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetStyleParam(int32_t             Param,
+LINKTOADDON Boolean_t STDCALL TecUtilStateChangeGetStyleParam(int                 Param,
                                                               TP_OUT const char** StyleParam);
 
 
@@ -4912,11 +4855,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilMacroRecordAddOnComRaw(const char *AddOnIDS
  * @return
  *   TRUE if successful; FALSE if an I/O error occurs while writing the command to a file.
  *
- *
- * @pre <em>Command</em>
- *   String must have a valid address and non-zero length.
- *
- *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilMacroRecordRawCommand(Command)
  *    CHARACTER*(*) Command
@@ -4999,55 +4937,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilMacroRecordRawCommand(const char *Command);
 LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddJournalCommand(const char *CommandProcessorIDString,
                                                               const char *Instructions,
                                                               const char *RawData);
-
-
-#if defined DEFER_TRANSIENT_OPERATIONS
-/**
- * Adds a transient command to the data journal.  This is re-executed whenever solution time changes.
- *
- * @param CommandProcessorIDString
- *   The ID string of the command processor. You must have registered a macro
- *   command callback with Tecplot to use this functionality. See
- *   TecUtilMacroAddCommandCallback for more information on registering a
- *   macro command callback
- *
- * @param Instructions
- *   Command Instructions.
- *
- * @param ZonesCreated
- *   Set of zones created by the initial invocation of this command.  Can set to nullptr if none.
- *
- * @param RawData
- *   Raw Data. Please see TecUtilMacroRecordExtComRaw() for a description of
- *   the raw data format.
- *
- * @return
- *   Returns TRUE if successful, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataSetAddTransientJournalCommand(
- *   &                   AddOnIDString,
- *   &                   Instructions,
- *   &                   RawData)
- *    CHARACTER*(*)   AddOnIDString
- *    CHARACTER*(*)   Instructions
- *    CHARACTER*(*)   RawData
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa
- *   TecUtilMacroAddCommandCallback, TecUtilMacroRecordExtComRaw
- *
- * @ingroup LayoutSupport
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddTransientJournalCommand(const char *CommandProcessorIDString,
-                                                                       const char *Instructions,
-                                                                       Set_pa      zonesCreated,
-                                                                       const char *RawData);
-#endif
 
 /**
  *   Adds a raw macro command to the data journal.
@@ -5190,34 +5079,13 @@ LINKTOADDON void STDCALL TecUtilDataSetSuspendMarking(Boolean_t DoSuspend);
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecUtilDispatchWorkAreaEvent(int32_t   I,
-                                                      int32_t   J,
-                                                      int32_t   ButtonOrKey,
+LINKTOADDON void STDCALL TecUtilDispatchWorkAreaEvent(int       I,
+                                                      int       J,
+                                                      int       ButtonOrKey,
                                                       Event_e   Event,
                                                       Boolean_t IsShifted,
                                                       Boolean_t IsAlted,
                                                       Boolean_t IsControlled);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Begins the interactive view change state. During that state the engine will not be interruptible
- * and performs high performance rendering of view changes with the graphics cache, if available.
- * The commands issued while in this mode should be limited to queries and those that modify the
- * viewer position.
- *
- * @since 16.2
- *
- * @sa TecUtilFinishInteractiveViewChange
- */
-LINKTOADDON void STDCALL TecUtilStartInteractiveViewChange(void);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Ends the interactive view change state.
- *
- * @since 16.2
- *
- * @sa TecUtilStartInteractiveViewChange
- */
-LINKTOADDON void STDCALL TecUtilFinishInteractiveViewChange(void);
 
 /**
  * Specifies whether to show the Tecplot toolbar or not.
@@ -5331,7 +5199,7 @@ LINKTOADDON Menu_pa STDCALL TecUtilMenuGetMain(void);
 
 /**
  * Gets the menu handle for a top-level standard Tecplot menu. This handle may
- * then be used with other functions.
+ * then be used with other functions such as TecUtilMenuInsertOption().
  *
  * @param StandardMenu
  *   Specify the top-level menu for which to get the handle.
@@ -5356,6 +5224,8 @@ LINKTOADDON Menu_pa STDCALL TecUtilMenuGetMain(void);
  *
  * <PythonSyntax>
  * </PythonSyntax>
+ *
+ * @sa TecUtilMenuInsertOption() for an example of TecUtilMenuGetStandard().
  *
  * @ingroup UserInterface
  *
@@ -5423,8 +5293,144 @@ LINKTOADDON Menu_pa STDCALL TecUtilMenuGetStandard(StandardMenu_e StandardMenu);
  * #internalattributes exclude_sdkdoc
  */
 LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertSubMenu(Menu_pa     ParentMenu,
-                                                     int32_t     InsertPos,
+                                                     int         InsertPos,
                                                      const char *SubMenuLabel);
+
+/**
+ * Inserts a menu option into a menu. A menu option performs some action when
+ * selected in the menu system.
+ *
+ * @param ParentMenu
+ *   Specify the menu in which to insert the new option.
+ *
+ * @param InsertPos
+ *   Specify the position in the parent menu for the new option.
+ *   MENU_POSITION_FIRST will put the new option first in the parent menu.
+ *   MENU_POSITION_LAST will put the new option last in the parent menu.
+ *
+ * @param OptionLabel
+ *   Specify the text for the new option. You may specify a mnemonic for the
+ *   option by putting a '&' in front of the desired letter. If you want to specify a
+ *   '&' in the menu option itself, use "&&". (A mnemonic is a keyboard short-cut
+ *   to access the menu.) You may specify an accelerator key at the end of the label
+ *   by separating it from the rest with a tab ('\\t'). An accelerator key is a key that can
+ *   be used from within Tecplot to activate the optionwithout going through
+ *   the menu system. Accelerators should be of the form "Ctrl+L" or "Shift+L"
+ *   or "Alt+L" or a combination such as "Ctrl+Shift+L" where "L" can be any letter
+ *   or number.
+ *
+ * @param ActivateCallback
+ *    Specify callback function to call when new menu option is activated.
+ *
+ * @param ActivateClientData
+ *    Specify data to send to ActivateCallback when called for this new menu option.
+ *
+ * @return
+ *   Returns menu handle for the new menu option, or NULL if creating the menu option failed (as
+ *   happens when Tecplot is running in batch mode).
+ *
+ * <FortranSyntax>
+ * C
+ * C  Note: Only one menu option callback function can active for each FORTRAN add-on.
+ * C  Registering another menu option callback function overwrites the first.
+ * C  You may use ClientData to differentiate between different menu options.
+ * C
+ *    SUBROUTINE TecUtilMenuInsertOption(
+ *   &           ParentMenuPtr,
+ *   &           InsertPos,
+ *   &           OptionLabel,
+ *   &           ActivateCallback,
+ *   &           ActivateClientDataPtr,
+ *   &           ResultPtr)
+ *    POINTER         (ParentMenuPtr, ParentMenu)
+ *    INTEGER*4       InsertPos
+ *    CHARACTER*(*)   OptionLabel
+ *    EXTERNAL        ActivateCallback
+ *    POINTER         (ActivateClientDataPtr, ActivateClientData)
+ *    POINTER         (ResultPtr, Result)
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ * Insert into the Tools menu two new options called "Do Something 1" and "Do Something 2".
+ * These menu options will appear as the first two options in the Tools menu.
+ *
+ * First create a DoSomethingCallback function:
+ *
+ * @code
+ *   void STDCALL DoSomethingCallback(ArbParam_t ClientData)
+ *   {
+ *      // code executed when one of the "Do Something" options is selected in the
+ *      // "Tools" menu.  ClientData will be 1 for the "Do Something 1" menu option,
+ *      // and ClientData will be 2 for the "Do Something 2" menu option.
+ *   }
+ * @endcode
+ *
+ * Elsewhere (probably in the initialization of the add-on) add the menu items to
+ * the "Tools" menu.
+ *
+ * @code
+ *   Menu_pa ToolsMenu, DoSomething1Option, DoSomething2Option;
+ *   ToolsMenu = TecUtilMenuGetStandard(StandardMenu_Tools);
+ *   DoSomething1Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                MENU_POSITION_FIRST,
+ *                                                "Do Something 1",
+ *                                                DoSomethingCallback,
+ *                                                1);
+ *   DoSomething2Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                2, // second item in menu
+ *                                                "Do Something 2",
+ *                                                DoSomethingCallback,
+ *                                                2);
+ * @endcode
+ *
+ *   To assign keyboard short-cuts to the menu options, use the following code instead.
+ *   "Do Something 1" has a keyboard short-cut of '1'.  That is, it
+ *   can be accessed quickly while in the "Tools" menu by simply pressing one.  Likewise
+ *   "Do Something 2" has a keyboard short-cut of '2'.
+ *
+ * @code
+ *   DoSomething1Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                MENU_POSITION_FIRST,
+ *                                                "Do Something &1",
+ *                                                DoSomethingCallback,
+ *                                                1);
+ *   DoSomething2Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                2, // second item in menu
+ *                                                "Do Something &2",
+ *                                                DoSomethingCallback,
+ *                                                2);
+ * @endcode
+ *   To assign keyboard accelerators to the menu option, use the following code instead.
+ *   "Do Something 1" still has the keyboard short-cut, but it also has an accelerator
+ *   key of "Alt+1".  An accelerator key allows the user to activate the menu option without
+ *   accessing the menu.  Pressing "Alt+1" while in the Tecplot main menu will activate
+ *   the "Do Something 1" menu option.  Likewise, "Alt+2" activates the "Do Something 2"
+ *   menu option.
+ *
+ * @code
+ *   DoSomething1Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                MENU_POSITION_FIRST,
+ *                                                "Do Something &1\tAlt+1",
+ *                                                DoSomethingCallback,
+ *                                                1);
+ *   DoSomething2Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                2, // second item in menu
+ *                                                "Do Something &2\tAlt+2",
+ *                                                DoSomethingCallback,
+ *                                                2);
+ * @endcode
+ *
+ * @ingroup UserInterface
+ *
+ * #internalattributes exclude_sdkdoc, exclude_tcl
+  */
+LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertOption(Menu_pa                 ParentMenu,
+                                                    int                     InsertPos,
+                                                    const char             *OptionLabel,
+                                                    MenuActivateCallback_pf ActivateCallback,
+                                                    ArbParam_t              ActivateClientData);
 
 /**
  *   Inserts a menu toggle into a menu. Like a menu option, a menu toggle performs
@@ -5556,12 +5562,14 @@ LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertSubMenu(Menu_pa     ParentMenu,
  *   Menu toggles can have keyboard short-cuts and accelerators just like menu
  *   options.
  *
+ * @sa TecUtilMenuInsertOption() for examples.
+ *
  * @ingroup UserInterface
  *
  * #internalattributes exclude_sdkdoc, exclude_tcl
  */
 LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertToggle(Menu_pa                       ParentMenu,
-                                                    int32_t                       InsertPos,
+                                                    int                           InsertPos,
                                                     const char                   *ToggleLabel,
                                                     MenuActivateCallback_pf       ActivateCallback,
                                                     ArbParam_t                    ActivateClientData,
@@ -5608,11 +5616,22 @@ LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertToggle(Menu_pa                     
  *   }
  * @endcode
  *
- * Add a separator to the "Tools" menu at position 3.
+ * Add some options to the top of the "Tools" menu and then separate them
+ * from the rest of that menu by including a separator.
  *
  * @code
  *   Menu_pa ToolsMenu, DoSomething1Option, DoSomething2Option, Separator;
  *   ToolsMenu = TecUtilMenuGetStandard(StandardMenu_Tools);
+ *   DoSomething1Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                MENU_POSITION_FIRST,
+ *                                                "Do Something 1",
+ *                                                DoSomethingCallback,
+ *                                                1);
+ *   DoSomething2Option = TecUtilMenuInsertOption(ToolsMenu,
+ *                                                2, // second item in menu
+ *                                                "Do Something 2",
+ *                                                DoSomethingCallback,
+ *                                                2);
  *   Separator = TecUtilMenuItemInsertSeparator(ToolsMenu,
  *                                              3); // third item in the menu
  * @endcode
@@ -5622,7 +5641,7 @@ LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertToggle(Menu_pa                     
  * #internalattributes exclude_sdkdoc
  */
 LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertSeparator(Menu_pa ParentMenu,
-                                                       int32_t InsertPos);
+                                                       int     InsertPos);
 
 /**
  *   Inserts a standard Tecplot menu into another menu as a submenu.
@@ -5672,7 +5691,7 @@ LINKTOADDON Menu_pa STDCALL TecUtilMenuInsertSeparator(Menu_pa ParentMenu,
  * #internalattributes exclude_sdkdoc
  */
 LINKTOADDON void STDCALL TecUtilMenuInsertStandard(Menu_pa        ParentMenu,
-                                                   int32_t        InsertPos,
+                                                   int            InsertPos,
                                                    StandardMenu_e StandardMenu);
 
 /**
@@ -5780,6 +5799,21 @@ LINKTOADDON void STDCALL TecUtilMenuRegisterSensitivityCallback(Menu_pa         
  * @code
  *   Menu_pa FileMenu = TecUtilMenuGetStandard(StandardMenu_File);
  *   TecUtilMenuDelete(&FileMenu);
+ * @endcode
+ *
+ * This code does the same thing using as TecUtilMenuClearAll(). The main menu
+ * always exists, so TecUtilMenuDelete() on the main menu only deletes the
+ * submenus of the main menu.
+ *
+ * @code
+ *   Menu_pa MainMenu = TecUtilMenuGetMain();
+ *   TecUtilMenuDelete(&MainMenu);
+ *   // main menu is still around, so add an item to it
+ *   TecUtilMenuInsertOption(MainMenu,
+ *                           MENU_POSITION_FIRST,
+ *                           "Do Something &1\tAlt+1",
+ *                           DoSomethingCallback,
+ *                           1);
  * @endcode
  *
  * @ingroup UserInterface
@@ -5938,11 +5972,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportAddConverter(DataSetConverter_pf  Con
  *   converters, but provide you with greater flexibility in terms of the graphical user interface and
  *   how the data can be retrieved. See Section 9.2, "Data Set Loaders," in the ADK User's Manual for
  *   a discussion of data set loaders.
- *
- *   Note that this function has been superceded by TecUtilImporAddLoaderX().  Calling TecUtilImportAddLoader
- *   is equivalent to calling TecUtilImportAddLoaderX() and specifying that the loader callback version is
- *   \\ref LoaderCallbackVersion_V1.   See TecUtilImportAddLoaderX() for details on the added capabilities with
- *   the newer loader versions.
  *
  * @param LoaderCallback
  *   Function to call to load non-Tecplot format data into Tecplot. The data set loader
@@ -6103,27 +6132,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportAddLoader(DataSetLoader_pf           
  * Required:
  *   No
  * Notes:
- *   This option is deprecated, use SV_LOADERADVANCEDOPTIONS instead.
  *   Indicates if the loader provides an its own dialog to handle advanced loader options.
- *
- * Name:
- *   SV_LOADERADVANCEDOPTIONS
- * Type:
- *   LoaderAdvancedOptions_e
- * Arg Function:
- *   TecUtilArgListAppendInt()()
- * Default:
- *   LoaderAdvancedOptions_Allow
- * Required:
- *   No
- * Notes:
- *   Indicates if the loader provides an its own dialog to handle advanced loader options:
- *   - LoaderAdvancedOptions_NotAvailable indicates that the loader does not have an advanced
- *     options dialog
- *   - LoaderAdvancedOptions_Allow indicates that the loader has an advanced options dialog, but
- *     can load files without invoking it.
- *   - LoaderAdvancedOptions_ForceLaunch indicates that the loader has an advanced options dialog
- *     and it must be invoked in order to be able to load data
  *
  * Name:
  *   SV_ALLOWAPPENDING
@@ -6154,28 +6163,24 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportAddLoader(DataSetLoader_pf           
  *   API version of the family of loader callbacks registered with this function. Valid values are
  *   LoaderCallbackVersion_V1 for compatibility with DataSetLoader_pf, DynamicMenuCallback_pf,
  *   DataSetLoaderInstructionOverride_pf callbacks and LoaderCallbackVersion_V2 for compatibility
- *   with DataLoader_pf, DataLoaderSelectedV2Callback_pf, DataLoaderInstructionOverride_pf. See SV_CLIENTDATA
+ *   with DataLoader_pf, DataLoaderSelected_pf, DataLoaderInstructionOverride_pf. See SV_CLIENTDATA
  *   for registering client data with the V2 family of callbacks.
  *
  * Name:
  *   SV_LOADERSELECTEDCALLBACK
  * Type:
- *   DynamicMenuCallback_pf for V1 and DataLoaderSelectedV2Callback_pf for V2
+ *   DynamicMenuCallback_pf for V1 and DataLoaderSelected_pf for V2
  * Arg Function:
- *   TecUtilArgListAppendFunction()
+ *   TecUtilArgListAppendFunction() 
  * Required:
- *   No
- * Default:
- *   NULL
+ *   Yes
  * Notes:
  *   Function that is called when the user selects this data set loader from the list of
  *   importers in the File/Import dialog. Functions of type DynamicMenuCallback_pf
- *   typically will launch a custom dialog to prompt the user to identify the data to be loaded.
- *   Functions of type DataLoaderSelectedV2Callback_pf it will require a list of files to be opened
+ *   typically will launch a custom dialog to prompt the user to identify the data to be loaded. 
+ *   Functions of type DataLoaderSelected_pf it will require a list of files to be opened
  *   and a flag to launch a custom dialog.
- *   If NULL or not supplied, Tecplot will not register a callback or put an entry in the
- *   File/Import dialog or use it to automatically process files from the command line that
- *   match the supplied SV_FILENAMEEXTENSIONS.
+ *   If NULL Tecplot will not register a callback or put an entry in the File/Import dialog.
  *
  * Name:
  *   SV_LOADERNAME
@@ -6194,11 +6199,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportAddLoader(DataSetLoader_pf           
  * Type:
  *   DataSetLoader_pf for V1 and DataLoader_pf for V2
  * Arg Function:
- *   TecUtilArgListAppendFunction()
+ *   TecUtilArgListAppendFunction() 
  * Required:
  *   Yes
  * Notes:
- *   Function to call to load non-Tecplot format data into Tecplot. Tecplot also calls this function
+ *   Function to call to load non-Tecplot format data into Tecplot. Tecplot also calls this function 
  *   when processing a $!READDATASET macro command that identifies this loader.
  *
  * Name:
@@ -6206,7 +6211,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportAddLoader(DataSetLoader_pf           
  * Type:
  *   DataSetLoaderInstructionOverride_pf for V1 and DataLoaderInstructionOverride_pf for V2
  * Arg Function:
- *   TecUtilArgListAppendFunction()
+ *   TecUtilArgListAppendFunction() 
  * Default:
  *   NULL
  * Required:
@@ -6218,19 +6223,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportAddLoader(DataSetLoader_pf           
  *   dialog that shows the user what the current settings are to load the data and provide a means by
  *   which the user can alter these instructions. The Instructions string list is updated according
  *   to changes made by the user and the new information is then used to load the data.
- *
- * Name:
- *   SV_ADVANCEDOPTIONSREQUIREFILENAME
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()()
- * Default:
- *   FALSE
- * Required:
- *   No
- * Notes:
- *   Indicates if the loader allows launching the advanced options if no file was selected.
  *
  * Name:
  *   SV_CLIENTDATA
@@ -6267,8 +6259,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportAddLoaderX(ArgList_pa ArgList);
  * is assumed that the current data set was loaded via a data set loader. The
  * current frame must have an attached data set when this function is used.
  *
- * IMPORTANT: Version 3 data loader add-ons must call this function if and only if the data was successfully loaded.
- * If the data was not successfully loaded, do not call this function.
+ * IMPORTANT: Version 3 data loader add-ons must call this function if and only if the data was successfully loaded. 
+ * If the data was not successfully loaded, do not call this function. 
  * If the data was successfully loaded, calling this function is required.
  *
  * @param DataSetLoaderName
@@ -6400,7 +6392,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportWriteLoaderInstr(const char   *DataSe
 
 /**
  * Register a data set writer with Tecplot. This will add an option to the list of data writers
- * accessed via the File/Write Dataset menu option.
+ * accessed via the File/Write Dataset menu option. 
  *
  * @param ArgList
  *   Set of Arglist entries.  This is built using calls to
@@ -6426,12 +6418,12 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportWriteLoaderInstr(const char   *DataSe
  * Type:
  *   DataWriterSelectedCallback_pf
  * Arg Function:
- *   TecUtilArgListAppendFunction()
+ *   TecUtilArgListAppendFunction() 
  * Required:
  *   Yes
  * Notes:
  *   Function that is called when the user selects this data set writer from the list of
- *   writers in the File/Write Datset dialog.
+ *   writers in the File/Write Datset dialog. 
  *
  * Name:
  *   SV_DATASETWRITERNAME
@@ -6442,7 +6434,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportWriteLoaderInstr(const char   *DataSe
  * Required:
  *   Yes
  * Notes:
- *   Unique name given to the DataSet writer.
+ *   Unique name given to the DataSet writer. 
  *
  * Name:
  *   SV_CLIENTDATA
@@ -6488,7 +6480,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetAddWriterX(ArgList_pa ArgList);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON int32_t STDCALL TecAppDataSetWriterGetNumRegisteredForeignWriters(void);
+LINKTOADDON int STDCALL TecAppDataSetWriterGetNumRegisteredForeignWriters(void);
 
 /**
  * Get the name of a registered foreign writer.
@@ -6509,7 +6501,7 @@ LINKTOADDON int32_t STDCALL TecAppDataSetWriterGetNumRegisteredForeignWriters(vo
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON Boolean_t STDCALL TecAppDataSetWriterGetForeignWriterName(int32_t         ForeignWriter,
+LINKTOADDON Boolean_t STDCALL TecAppDataSetWriterGetForeignWriterName(int             ForeignWriter,
                                                                       TP_GIVES char** Name);
 
 /**
@@ -6531,7 +6523,7 @@ LINKTOADDON Boolean_t STDCALL TecAppDataSetWriterGetForeignWriterName(int32_t   
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON Boolean_t STDCALL TecAppDataSetWriterGetForeignWriterExtensions(int32_t         ForeignWriter,
+LINKTOADDON Boolean_t STDCALL TecAppDataSetWriterGetForeignWriterExtensions(int             ForeignWriter,
                                                                             TP_GIVES char** Extensions);
 
 /**
@@ -6549,7 +6541,7 @@ LINKTOADDON Boolean_t STDCALL TecAppDataSetWriterGetForeignWriterExtensions(int3
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON void* STDCALL TecAppDataSetWriterGetForeignWriterSelectedCallback(int32_t ForeignWriter);
+LINKTOADDON void* STDCALL TecAppDataSetWriterGetForeignWriterSelectedCallback(int ForeignWriter);
 
 /**
  * Returns client data associated with a foreign writer.
@@ -6566,7 +6558,7 @@ LINKTOADDON void* STDCALL TecAppDataSetWriterGetForeignWriterSelectedCallback(in
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON ArbParam_t* STDCALL TecAppDataSetWriterGetForeignWriterClientData(int32_t ForeignWriter);
+LINKTOADDON ArbParam_t* STDCALL TecAppDataSetWriterGetForeignWriterClientData(int ForeignWriter);
 
 /**
  * @deprecated
@@ -6659,7 +6651,7 @@ LINKTOADDON void STDCALL TecUtilAddOnRegisterInfo(const char *OfficialName,
  * @ingroup AddOnManagement
  *
  */
-LINKTOADDON AddOn_pa STDCALL TecUtilAddOnRegister(int32_t     TecplotBaseVersionNumber,
+LINKTOADDON AddOn_pa STDCALL TecUtilAddOnRegister(int         TecplotBaseVersionNumber,
                                                   const char *OfficialName,
                                                   const char *Version,
                                                   const char *Author);
@@ -6876,82 +6868,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilCurveRegisterExtCrvFit(const char          
 
 
 /**
- * Retrieves number of extended curve fits.
- *
- * @return
- *   Returns number of extended curve fits.
- *
- * @since 2018.1
- *
- * @sa TecUtilCurveRegisterExtCrvFit
- *
- * @ingroup LineMap
- */
-LINKTOADDON EntIndex_t STDCALL TecUtilCurveExtCrvFitCount(void);
-
-/**
- * Retrieves the name of an extended curve fit.
- *
- * @param CurveFitNum An index of an extended curve fit.
- *
- * @param CurveFitName The returned name of the extended curve fit. Space for the new name will be
- * allocated for you. You must later free the string by using TecUtilStringDealloc().
- *
- * @return
- *   Returns TRUE if the curve fit name was successfully retrieved.
- *
- * @code
- *   char* name = NULL;
- *   if (TecUtilCurveExtCrvFitName(1, &name))
- *     {
- *       // do something
- *       TecUtilStringDealloc(&name);
- *     }
- * @endcode
- *
- * @since 2018.1
- *
- * @sa TecUtilCurveRegisterExtCrvFit
- *
- * @ingroup LineMap
- */
-LINKTOADDON Boolean_t  STDCALL TecUtilCurveExtCrvFitName(EntIndex_t      CurveFitNum,
-                                                         TP_GIVES char** CurveFitName);
-
-/**
- * Retrieves a callback that is responsible for modifying settings for an extended curve fit.
- *
- * @param CurveFitNum An index of an extended curve fit.
- *
- * @return Callback used to assign extended curve settings. This is called when the user presses the
- * "Curve Settings" button in the mapping style dialog.
- *
- * @since 2018.1
- *
- * @sa TecUtilCurveRegisterExtCrvFit
- *
- * @ingroup LineMap
- */
-LINKTOADDON GetCurveSettingsCallback_pf STDCALL TecUtilCurveExtCrvFitSettingsCallback(EntIndex_t CurveFitNum);
-
-/**
- * Retrieves a callback that is responsible for producing an abbreviated settings string for an
- * extended curve fit.
- *
- * @param CurveFitNum An index of an extended curve fit.
- *
- * @return Callback function that returns an abbreviated version of the curve settings for a
- * particular Line Map.
- *
- * @since 2018.1
- *
- * @sa TecUtilCurveRegisterExtCrvFit
- *
- * @ingroup LineMap
- */
-LINKTOADDON GetAbbreviatedSettingsStringCallback_pf STDCALL TecUtilCurveExtCrvFitAbbreviatedSettingsStringCallback(EntIndex_t CurveFitNum);
-
-/**
  * Launch a dialog with an error message.
  * This function is \ref threadsafe.
  *
@@ -7033,16 +6949,6 @@ namespace tecplot { namespace szl {
     class DataSetRegistrationInterface;
 }}
 LINKTOADDON tecplot::szl::DataSetRegistrationInterface* STDCALL TecUtilDataSetGetSZLRegistration(void);
-
-namespace tecplot {
-    class ExtendedScatterSymbolManagerInterface; 
-} 
-
-/**
- * Create a manager with the indicated name.
- * Note that SDK is responsible for the lifecycle of the returned pointer.
- */
-LINKTOADDON tecplot::ExtendedScatterSymbolManagerInterface* TecUtilExtendedScatterSymbolGetManager(void);
 #endif
 
 /**
@@ -7110,15 +7016,12 @@ LINKTOADDON void STDCALL TecUtilDataValueShare(EntIndex_t SourceZone,
  * @param Var
  *   The variable to be copied.
  *
- * @return
- *   TRUE if the variable was successfully copied, FALSE otherwise.
- *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataValueCopy(
+ *    SUBROUTINE TecUtilDataValueCopy(
  *   &           SourceZone,
  *   &           DestZone,
  *   &           Var)
@@ -7133,15 +7036,15 @@ LINKTOADDON void STDCALL TecUtilDataValueShare(EntIndex_t SourceZone,
  * Copy the values from variable 1 of zone 2 to zone 3.
  *
  * @code
- *   Boolean_t isOk = TecUtilDataValueCopy(2, 3, 1);
+ *   TecUtilDataValueCopy(2, 3, 1);
  * @endcode
  *
  * @ingroup DataValue
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilDataValueCopy(EntIndex_t SourceZone,
-                                                   EntIndex_t DestZone,
-                                                   EntIndex_t Var);
+LINKTOADDON void STDCALL TecUtilDataValueCopy(EntIndex_t SourceZone,
+                                              EntIndex_t DestZone,
+                                              EntIndex_t Var);
 
 /**
  * Allocates the space needed for the variable. This function is used in
@@ -7158,7 +7061,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataValueCopy(EntIndex_t SourceZone,
  *   The variable to be allocated.
  *
  * @return
- *   TRUE if the variable was successfully allocated, FALSE otherwise.
+ *   TRUE if the variable was sucessfully allocated, FALSE otherwise.
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
@@ -7177,7 +7080,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataValueCopy(EntIndex_t SourceZone,
  *
  * Allocate the first variable of zone 3. Note that this example is only valid
  * if the zone was added with the deferred variable creation option set to
- * TRUE.
+ * true.
  *
  * @code
  *   IsOk = TecUtilDataValueAlloc(3, 1);
@@ -7199,10 +7102,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataValueAlloc(EntIndex_t Zone,
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueCanMemMapData(EntIndex_t     Zone,
-                                                                     EntIndex_t     Var,
-                                                                     MemMapOffset_t Offset,
-                                                                     Boolean_t      IsDataNativeByteOrder);
+LINKTOADDON Boolean_t STDCALL TecUtilDataValueCanMemMapData(EntIndex_t     Zone,
+                                                            EntIndex_t     Var,
+                                                            MemMapOffset_t Offset,
+                                                            Boolean_t      IsDataNativeByteOrder);
 /**
  * @deprecated
  *   Please use TecUtilDataValueAutoLOD() instead.
@@ -7213,7 +7116,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueCanMemMapData(EntIndex_t 
  */
 LINKTOADDON Boolean_t STDCALL TecUtilDataValueMemMapData(EntIndex_t     Zone,
                                                          EntIndex_t     Var,
-                                                         int32_t        FileDescriptor,
+                                                         int            FileDescriptor,
                                                          MemMapOffset_t Offset,
                                                          Boolean_t      IsDataNativeByteOrder);
 
@@ -7275,7 +7178,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataValueAutoLOD(EntIndex_t            Zone
                                                       DataValueStructure_e  DataValueStructure,
                                                       const char           *FileName,
                                                       FileOffset_t          Offset,
-                                                      int64_t               Stride,
+                                                      Int64_t               Stride,
                                                       Boolean_t             IsDataNativeByteOrder);
 
 /**
@@ -7353,8 +7256,8 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataValueGetClientData(FieldData_pa FieldD
  *   backing. In addition the add-on must supply the VariableCleanup() callback
  *   to receive notification when the variable source is no longer needed.
  *   Optionally the add-on may supply the VariableUnload() callback to receive
- *   notification of the variable being unloaded. Supplying NULL for
- *   the VariableUnload() callback instructs Tecplot to assume
+ *   notification of the variable being unloaded. Most add-ons should supply
+ *   NULL for the VariableUnload() callback instructing Tecplot to assume
  *   responsibility for unloading the variable and re-loading it in an
  *   efficient form. The "Custom Load Variable on Demand" method is signified
  *   by passing NULL for the GetValueFunction() and SetValueFunction() callback
@@ -7547,7 +7450,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataValueGetClientData(FieldData_pa FieldD
  *   ...initialize any other client data information needed to load variable data
  *   IsOk = TecUtilDataValueCustomLOD(3, 4,
  *                                    MyVariableLoader,
- *                                    MyVariableUnload,
+ *                                    MyVariableUnload, // most add-ons should pass NULL instead of MyVariableUnload
  *                                    MyVariableCleanup,
  *                                    NULL, // passing NULL for GetValue function signifies load-variable-on-demand
  *                                    NULL,
@@ -7611,22 +7514,14 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataValueUnload(EntIndex_t Zone,
                                                      EntIndex_t Var);
 
 /**
- * If the variable is shared, create a branch off a shared variable. The specified variable of the
- * specified zone is branched so it is no longer shared with anything. If the original variable was
- * not shared this function does nothing.
+ * Branch off a shared variable. The specified variable of the specified zone
+ * is branched so it is no longer shared with anything.
  *
  * @param Zone
  *   Zone in which the shared variable is located.
  *
  * @param Var
  *   Variable that will be branched
- *
- * @param CopySharedData
- *   If TRUE the shared data will be copied to the branched variable, otherwise the branched
- *   variable will be a passive variable. Passive variables return zero everywhere and do not
- *   consume any space for the data. Not copying the data is particularly useful when you need to
- *   branch a variable for replacement and don't want to incur the cost of loading and copying the
- *   data from the variable with which it shares.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -7638,28 +7533,28 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataValueUnload(EntIndex_t Zone,
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilDataValueBranchShared(
  *   &                   Zone,
- *   &                   Var,
- *   &                   CopySharedData)
+ *   &                   Var)
  *    INTEGER*4       Zone
  *    INTEGER*4       Var
- *    INTEGER*4       CopySharedData
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * Branch variable 2 in zone 1, and copy the shared data.
+ * Branch variable 2 in zone 1.
  *
  * @code
- *   TecUtilDataValueBranchShared(1, 2, TRUE);
+ *   TecUtilDataValueBranchShared(1, 2);
  * @endcode
  *
  * @ingroup DataValue
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilDataValueBranchShared(EntIndex_t Zone,
-                                                           EntIndex_t Var,
-                                                           Boolean_t  CopySharedData);
+                                                           EntIndex_t Var);
+
+
+
 
 /**
  * Sets the properties of the connectivity so that it is shared between source and destination zones
@@ -8021,8 +7916,8 @@ LINKTOADDON void STDCALL TecUtilDataValueSetMinMaxByZoneVar(EntIndex_t   Zone,
 /**
  * Set the node index for a particular corner of a finite-element. This
  * function does not require you to obtain the handle to the node map as does
- * TecUtilDataNodeArraySetByRef(), TecUtilDataNodeArraySetByRef64() or TecUtilDataNodeSetByRef(), however, this
- * function is not very efficient. Use TecUtilDataNodeArraySetByRef(), TecUtilDataNodeArraySetByRef64(), or
+ * TecUtilDataNodeArraySetByRef() or TecUtilDataNodeSetByRef(), however, this
+ * function is not very efficient. Use TecUtilDataNodeArraySetByRef() or
  * TecUtilDataNodeSetByRef() if you are setting multiple nodes for the same
  * zone. You do not need to call TecUtilStateChanged() after calling this
  * function as Tecplot does that for you.
@@ -8069,7 +7964,7 @@ LINKTOADDON void STDCALL TecUtilDataValueSetMinMaxByZoneVar(EntIndex_t   Zone,
  */
 LINKTOADDON void STDCALL TecUtilDataNodeSetByZone(EntIndex_t Zone,
                                                   LgIndex_t  Element,
-                                                  int32_t    Corner,
+                                                  LgIndex_t  Corner,
                                                   NodeMap_t  Node);
 
 /**
@@ -8094,9 +7989,8 @@ LINKTOADDON void STDCALL TecUtilDataNodeSetByZone(EntIndex_t Zone,
  *   Number of nodes to assign to the destination node map. This value must not
  *   exceed the number of items supplied by SourceValueArray.
  * @param SourceNodeArray
- *   An int32_t array containing the one based nodes to copy. The first node is assumed
- *   to be at the base of the array.  If node values require 64-bit integers then you
- *   must use TecUtilDataNodeArraySetByRef64() instead (@sa TecUtilDataNodeGetRawItemType);
+ *   An array containing the one based nodes to copy. The first node is assumed
+ *   to be at the base of the array.
  *
  *
  * @pre <em>DestNodeMap</em>
@@ -8109,63 +8003,13 @@ LINKTOADDON void STDCALL TecUtilDataNodeSetByZone(EntIndex_t Zone,
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilDataNodeArraySetByRef64()
- *
  * @ingroup DataStructure
  *
  */
-LINKTOADDON void STDCALL TecUtilDataNodeArraySetByRef(NodeMap_pa      DestNodeMap,
-                                                      LgIndex_t       DestOffset,
-                                                      LgIndex_t       DestCount,
-                                                      const int32_t*  SourceNodeArray);
-
-
-/**
- * Copies the specified number of nodes from the base of the source node array
- * to the destination node map starting at the specified offset.
- *
- * This function is \ref threadsafe.
- *
- * @par Note:
- *   Unless this call is in response to a custom load-on-demand callback be
- *   sure to issue a state change StateChange_NodeMapsAltered before returning
- *   control to Tecplot.
- *
- * @since
- *   11.0-0-019
- *
- * @param DestNodeMap
- *   Node map to receive the source nodes.
- * @param DestOffset
- *   Node offset in the destination node map to begin assigning nodes.
- * @param DestCount
- *   Number of nodes to assign to the destination node map. This value must not
- *   exceed the number of items supplied by SourceValueArray.
- * @param SourceNodeArray
- *   An int64_t array containing the one based nodes to copy. The first node is assumed
- *   to be at the base of the array.  If node values do not require 64-bit integers then you
- *   must use TecUtilDataNodeArraySetByRef() instead (@sa TecUtilDataNodeGetRawItemType);
- *
- *
- * @pre <em>DestNodeMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>SourceNodeArray</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilDataNodeArraySetByRef()
- *
- * @ingroup DataStructure
- *
- */
-LINKTOADDON void STDCALL TecUtilDataNodeArraySetByRef64(NodeMap_pa      DestNodeMap,
-                                                        LgIndex_t       DestOffset,
-                                                        LgIndex_t       DestCount,
-                                                        const int64_t*  SourceNodeArray);
+LINKTOADDON void STDCALL TecUtilDataNodeArraySetByRef(NodeMap_pa       DestNodeMap,
+                                                      LgIndex_t        DestOffset,
+                                                      LgIndex_t        DestCount,
+                                                      const NodeMap_t *SourceNodeArray);
 
 /**
  * Set the node index for a particular corner of a finite-element. To use this
@@ -8237,7 +8081,7 @@ LINKTOADDON void STDCALL TecUtilDataNodeArraySetByRef64(NodeMap_pa      DestNode
  */
 LINKTOADDON void STDCALL TecUtilDataNodeSetByRef(NodeMap_pa NM,
                                                  LgIndex_t  Element,
-                                                 int32_t    Corner,
+                                                 LgIndex_t  Corner,
                                                  NodeMap_t  Node);
 
 /**
@@ -8288,7 +8132,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataNodeGetClientData(NodeMap_pa NodeMap);
  * unload and subsequently reload the node map at unspecified times.
  *
  * This function is used in conjunction with deferred variable creation. See
- * the SV_DEFERCONNECTCREATION option for TecUtilDataSetAddZoneX() for details.
+ * the SV_DEFERNODEMAPCREATION option for TecUtilDataSetAddZoneX() for details.
  *
  * @since
  *   11.3-0-010
@@ -8345,7 +8189,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataNodeAutoLOD(EntIndex_t   Zone,
  * the callbacks.
  *
  * This function is used in conjunction with deferred variable creation. See
- * the SV_DEFERCONNECTCREATION option for TecUtilDataSetAddZoneX()for details.
+ * the SV_DEFERNODEMAPCREATION option for TecUtilDataSetAddZoneX()for details.
  *
  * The method for loading and accessing node map data with custom
  * load-on-demand is similar to custom load-on-demand for field data (see ADK
@@ -8356,9 +8200,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataNodeAutoLOD(EntIndex_t   Zone,
  * CleanupCallback() callback to receive notification of when the node map is
  * no longer needed. Optionally, the add-on may supply the UnloadCallback()
  * callback to receive notification of when the node map is being unloaded.
- * Supplying NULL for the UnloadCallback() callback instructs Tecplot to
- * assume responsibility for unloading the node map and re-loading it in
- * an efficient form.
+ * Most add-ons should supply NULL for the UnloadCallback() callback,
+ * instructing Tecplot to assume responsibility for unloading the node map and
+ * re-loading it in an efficient form.
  *
  * @since
  *   11.3-0-010
@@ -8485,7 +8329,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataNodeAutoLOD(EntIndex_t   Zone,
  *   ...initialize any other client data information needed to load node map data
  *   IsOk = TecUtilDataNodeCustomLOD(3,
  *                                   MyNodeMapLoader,
- *                                   MyNodeMapUnload,
+ *                                   MyNodeMapUnload, // most add-ons should pass NULL instead of MyNodeMapUnload
  *                                   MyNodeMapCleanup,
  *                                   (ArbParam_t)MyClientData);
  * @endcode
@@ -8505,7 +8349,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataNodeCustomLOD(EntIndex_t               
                                                        ArbParam_t                    ClientData);
 /**
  * Allocates the space needed for the node mapping. This function is used in
- * conjunction with deferred node map creation. See the SV_DEFERCONNECTCREATION
+ * conjunction with deferred node map creation. See the SV_DEFERNODEMAPCREATION
  * option for TecUtilDataSetAddZoneX() for details.
  *
  * @since
@@ -8699,15 +8543,15 @@ LINKTOADDON void STDCALL TecUtilSliceStartDragging(void);
 /**
  * Called to show a solid plane instead of the full slice in a
  * drag operation.
- * \ref TecUtilSliceStartDragging should be called before to call
+ * \ref TecUtilSliceStartDragging should be called before to call 
  * this function and \ref TecUtilSetSlicesDrawAsSolidPlane should
  * be set to TRUE.
  * \ref TecUtilSliceFinishDragging should be called after to
  * call this function.
  *
  * @param slicePosition
- *   Slice position for the slider control. Set in terms of the fractional
- *   distance between 0-1 where 0 will set the slider control to it's min
+ *   Slice position for the slider control. Set in terms of the fractional 
+ *   distance between 0-1 where 0 will set the slider control to it's min 
  *   setting and 1 to its max setting.
  *
  * @return
@@ -8746,7 +8590,7 @@ LINKTOADDON double STDCALL TecUtilSliceSolidPlaneSetPosition(double slicePositio
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilSliceStartDragging, TecUtilSliceSolidPlaneSetPosition,
+ * @sa TecUtilSliceStartDragging, TecUtilSliceSolidPlaneSetPosition, 
  *     TecUtilQuerySlicesDrawAsSolidPlane, TecUtilSetSlicesDrawAsSolidPlane
  *
  * @ingroup Utilities
@@ -8771,6 +8615,7 @@ LINKTOADDON void STDCALL TecUtilSliceFinishDragging(void);
  *
  * @pre <em>PercentDoneText</em>
  *   Pointer must be a valid address and non-NULL.
+ * @pre TecUtilStatusStartPercentDone should not be called while in the middle of another operation.
  *
  *
  * <FortranSyntax>
@@ -8855,7 +8700,7 @@ LINKTOADDON void STDCALL TecUtilStatusSetPercentDoneText(const char *PercentDone
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecUtilStatusCheckPercentDone(int32_t PercentDone);
+LINKTOADDON Boolean_t STDCALL TecUtilStatusCheckPercentDone(int PercentDone);
 
 /**
  * Called when a long operation that needs to present percent done information
@@ -8890,6 +8735,7 @@ LINKTOADDON void STDCALL TecUtilStatusFinishPercentDone(void);
  *
  * @pre <em>Label</em>
  *   String must have a valid address and non-zero length.
+ * @pre TecUtilDialogLaunchPercentDone should not be called while in the middle of another operation.
  *
  *
  * <FortranSyntax>
@@ -8987,7 +8833,7 @@ LINKTOADDON void STDCALL TecUtilDialogSetPercentDoneText(const char *Text);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecUtilDialogCheckPercentDone(int32_t PercentDone);
+LINKTOADDON Boolean_t STDCALL TecUtilDialogCheckPercentDone(int PercentDone);
 
 /**
  *   Drop the Percent Done dialog.
@@ -9008,14 +8854,8 @@ LINKTOADDON void STDCALL      TecUtilDialogDropPercentDone(void);
 /**
  * Instruct Tecplot to execute a single macro command. The macro command is supplied as a string.
  * Currently this command is restricted as follows:
- *     - Intrinsic variables (for example, |DATASETFNAME|) are not supported.
- *     - The $!VarSet command is not supported. To set a variable, use TecUtilMacroSetMacroVar().
- *     - If the command contains a RAWDATA section, it must be formatted correctly
- *       as specified in the Tecplot 360 User's Manual, including any newline characters.
- *
- * Note: Macro commands associated
- * with add-ons must be executed with TecUtilExecuteExtendedCommand(), which
- * delegates the processing of the command to a named add-on.
+ *     - Only commands that do not require raw data are accepted.
+ *     - Command must be all on one line-no newlines.
  *
  * See the Tecplot Reference Manual for details about Tecplot's macro language.
  *
@@ -9045,55 +8885,8 @@ LINKTOADDON void STDCALL      TecUtilDialogDropPercentDone(void);
  * @endcode
  *
  * @ingroup ScriptSupport
- * @sa TecUtilMacroExecuteExtendedCommand
  */
 LINKTOADDON Boolean_t STDCALL TecUtilMacroExecuteCommand(const char *Command);
-
-/**
-* Instruct Tecplot to execute a single macro add-on extended command.
-* Tecplot 360 add-ons can extend the Tecplot macro language with extended
-* commands. Use this function to run an extended command.
-*
-* @param commandProcessorId
-*   A unique string used to determine the function to call when an
-*   $!EXTENDEDCOMMAND macro command is processed. Each application or add-on
-*   should have its own unique ID string. For example, if a file converter
-*   add-on responsible for converting DXF files for Tecplot defines an ID
-*   string of "DXFCONVERTTOOL-1.2" then this same ID string must be used in
-*   the calls to TecUtilMacroRecordExtCommand() and
-*   TecUtilMacroAddCommandCallback(). 
-*
-* @param command
-*  Macro command. Must not be NULL.
-*
-* @param rawData
-*   Optional raw data for the command. Pass NULL if the command does not use raw data.
-*
-* <FortranSyntax>
-*    INTEGER*4 FUNCTION TecUtilMacroExecuteExtendedCommand(Command, commandProcessorId)
-*    CHARACTER*(*) command
-*    CHARACTER*(*) commandProcessorId
-*    CHARACTER*(*) rawData
-* </FortranSyntax>
-*
-* Execute a CFDAnalyzer command to display boundaries:
-*
-* @code
-* TecUtilExecuteExtendedCommand(
-*      "CFDAnalyzer3",
-*      "DisplayBoundaries Axisymmetric='F'"
-"      "Outflow, [7, 16]  Wall, [3 - 6, 12 - 15] Symmetry, [8, 17]");
-* @endcode
-*
-* @ingroup ScriptSupport
-* @sa TecUtilMacroExecuteCommand
-*
-* @since 17.3
-*/
-LINKTOADDON Boolean_t TecUtilMacroExecuteExtendedCommand(
-    const char *commandProcessorId,
-    const char *command,
-    const char *rawData);
 
 /**
  *   Set the value for a macro variable. Any macro executed after this call may then reference the
@@ -9169,19 +8962,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilMacroSetMacroVar(const char *MacroVar,
  *
  * @ingroup Utilities
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilInterruptIsSet(void);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- *
- * This function can be called to clear the sate of the interrupted flag after the execution stack
- * has been unwound and all the clients have had a chance to querry the TecUtilInterruptIsSet().
- *
- * @since
- *   16.2
- *
- * @sa TecUtilInterruptIsSet, TecUtilInterruptCheck, TecUtilIsBusy()
- */
-LINKTOADDON void STDCALL TecEngClearInterruptedIfNotBusy(void);
+LINKTOADDON Boolean_t STDCALL TecUtilInterruptIsSet(void);
 
 /**
  * Checks if Tecplot is in an interrupted state. This function should be called
@@ -9206,7 +8987,7 @@ LINKTOADDON void STDCALL TecEngClearInterruptedIfNotBusy(void);
  *
  * @ingroup Utilities
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilInterruptCheck(void);
+LINKTOADDON Boolean_t STDCALL TecUtilInterruptCheck(void);
 
 /**
  * Interrupt Tecplot execution. This is mainly for use with addons which use
@@ -9242,14 +9023,14 @@ LINKTOADDON void STDCALL TecUtilInterrupt(void);
  *   Deletes the specified geometry object.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   Handle to a geometry object
  *
  * @pre @e GID must be a valid geometry ID.
  *
  *
  * <FortranSyntax>
- *    SUBROUTINE TecUtilGeomDelete(GID)
- *    INTEGER*8 GID
+ *    SUBROUTINE TecUtilGeomDelete(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -9259,7 +9040,7 @@ LINKTOADDON void STDCALL TecUtilInterrupt(void);
  *   frame.
  *
  * @code
- *   GeomID_t Geom;
+ *   Geom_ID Geom;
  *   Geom = TecUtilGeomGetBase();
  *   if (Geom != TECUTILBADID)
  *     {
@@ -9270,20 +9051,20 @@ LINKTOADDON void STDCALL TecUtilInterrupt(void);
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomDelete(GeomID_t GID);
+LINKTOADDON void STDCALL TecUtilGeomDelete(Geom_ID GID);
 
 /**
  *   Deletes the specified text object.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to a text object
  *
  * @pre @e TID must be a valid text ID.
  *
  *
  * <FortranSyntax>
- *    SUBROUTINE TecUtilTextDelete(TID)
- *    INTEGER*8 TID
+ *    SUBROUTINE TecUtilTextDelete(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -9292,7 +9073,7 @@ LINKTOADDON void STDCALL TecUtilGeomDelete(GeomID_t GID);
  *   Delete the first text object from the list of text objects maintained by the current frame.
  *
  * @code
- *   TextID_t Text;
+ *   Text_ID Text;
  *
  *   Text = TecUtilTextGetBase();
  *   if (Text != TECUTILBADID)
@@ -9304,7 +9085,7 @@ LINKTOADDON void STDCALL TecUtilGeomDelete(GeomID_t GID);
  * @ingroup Text
  *
  */
-LINKTOADDON void STDCALL TecUtilTextDelete(TextID_t TID);
+LINKTOADDON void STDCALL TecUtilTextDelete(Text_ID TID);
 
 /**
  *   Add the specified geometry to the pick list. See Section 17.4, "The Pick List," in the ADK User's
@@ -9321,8 +9102,8 @@ LINKTOADDON void STDCALL TecUtilTextDelete(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilPickGeom(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilPickGeom(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -9331,7 +9112,7 @@ LINKTOADDON void STDCALL TecUtilTextDelete(TextID_t TID);
  *   Pick the first geometry in the current frame:
  *
  * @code
- *   GeomID_t gid;
+ *   Geom_ID gid;
  *   gid = TecUtilGeomGetBase();
  *   if (gid ! = NULL)
  *      TecUtilPickGeom(gid);
@@ -9340,7 +9121,7 @@ LINKTOADDON void STDCALL TecUtilTextDelete(TextID_t TID);
  * @ingroup Pick
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilPickGeom(GeomID_t GID);
+LINKTOADDON Boolean_t STDCALL TecUtilPickGeom(Geom_ID GID);
 
 /**
  *   Add the specified text to the pick list. See the ADK User's Manual for a discussion of pick lists.
@@ -9356,8 +9137,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickGeom(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilPickText(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilPickText(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -9366,7 +9147,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickGeom(GeomID_t GID);
  *   Pick the first text in the current frame.
  *
  * @code
- *   TextID_t tid;
+ *   Text_ID tid;
  *   tid = TecUtilTextGetBase();
  *   if (tid ! = NULL)
  *      TecUtilPickText(tid);
@@ -9375,7 +9156,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickGeom(GeomID_t GID);
  * @ingroup Pick
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilPickText(TextID_t TID);
+LINKTOADDON Boolean_t STDCALL TecUtilPickText(Text_ID TID);
 
 /**
  *   Validate a geometry ID.
@@ -9390,8 +9171,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickText(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomIsValid(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomIsValid(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -9400,7 +9181,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickText(TextID_t TID);
  *   Determine if a geometry ID is still valid, and if it is valid, change its color to red:
  *
  * @code
- *   extern GeomID_t g; // created elsewhere
+ *   extern Geom_ID g; // created elsewhere
  *   if ( TecUtilGeomIsValid(g) )
  *      TecUtilGeomSetColor(g, Red_C);
  * @endcode
@@ -9408,13 +9189,13 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickText(TextID_t TID);
  * @ingroup Geom
  *
  */
-LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilGeomIsValid(GeomID_t GID);
+LINKTOADDON Boolean_t  STDCALL TecUtilGeomIsValid(Geom_ID GID);
 
 /**
  *   Determine if the text object is valid in the current frame context.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to a text object.
  *
  * @return
  *   TRUE if TID is a valid text object, otherwise FALSE.
@@ -9423,8 +9204,8 @@ LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilGeomIsValid(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextIsValid(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextIsValid(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -9433,7 +9214,7 @@ LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilGeomIsValid(GeomID_t GID);
  * @ingroup Text
  *
  */
-LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilTextIsValid(TextID_t TID);
+LINKTOADDON Boolean_t  STDCALL TecUtilTextIsValid(Text_ID TID);
 
 /**
  *   Convert a text string using the old formatting syntax into the new formatting syntax.
@@ -9506,7 +9287,7 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilStringConvOldFormatting(const char *Ol
  *
  * #internalattributes exclude_fglue, exclude_tcl
  */
-LINKTOADDON TP_GIVES char* STDCALL TecUtilStringAlloc(LgIndex_t   MaxLength, /* <-activex> */
+LINKTOADDON TP_GIVES char* STDCALL TecUtilStringAlloc(int         MaxLength, /* <-activex> */
                                                       const char* DebugInfo);
 /**
  * Free a string previously allocated with TecUtilStringAlloc(), or one that
@@ -9892,7 +9673,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilStringListGetCount(StringList_pa StringList
  *   TecUtilStringListGetCount() to get the number of items.
  *
  * @return
- *   Returns a REFERENCE to the string. DO NOT DEALLOCATE THIS REFERENCE.
+ *   Returns a REFERENCE to the string. DO OT DEALLOCATE THIS REFERENCE.
  *
  * <PythonSyntax>
  * </PythonSyntax>
@@ -10741,7 +10522,7 @@ LINKTOADDON void       STDCALL TecUtilSetRemoveMember(Set_pa     Set,
  * @ingroup Set
  *
  */
-LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilSetIsMember(Set_pa     Set,
+LINKTOADDON Boolean_t  STDCALL TecUtilSetIsMember(Set_pa     Set,
                                                   SetIndex_t Member);
 /**
  *   Determine if the specified set is NULL or contains no members. See the chapter "Using Sets" in
@@ -10781,7 +10562,7 @@ LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilSetIsMember(Set_pa     Set,
  * @ingroup Set
  *
  */
-LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilSetIsEmpty(Set_pa Set);
+LINKTOADDON Boolean_t  STDCALL TecUtilSetIsEmpty(Set_pa Set);
 
 
 
@@ -10864,7 +10645,7 @@ LINKTOADDON SetIndex_t STDCALL TecUtilSetGetMemberCount(Set_pa Set);
  * @ingroup Set
  *
  */
-LINKTOADDON TP_QUERY Boolean_t  STDCALL TecUtilSetIsEqual(Set_pa Set1,
+LINKTOADDON Boolean_t  STDCALL TecUtilSetIsEqual(Set_pa Set1,
                                                  Set_pa Set2);
 /**
  *
@@ -11148,16 +10929,16 @@ void TecUtilSetForEachMember(SetIndex_t Member,
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * Determine the position on the paper of a text label. Assume the TextID_t has
+ * Determine the position on the paper of a text label. Assume the Text_ID has
  * already been obtained (See TecUtilPickListXxx functions or TecUtilTextXxx
- * functions for examples on how to obtain a TextID_t).
+ * functions for examples on how to obtain a Text_ID).
  *
  * @code
- *   TextID_t TID;
+ *   Text_ID TID;
  *   double  XPos,YPos;
  *   double PaperXPos,PaperYPos;
  *
- *   ... TextID_t obtained....
+ *   ... Text_ID obtained....
  *
  *   TecUtilTextGetXYPos(TID,&XPos,&YPos);
  *
@@ -11259,16 +11040,16 @@ LINKTOADDON double STDCALL TecUtilConvertXDimension(CoordSys_e  OldCoordSys,
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * Determine the position on the paper of a text label. Assume the TextID_t has
+ * Determine the position on the paper of a text label. Assume the Text_ID has
  * already been obtained (See TecUtilPickListXxx functions or TecUtilTextXxx
- * functions for examples on how to obtain a TextID_t).
+ * functions for examples on how to obtain a Text_ID).
  *
  * @code
- *   TextID_t TID;
+ *   Text_ID TID;
  *   double  XPos,YPos;
  *   double PaperXPos,PaperYPos;
  *
- *   ... TextID_t obtained....
+ *   ... Text_ID obtained....
  *
  *   TecUtilTextGetXYPos(TID,&XPos,&YPos);
  *
@@ -11375,7 +11156,7 @@ LINKTOADDON double STDCALL TecUtilConvertYDimension(CoordSys_e  OldCoordSys,
  * To create a line with a line thickness of three points:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   double frame_units;
  *   frame_units = TecUtilConvertUnits(Units_Point, Units_Frame, 3.);
  *   g = TecUtilGeom2DLineSegmentCreate(CoordSys_Frame, 5., 5., 95., 95.);
@@ -11443,7 +11224,7 @@ LINKTOADDON double STDCALL TecUtilConvertUnits(Units_e OldUnits,
  */
 LINKTOADDON Boolean_t STDCALL TecUtilReadBinaryData(Boolean_t      GetHeaderInfoOnly, /* <-activex> */
                                                     const char*    FName,
-                                                    int32_t*       IVersion,
+                                                    short*         IVersion,
                                                     char**         DataSetTitle,
                                                     EntIndex_t*    NumZones,
                                                     EntIndex_t*    NumVars,
@@ -11460,20 +11241,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilReadBinaryData(Boolean_t      GetHeaderInfo
                                                     double***      VDataBase);
 
 /**
- * Register the function used to abort caused by an TecUtil assert.
- * @param func
- *   This must be of the form void(*)(const char*) where the only
- *   parameter is the error message emitted from a failed TUAssert.
- * @since 17.1
- **/
-LINKTOADDON void STDCALL TecUtilRegisterAbort(TUAbort_pf Func);
-
-/**
  *   Get the clipping properties of a text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   ID of the text object
  *
  * @return
  *   Returns the clipping type. Can be one of Clipping_ClipToViewport or Clipping_ClipToFrame.
@@ -11483,7 +11254,7 @@ LINKTOADDON void STDCALL TecUtilRegisterAbort(TUAbort_pf Func);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilTextGetClipping(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 TID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11492,15 +11263,14 @@ LINKTOADDON void STDCALL TecUtilRegisterAbort(TUAbort_pf Func);
  * @ingroup Text
  *
  */
-LINKTOADDON Clipping_e    STDCALL TecUtilTextGetClipping(TextID_t TID);
+LINKTOADDON Clipping_e    STDCALL TecUtilTextGetClipping(Text_ID TID);
 
 /**
  * Get the anchor coordinate position of the text object in the current
  * coordinate system.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object
  *
  * @param XOrThetaPos
  *   Pointer to the text object's X or Theta anchor position.
@@ -11525,11 +11295,11 @@ LINKTOADDON Clipping_e    STDCALL TecUtilTextGetClipping(TextID_t TID);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextGetAnchorPos(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           XOrThetaPos,
  *   &           YOrRPos,
  *   &           ZPos)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    REAL*8          XOrThetaPos
  *    REAL*8          YOrRPos
  *    REAL*8          ZPos
@@ -11538,7 +11308,7 @@ LINKTOADDON Clipping_e    STDCALL TecUtilTextGetClipping(TextID_t TID);
  * <PythonSyntax>
  * </PythonSyntax>
  *
- *   TextID_t Text;
+ *   Text_ID Text;
  *
  * @code
  *   double  XOrThetaPos;
@@ -11566,7 +11336,7 @@ LINKTOADDON Clipping_e    STDCALL TecUtilTextGetClipping(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON void STDCALL TecUtilTextGetAnchorPos(TextID_t        TID,
+LINKTOADDON void STDCALL TecUtilTextGetAnchorPos(Text_ID        TID,
                                                  TP_OUT double* XOrThetaPos,
                                                  TP_OUT double* YOrRPos,
                                                  TP_OUT double* ZPos);
@@ -11579,15 +11349,14 @@ LINKTOADDON void STDCALL TecUtilTextGetAnchorPos(TextID_t        TID,
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecUtilTextGetXYPos(TextID_t        TID,
+LINKTOADDON void STDCALL TecUtilTextGetXYPos(Text_ID        TID,
                                              TP_OUT double* XPos,
                                              TP_OUT double* YPos);
 /**
  *   Get the coordinate system to which the text is associated.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   Text object's coordinate system. The possible values are: \ref CoordSys_Grid, \ref CoordSys_Frame.
@@ -11596,8 +11365,8 @@ LINKTOADDON void STDCALL TecUtilTextGetXYPos(TextID_t        TID,
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetPositionCoordSys(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetPositionCoordSys(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11606,14 +11375,13 @@ LINKTOADDON void STDCALL TecUtilTextGetXYPos(TextID_t        TID,
  * @ingroup Text
  *
  */
-LINKTOADDON CoordSys_e    STDCALL TecUtilTextGetPositionCoordSys(TextID_t TID);
+LINKTOADDON CoordSys_e    STDCALL TecUtilTextGetPositionCoordSys(Text_ID TID);
 /**
  * Get the zone or map with which the text object is associated (if it is
  * attached).
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   Zone or map.
@@ -11622,8 +11390,8 @@ LINKTOADDON CoordSys_e    STDCALL TecUtilTextGetPositionCoordSys(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetZoneOrMap(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetZoneOrMap(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11634,12 +11402,12 @@ LINKTOADDON CoordSys_e    STDCALL TecUtilTextGetPositionCoordSys(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON EntIndex_t    STDCALL TecUtilTextGetZoneOrMap(TextID_t TID);
+LINKTOADDON EntIndex_t    STDCALL TecUtilTextGetZoneOrMap(Text_ID TID);
 /**
  * Determine if the text object is attached to a zone or map.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to a text object.
  *
  * @return
  *   TRUE if attached, otherwise FALSE.
@@ -11648,8 +11416,8 @@ LINKTOADDON EntIndex_t    STDCALL TecUtilTextGetZoneOrMap(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextIsAttached(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextIsAttached(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11660,13 +11428,12 @@ LINKTOADDON EntIndex_t    STDCALL TecUtilTextGetZoneOrMap(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextIsAttached(TextID_t TID);
+LINKTOADDON Boolean_t     STDCALL TecUtilTextIsAttached(Text_ID TID);
 /**
  *   Get the color of the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object
  *
  * @return
  *   Text color. The possible values are: \ref Black_C, \ref Blue_C,
@@ -11677,8 +11444,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextIsAttached(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetColor(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetColor(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11687,38 +11454,24 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextIsAttached(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON int32_t  STDCALL TecUtilTextGetColor(TextID_t TID);
+LINKTOADDON ColorIndex_t  STDCALL TecUtilTextGetColor(Text_ID TID);
 /**
  *   Get the font used for the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
- *   Text font. The possible values are:
- *   Font_Helvetica,
- *   Font_HelveticaBold,
- *   Font_HelveticaItalic,
- *   Font_HelveticaItalicBold,
- *   Font_Greek,
- *   Font_Math,
- *   Font_UserDefined,
- *   Font_Times,
- *   Font_TimesItalic,
- *   Font_TimesItalicBold,
- *   Font_TimesBold,
- *   Font_Courier,
- *   Font_CourierBold,
- *   Font_CourierItalic,
- *   Font_CourierItalicBold.
+ *   Text font. The possible values are: Font_Helvetica, Font_HelveticaBold, Font_Greek, Font_Math,
+ *   Font_UserDefined, Font_Times, Font_TimesItalic, Font_TimesItalicBold, Font_TimesBold,
+ *   Font_Courier, Font_CourierBold.
  *
  * @pre @e TID must be a valid text ID.
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetFont(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetFont(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11730,7 +11483,7 @@ LINKTOADDON int32_t  STDCALL TecUtilTextGetColor(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON Font_e        STDCALL TecUtilTextGetFont(TextID_t TID);
+LINKTOADDON Font_e        STDCALL TecUtilTextGetFont(Text_ID TID);
 
 /**
  * Gets the typeface font family used for the text object.
@@ -11740,21 +11493,17 @@ LINKTOADDON Font_e        STDCALL TecUtilTextGetFont(TextID_t TID);
  *     TecUtilStringDealloc() when no longer needed.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *     Handle to a text object.
  *
  * @return
  *     An allocated string containing the typeface font family used for the text object.
  *
- * @pre @e TID must be a valid text ID.
- *
- *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextGetTypefaceFamily(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Result,
  *   &           ResultLength)
- *    INTEGER*8 TID
+ *    POINTER(TIDPtr, TID)
  *    CHARACTER*(*)   Result
  *    INTEGER*4       ResultLength
  * </FortranSyntax>
@@ -11769,14 +11518,13 @@ LINKTOADDON Font_e        STDCALL TecUtilTextGetFont(TextID_t TID);
  *
  * @since 12.2.1.96181
  */
-LINKTOADDON TP_GIVES char* STDCALL TecUtilTextGetTypefaceFamily(TextID_t TID);
+LINKTOADDON TP_GIVES char* STDCALL TecUtilTextGetTypefaceFamily(Text_ID TID);
 
 /**
  * Indicates if the text object's typeface has bold font style.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *     Handle to a text object.
  *
  * @return
  *     TRUE if the text object's typeface has bold font style, FALSE otherwise.
@@ -11785,8 +11533,8 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilTextGetTypefaceFamily(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetTypefaceIsBold(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetTypefaceIsBold(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11799,14 +11547,13 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilTextGetTypefaceFamily(TextID_t TID);
  *
  * @since 12.2.1.96181
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextGetTypefaceIsBold(TextID_t TID);
+LINKTOADDON Boolean_t STDCALL TecUtilTextGetTypefaceIsBold(Text_ID TID);
 
 /**
  * Indicates if the text object's typeface has italic font style.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *     Handle to a text object.
  *
  * @return
  *     TRUE if the text object's typeface has italic font style, FALSE otherwise.
@@ -11815,8 +11562,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextGetTypefaceIsBold(TextID_t TID
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetTypefaceIsItalic(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetTypefaceIsItalic(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11829,14 +11576,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextGetTypefaceIsBold(TextID_t TID
  *
  * @since 12.2.1.96181
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextGetTypefaceIsItalic(TextID_t TID);
+LINKTOADDON Boolean_t STDCALL TecUtilTextGetTypefaceIsItalic(Text_ID TID);
 
 /**
  *   Get the text height in the currently defined text size units.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   Text height measured in the currently defined text size units.
@@ -11845,8 +11591,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextGetTypefaceIsItalic(TextID_t T
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilTextGetHeight(TID)
- *    INTEGER*8 TID
+ *    REAL*8 FUNCTION TecUtilTextGetHeight(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11855,13 +11601,12 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilTextGetTypefaceIsItalic(TextID_t T
  * @ingroup Text
  *
  */
-LINKTOADDON double        STDCALL TecUtilTextGetHeight(TextID_t TID);
+LINKTOADDON double        STDCALL TecUtilTextGetHeight(Text_ID TID);
 /**
  * Get the size units for the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   Text size units. The possible values are: Units_Grid, Units_Frame or Units_Point.
@@ -11870,8 +11615,8 @@ LINKTOADDON double        STDCALL TecUtilTextGetHeight(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetSizeUnits(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetSizeUnits(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11882,13 +11627,12 @@ LINKTOADDON double        STDCALL TecUtilTextGetHeight(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON Units_e       STDCALL TecUtilTextGetSizeUnits(TextID_t TID);
+LINKTOADDON Units_e       STDCALL TecUtilTextGetSizeUnits(Text_ID TID);
 /**
  * Get the type of the box surrounding the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   The possible values are: TextBox_None, TextBox_Filled, TextBox_Hollow.
@@ -11897,8 +11641,8 @@ LINKTOADDON Units_e       STDCALL TecUtilTextGetSizeUnits(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextBoxGetType(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextBoxGetType(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11907,13 +11651,12 @@ LINKTOADDON Units_e       STDCALL TecUtilTextGetSizeUnits(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON TextBox_e     STDCALL TecUtilTextBoxGetType(TextID_t TID);
+LINKTOADDON TextBox_e     STDCALL TecUtilTextBoxGetType(Text_ID TID);
 /**
  *   Get the margin between the text and the box surrounding the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   The text box margin in frame units.
@@ -11922,8 +11665,8 @@ LINKTOADDON TextBox_e     STDCALL TecUtilTextBoxGetType(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilTextBoxGetMargin(TID)
- *    INTEGER*8 TID
+ *    REAL*8 FUNCTION TecUtilTextBoxGetMargin(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11932,13 +11675,12 @@ LINKTOADDON TextBox_e     STDCALL TecUtilTextBoxGetType(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON double        STDCALL TecUtilTextBoxGetMargin(TextID_t TID);
+LINKTOADDON double        STDCALL TecUtilTextBoxGetMargin(Text_ID TID);
 /**
  *   Get the line thickness of the text box border.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   The text box line thickness in frame units.
@@ -11947,8 +11689,8 @@ LINKTOADDON double        STDCALL TecUtilTextBoxGetMargin(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilTextBoxGetLineThickness(TID)
- *    INTEGER*8 TID
+ *    REAL*8 FUNCTION TecUtilTextBoxGetLineThickness(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11957,13 +11699,12 @@ LINKTOADDON double        STDCALL TecUtilTextBoxGetMargin(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON double        STDCALL TecUtilTextBoxGetLineThickness(TextID_t TID);
+LINKTOADDON double        STDCALL TecUtilTextBoxGetLineThickness(Text_ID TID);
 /**
  *   Get the line color of the box surrounding the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   The text box color.
@@ -11972,8 +11713,8 @@ LINKTOADDON double        STDCALL TecUtilTextBoxGetLineThickness(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextBoxGetColor(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextBoxGetColor(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -11982,13 +11723,12 @@ LINKTOADDON double        STDCALL TecUtilTextBoxGetLineThickness(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON int32_t  STDCALL TecUtilTextBoxGetColor(TextID_t TID);
+LINKTOADDON ColorIndex_t  STDCALL TecUtilTextBoxGetColor(Text_ID TID);
 /**
  *   Get the fill color of the box surrounding the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   The text box fill color.
@@ -11997,8 +11737,8 @@ LINKTOADDON int32_t  STDCALL TecUtilTextBoxGetColor(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextBoxGetFillColor(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextBoxGetFillColor(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12007,13 +11747,12 @@ LINKTOADDON int32_t  STDCALL TecUtilTextBoxGetColor(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON int32_t  STDCALL TecUtilTextBoxGetFillColor(TextID_t TID);
+LINKTOADDON ColorIndex_t  STDCALL TecUtilTextBoxGetFillColor(Text_ID TID);
 /**
  *   Get the text angle.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object
  *
  * @return
  *   The text angle in degrees.
@@ -12022,8 +11761,8 @@ LINKTOADDON int32_t  STDCALL TecUtilTextBoxGetFillColor(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilTextGetAngle(TID)
- *    INTEGER*8 TID
+ *    REAL*8 FUNCTION TecUtilTextGetAngle(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12032,13 +11771,12 @@ LINKTOADDON int32_t  STDCALL TecUtilTextBoxGetFillColor(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON double        STDCALL TecUtilTextGetAngle(TextID_t TID);
+LINKTOADDON double        STDCALL TecUtilTextGetAngle(Text_ID TID);
 /**
  *   Get the text anchor style.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object
  *
  * @return
  *   The text anchor style. The possible values are: TextAnchor_Left, TextAnchor_Center,
@@ -12049,8 +11787,8 @@ LINKTOADDON double        STDCALL TecUtilTextGetAngle(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetAnchor(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetAnchor(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12059,7 +11797,7 @@ LINKTOADDON double        STDCALL TecUtilTextGetAngle(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON TextAnchor_e  STDCALL TecUtilTextGetAnchor(TextID_t TID);
+LINKTOADDON TextAnchor_e  STDCALL TecUtilTextGetAnchor(Text_ID TID);
 /**
  * Get the spacing between lines of text.
  *
@@ -12068,8 +11806,7 @@ LINKTOADDON TextAnchor_e  STDCALL TecUtilTextGetAnchor(TextID_t TID);
  *   point.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   Vertical line spacing between multiple lines of a ext object.
@@ -12078,8 +11815,8 @@ LINKTOADDON TextAnchor_e  STDCALL TecUtilTextGetAnchor(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilTextGetLineSpacing(TID)
- *    INTEGER*8 TID
+ *    REAL*8 FUNCTION TecUtilTextGetLineSpacing(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12088,15 +11825,14 @@ LINKTOADDON TextAnchor_e  STDCALL TecUtilTextGetAnchor(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON double        STDCALL TecUtilTextGetLineSpacing(TextID_t TID);
+LINKTOADDON double        STDCALL TecUtilTextGetLineSpacing(Text_ID TID);
 /**
  *   Get the scope of the text object. Text with local scope is displayed only in the frame in which it
  *   is created. If the text is defined as having global scope it will appear in all "like"
  *   frames, that is, those frames using the same data set as the one in which the text was created.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @return
  *   Text scope. The possible values are: Scope_Local or Scope_Global.
@@ -12105,8 +11841,8 @@ LINKTOADDON double        STDCALL TecUtilTextGetLineSpacing(TextID_t TID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetScope(TID)
- *    INTEGER*8 TID
+ *    INTEGER*4 FUNCTION TecUtilTextGetScope(TIDPtr)
+ *    POINTER(TIDPtr, TID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12115,7 +11851,7 @@ LINKTOADDON double        STDCALL TecUtilTextGetLineSpacing(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON Scope_e       STDCALL TecUtilTextGetScope(TextID_t TID);
+LINKTOADDON Scope_e       STDCALL TecUtilTextGetScope(Text_ID TID);
 
 
 
@@ -12123,8 +11859,7 @@ LINKTOADDON Scope_e       STDCALL TecUtilTextGetScope(TextID_t TID);
  * Get the macro function command string associated with the text object.
  *
  * @param TID
- *   Unique ID for the text object
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
+ *   Handle to a text object.
  *
  * @param MacroFunctionCommand
  *   Handle to a macro function command string. The result must be deallocated
@@ -12141,10 +11876,10 @@ LINKTOADDON Scope_e       STDCALL TecUtilTextGetScope(TextID_t TID);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilTextGetMacroFunctionCmd(
- *   &                   TID,
+ *   &                   TIDPtr,
  *   &                   MacroFunctionCommand,
  *   &                   MacroFunctionCommandLength)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    CHARACTER*(*)   MacroFunctionCommand
  *    INTEGER*4       MacroFunctionCommandLength
  * </FortranSyntax>
@@ -12155,7 +11890,7 @@ LINKTOADDON Scope_e       STDCALL TecUtilTextGetScope(TextID_t TID);
  *   Boolean_t IsOk;
  *
  * @code
- *   TextID_t   Text;
+ *   Text_ID   Text;
  *   char      *MacroCommand = NULL;
  *     .
  *     .
@@ -12178,13 +11913,13 @@ LINKTOADDON Scope_e       STDCALL TecUtilTextGetScope(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilTextGetMacroFunctionCmd(TextID_t         TID,
+LINKTOADDON Boolean_t STDCALL TecUtilTextGetMacroFunctionCmd(Text_ID         TID,
                                                              TP_GIVES char** MacroFunctionCommand);
 /**
  * Get the string associated with the text object.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to a text object.
  *
  * @param TextString
  *   String of the text object. Result must be deallocated with
@@ -12201,10 +11936,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilTextGetMacroFunctionCmd(TextID_t         TI
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilTextGetString(
- *   &                   TID,
+ *   &                   TIDPtr,
  *   &                   TextString,
  *   &                   TextStringLength)
- *    INTEGER*8 TID
+ *    POINTER         (TIDPtr, TID)
  *    CHARACTER*(*)   TextString
  *    INTEGER*4       TextStringLength
  * </FortranSyntax>
@@ -12212,7 +11947,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilTextGetMacroFunctionCmd(TextID_t         TI
  * <PythonSyntax>
  * </PythonSyntax>
  *
- *   TextID_t Text;
+ *   Text_ID Text;
  *
  * @code
  *   Boolean_t IsOk = FALSE;
@@ -12249,34 +11984,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilTextGetMacroFunctionCmd(TextID_t         TI
  * @ingroup Text
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilTextGetString(TextID_t         TID,
+LINKTOADDON Boolean_t STDCALL TecUtilTextGetString(Text_ID         TID,
                                                    TP_GIVES char** TextString);
-
-/**
- *   Get the text object type.
- *
- * @param TID
- *   Unique ID for the text object.
-     Can use TECUTIL_DEFAULT_TEXT_ID to get defaults from engine
- *
- * @return  
- *   Text type. The possible values are: TextType_Regular, TextType_LaTeX.
- *
- * @pre @e TID must be a valid text ID.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilTextGetType(TID)
- *    INTEGER*8 TID
- * </FortranSyntax>
- *
- *
- * @ingroup Text
- *
- * @since 17.3
- */
-LINKTOADDON TextType_e STDCALL TecUtilTextGetType(TextID_t TID);
-
 
 /**
  * Get the first text object from the list of text objects maintained by the
@@ -12319,14 +12028,14 @@ LINKTOADDON TextType_e STDCALL TecUtilTextGetType(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON TextID_t STDCALL TecUtilTextGetBase(void);
+LINKTOADDON Text_ID STDCALL TecUtilTextGetBase(void);
 
 /**
  * Get the next text object, relative to the specified text object, from the
  * list of text objects maintained by the current frame.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to a text object.
  *
  * @return
  *   Text object following the specified text object. If the specified text
@@ -12337,9 +12046,9 @@ LINKTOADDON TextID_t STDCALL TecUtilTextGetBase(void);
  *
  * <FortranSyntax>
  *   SUBROUTINE TecUtilTextGetNext(
- *  &           TID,
+ *  &           TIDPtr,
  *  &           ResultPtr)
- *    INTEGER*8 TID
+ *   POINTER        (TIDPtr, TID)
  *   POINTER        (ResultPtr, Result)
  * </FortranSyntax>
  *
@@ -12349,14 +12058,14 @@ LINKTOADDON TextID_t STDCALL TecUtilTextGetBase(void);
  * @ingroup Text
  *
  */
-LINKTOADDON TextID_t       STDCALL TecUtilTextGetNext(TextID_t TID);
+LINKTOADDON Text_ID       STDCALL TecUtilTextGetNext(Text_ID TID);
 
 /**
  * Get the previous text object, relative to the specified text object, from the list of text objects
  * maintained by the current frame.
  *
  * @param TID
- *   Unique ID for the text object defined in the current frame
+ *   Handle to a text object defined in the current frame.
  *
  * @return
  *   Text object preceeding the specified text object. If the specified text object is the first in the
@@ -12367,9 +12076,9 @@ LINKTOADDON TextID_t       STDCALL TecUtilTextGetNext(TextID_t TID);
  *
  * <FortranSyntax>
  *   SUBROUTINE TecUtilTextGetPrev(
- *  &           TID,
+ *  &           TIDPtr,
  *  &           ResultPtr)
- *   INTEGER*8 TID
+ *   POINTER        (TIDPtr, TID)
  *   POINTER        (ResultPtr, Result)
  * </FortranSyntax>
  *
@@ -12381,7 +12090,7 @@ LINKTOADDON TextID_t       STDCALL TecUtilTextGetNext(TextID_t TID);
  * @ingroup Text
  *
  */
-LINKTOADDON TextID_t       STDCALL TecUtilTextGetPrev(TextID_t TID);
+LINKTOADDON Text_ID       STDCALL TecUtilTextGetPrev(Text_ID TID);
 
 /**
  */
@@ -12389,14 +12098,14 @@ LINKTOADDON TextID_t       STDCALL TecUtilTextGetPrev(TextID_t TID);
  *   Function will get the clipping properties of a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @pre @e GID must be a valid geometry ID.
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetClipping(GID)
- *    INTEGER*8    GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetClipping(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12405,7 +12114,7 @@ LINKTOADDON TextID_t       STDCALL TecUtilTextGetPrev(TextID_t TID);
  *   Create a red circle and set the clipping to "ClipToFrame":
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   Clipping_e clip;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   clip = TecUtilGeomGetClipping(g);
@@ -12414,7 +12123,7 @@ LINKTOADDON TextID_t       STDCALL TecUtilTextGetPrev(TextID_t TID);
  * @ingroup Geom
  *
  */
-LINKTOADDON Clipping_e    STDCALL TecUtilGeomGetClipping(GeomID_t GID);
+LINKTOADDON Clipping_e    STDCALL TecUtilGeomGetClipping(Geom_ID GID);
 /**
  */
 /**
@@ -12446,11 +12155,11 @@ LINKTOADDON Clipping_e    STDCALL TecUtilGeomGetClipping(GeomID_t GID);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomGetAnchorPos(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           XOrThetaPos,
  *   &           YOrRPos,
  *   &           ZPos)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          XOrThetaPos
  *    REAL*8          YOrRPos
  *    REAL*8          ZPos
@@ -12465,7 +12174,7 @@ LINKTOADDON Clipping_e    STDCALL TecUtilGeomGetClipping(GeomID_t GID);
  *
  *   double XPos, YPos, ZPos;
  *
- *   GeomID_t Geom;
+ *   Geom_ID Geom;
  *   Geom = TecUtilGeomCircleCreate(CoordSys_Grid,
  *     4.0, 3.0, 5.0);
  *
@@ -12475,7 +12184,7 @@ LINKTOADDON Clipping_e    STDCALL TecUtilGeomGetClipping(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomGetAnchorPos(GeomID_t        GID,
+LINKTOADDON void STDCALL TecUtilGeomGetAnchorPos(Geom_ID        GID,
                                                  TP_OUT double* XOrThetaPos,
                                                  TP_OUT double* YOrRPos,
                                                  TP_OUT double* ZPos);
@@ -12498,9 +12207,9 @@ LINKTOADDON void STDCALL TecUtilGeomGetAnchorPos(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomImageSetUseRatio(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           MaintainAspectRatio)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       MaintainAspectRatio
  * </FortranSyntax>
  *
@@ -12516,7 +12225,7 @@ LINKTOADDON void STDCALL TecUtilGeomGetAnchorPos(GeomID_t        GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomImageSetUseRatio(GeomID_t   GID,
+LINKTOADDON void STDCALL TecUtilGeomImageSetUseRatio(Geom_ID   GID,
                                                      Boolean_t MaintainAspectRatio);
 
 
@@ -12528,7 +12237,7 @@ LINKTOADDON void STDCALL TecUtilGeomImageSetUseRatio(GeomID_t   GID,
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecUtilGeomGetXYZAnchorPos(GeomID_t        GID,
+LINKTOADDON void STDCALL TecUtilGeomGetXYZAnchorPos(Geom_ID        GID,
                                                     TP_OUT double* XPos,
                                                     TP_OUT double* YPos,
                                                     TP_OUT double* ZPos);
@@ -12538,7 +12247,7 @@ LINKTOADDON void STDCALL TecUtilGeomGetXYZAnchorPos(GeomID_t        GID,
  * at all.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The zone number or the Line-mapping number.
@@ -12547,8 +12256,8 @@ LINKTOADDON void STDCALL TecUtilGeomGetXYZAnchorPos(GeomID_t        GID,
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetZoneOrMap(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetZoneOrMap(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12560,7 +12269,7 @@ LINKTOADDON void STDCALL TecUtilGeomGetXYZAnchorPos(GeomID_t        GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON EntIndex_t    STDCALL TecUtilGeomGetZoneOrMap(GeomID_t GID);
+LINKTOADDON EntIndex_t    STDCALL TecUtilGeomGetZoneOrMap(Geom_ID GID);
 
 
 
@@ -12580,8 +12289,8 @@ LINKTOADDON EntIndex_t    STDCALL TecUtilGeomGetZoneOrMap(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomIsAttached(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomIsAttached(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12590,24 +12299,24 @@ LINKTOADDON EntIndex_t    STDCALL TecUtilGeomGetZoneOrMap(GeomID_t GID);
  *   Determine the zone or Line-mapping that a geometry is attached to:
  *
  * @code
- *   extern GeomID_t g; // created elsewhere
+ *   extern Geom_ID g; // created elsewhere
  *   EntIndex_t zone = 0;
  *   EntIndex_t LineMap = 0;
- *   if ( TecUtilFrameGetPlotType() == FrameMode_XY )
+ *   if ( TecUtilFrameGetMode() == Frame_XY )
  *      LineMap = TecUtilGeomGetZoneOrMap(g);
- *   else if ( TecUtilFrameGetPlotType() != FrameMode_Sketch )
+ *   else if ( TecUtilFrameGetMode() != Frame_Sketch )
  *      zone = TecUtilGeomGetZoneOrMap(g);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomIsAttached(GeomID_t GID);
+LINKTOADDON Boolean_t     STDCALL TecUtilGeomIsAttached(Geom_ID GID);
 /**
  *   Get the geometry line color.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The line color of the geometry. The possible values are: Black_C, Blue_C, Red_C, Green_C, Cyan_C,
@@ -12617,8 +12326,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomIsAttached(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetColor(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetColor(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12627,13 +12336,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomIsAttached(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilGeomGetColor(GeomID_t GID);
+LINKTOADDON ColorIndex_t  STDCALL TecUtilGeomGetColor(Geom_ID GID);
 /**
  * Get the geometry fill color. Use TecUtilGeomGetIsFilled() to determine
  * whether or not the geometry is filled with a color.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The geometry fill color. The possible values are: Black_C, Blue_C, Red_C,
@@ -12644,8 +12353,8 @@ LINKTOADDON int32_t STDCALL TecUtilGeomGetColor(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetFillColor(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetFillColor(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12654,12 +12363,12 @@ LINKTOADDON int32_t STDCALL TecUtilGeomGetColor(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON int32_t  STDCALL TecUtilGeomGetFillColor(GeomID_t GID);
+LINKTOADDON ColorIndex_t  STDCALL TecUtilGeomGetFillColor(Geom_ID GID);
 /**
  *   Determine if a geometry if filled.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   TRUE if the geometry is filled, otherwise FALSE.
@@ -12668,8 +12377,8 @@ LINKTOADDON int32_t  STDCALL TecUtilGeomGetFillColor(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetIsFilled(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetIsFilled(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12678,24 +12387,23 @@ LINKTOADDON int32_t  STDCALL TecUtilGeomGetFillColor(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomGetIsFilled(GeomID_t GID);
+LINKTOADDON Boolean_t     STDCALL TecUtilGeomGetIsFilled(Geom_ID GID);
 /**
  *   Get the geometry type.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The geometry type. This can be one of: GeomType_LineSegs (includes 2-D and 3-D line, polyline and
- *   multi-polyline geometries), GeomType_Rectangle, GeomType_Square, GeomType_Circle, GeomType_Ellipse,
- *   or GeomType_Image (2D or 3D).
+ *   multi-polyline geometries), GeomType_Rectangle, GeomType_Square, GeomType_Circle, GeomType_Ellipse.
  *
  * @pre @e GID must be a valid geometry ID.
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetType(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetType(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12704,7 +12412,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomGetIsFilled(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomType_e STDCALL TecUtilGeomGetType(GeomID_t GID);
+LINKTOADDON GeomForm_e    STDCALL TecUtilGeomGetType(Geom_ID GID);
 /**
  *   Get the line pattern of a geometry.
  *
@@ -12720,8 +12428,8 @@ LINKTOADDON GeomType_e STDCALL TecUtilGeomGetType(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetLinePattern(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetLinePattern(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12730,12 +12438,12 @@ LINKTOADDON GeomType_e STDCALL TecUtilGeomGetType(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON LinePattern_e STDCALL TecUtilGeomGetLinePattern(GeomID_t GID);
+LINKTOADDON LinePattern_e STDCALL TecUtilGeomGetLinePattern(Geom_ID GID);
 /**
  *   Get the geometry line pattern length.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The line pattern length in frame units.
@@ -12744,8 +12452,8 @@ LINKTOADDON LinePattern_e STDCALL TecUtilGeomGetLinePattern(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilGeomGetPatternLength(GID)
- *    INTEGER*8 GID
+ *    REAL*8 FUNCTION TecUtilGeomGetPatternLength(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12754,12 +12462,12 @@ LINKTOADDON LinePattern_e STDCALL TecUtilGeomGetLinePattern(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON double        STDCALL TecUtilGeomGetPatternLength(GeomID_t GID);
+LINKTOADDON double        STDCALL TecUtilGeomGetPatternLength(Geom_ID GID);
 /**
  *   Get the geometry line thickness.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The geometry line thickness in frame units.
@@ -12768,8 +12476,8 @@ LINKTOADDON double        STDCALL TecUtilGeomGetPatternLength(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilGeomGetLineThickness(GID)
- *    INTEGER*8 GID
+ *    REAL*8 FUNCTION TecUtilGeomGetLineThickness(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12778,7 +12486,7 @@ LINKTOADDON double        STDCALL TecUtilGeomGetPatternLength(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON double        STDCALL TecUtilGeomGetLineThickness(GeomID_t GID);
+LINKTOADDON double        STDCALL TecUtilGeomGetLineThickness(Geom_ID GID);
 /**
  *   Get the number of points used to draw a circle or ellipse geometry.
  *
@@ -12792,8 +12500,8 @@ LINKTOADDON double        STDCALL TecUtilGeomGetLineThickness(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomEllipseGetNumPoints(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomEllipseGetNumPoints(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12802,7 +12510,7 @@ LINKTOADDON double        STDCALL TecUtilGeomGetLineThickness(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON int32_t   STDCALL TecUtilGeomEllipseGetNumPoints(GeomID_t GID);
+LINKTOADDON SmInteger_t   STDCALL TecUtilGeomEllipseGetNumPoints(Geom_ID GID);
 /**
  *   Get the geometry arrowhead style.
  *
@@ -12817,8 +12525,8 @@ LINKTOADDON int32_t   STDCALL TecUtilGeomEllipseGetNumPoints(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomArrowheadGetStyle(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomArrowheadGetStyle(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12827,7 +12535,7 @@ LINKTOADDON int32_t   STDCALL TecUtilGeomEllipseGetNumPoints(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON ArrowheadStyle_e        STDCALL TecUtilGeomArrowheadGetStyle(GeomID_t GID);
+LINKTOADDON ArrowheadStyle_e        STDCALL TecUtilGeomArrowheadGetStyle(Geom_ID GID);
 /**
  *   Get the geometry arrowhead attachment.
  *
@@ -12843,8 +12551,8 @@ LINKTOADDON ArrowheadStyle_e        STDCALL TecUtilGeomArrowheadGetStyle(GeomID_
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomArrowheadGetAttach(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomArrowheadGetAttach(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12853,7 +12561,7 @@ LINKTOADDON ArrowheadStyle_e        STDCALL TecUtilGeomArrowheadGetStyle(GeomID_
  * @ingroup Geom
  *
  */
-LINKTOADDON ArrowheadAttachment_e   STDCALL TecUtilGeomArrowheadGetAttach(GeomID_t GID);
+LINKTOADDON ArrowheadAttachment_e   STDCALL TecUtilGeomArrowheadGetAttach(Geom_ID GID);
 /**
  *   Get the geometry arrowhead size.
  *
@@ -12867,8 +12575,8 @@ LINKTOADDON ArrowheadAttachment_e   STDCALL TecUtilGeomArrowheadGetAttach(GeomID
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilGeomArrowheadGetSize(GID)
- *    INTEGER*8 GID
+ *    REAL*8 FUNCTION TecUtilGeomArrowheadGetSize(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12877,7 +12585,7 @@ LINKTOADDON ArrowheadAttachment_e   STDCALL TecUtilGeomArrowheadGetAttach(GeomID
  * @ingroup Geom
  *
  */
-LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetSize(GeomID_t GID);
+LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetSize(Geom_ID GID);
 /**
  *   Get the geometry arrowhead angle.
  *
@@ -12891,8 +12599,8 @@ LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetSize(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilGeomArrowheadGetAngle(GID)
- *    INTEGER*8 GID
+ *    REAL*8 FUNCTION TecUtilGeomArrowheadGetAngle(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12901,12 +12609,12 @@ LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetSize(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetAngle(GeomID_t GID);
+LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetAngle(Geom_ID GID);
 /**
  *   Get the geometry scope.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The geometry scope. The possible values are: Scope_Local (show in current
@@ -12917,8 +12625,8 @@ LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetAngle(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetScope(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetScope(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12927,12 +12635,12 @@ LINKTOADDON double        STDCALL TecUtilGeomArrowheadGetAngle(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON Scope_e       STDCALL TecUtilGeomGetScope(GeomID_t GID);
+LINKTOADDON Scope_e       STDCALL TecUtilGeomGetScope(Geom_ID GID);
 /**
  *   Get the geometry position coordinate system.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The coordinate system. The possible values are: CoordSys_Grid3D or CoordSys_Frame.
@@ -12941,8 +12649,8 @@ LINKTOADDON Scope_e       STDCALL TecUtilGeomGetScope(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetPositionCoordSys(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetPositionCoordSys(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12951,7 +12659,7 @@ LINKTOADDON Scope_e       STDCALL TecUtilGeomGetScope(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON CoordSys_e    STDCALL TecUtilGeomGetPositionCoordSys(GeomID_t GID);
+LINKTOADDON CoordSys_e    STDCALL TecUtilGeomGetPositionCoordSys(Geom_ID GID);
 /**
  *   Get the resize filter of an image geometry. The resize filter determines
  *   the algorithm used when an image is resized.
@@ -12966,8 +12674,8 @@ LINKTOADDON CoordSys_e    STDCALL TecUtilGeomGetPositionCoordSys(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomImageGetResizeFilter(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomImageGetResizeFilter(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12983,7 +12691,7 @@ LINKTOADDON CoordSys_e    STDCALL TecUtilGeomGetPositionCoordSys(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON ImageResizeFilter_e STDCALL TecUtilGeomImageGetResizeFilter(GeomID_t GID);
+LINKTOADDON ImageResizeFilter_e STDCALL TecUtilGeomImageGetResizeFilter(Geom_ID GID);
 /**
  *   Sets the resize filter of an image geometry. The resize filter determines
  *   the algorithm used when an image is resized.
@@ -12999,9 +12707,9 @@ LINKTOADDON ImageResizeFilter_e STDCALL TecUtilGeomImageGetResizeFilter(GeomID_t
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomImageSetResizeFilter(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ResizeFilter)
- *    INTEGER*8                GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       ResizeFilter
  * </FortranSyntax>
  *
@@ -13017,10 +12725,8 @@ LINKTOADDON ImageResizeFilter_e STDCALL TecUtilGeomImageGetResizeFilter(GeomID_t
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomImageSetResizeFilter(GeomID_t            GID,
+LINKTOADDON void STDCALL TecUtilGeomImageSetResizeFilter(Geom_ID             GID,
                                                          ImageResizeFilter_e ResizeFilter);
-
-
 /**
  * Get the name of the file associated with an image geometry.
  *
@@ -13040,10 +12746,10 @@ LINKTOADDON void STDCALL TecUtilGeomImageSetResizeFilter(GeomID_t            GID
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomImageGetFileName(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           FileName,
  *   &           FileNameLength)
- *    INTEGER*8                GID
+ *    POINTER         (GIDPtr, GID)
  *    CHARACTER*(*)   FileName
  *    INTEGER*4       FileNameLength
  * </FortranSyntax>
@@ -13061,7 +12767,7 @@ LINKTOADDON void STDCALL TecUtilGeomImageSetResizeFilter(GeomID_t            GID
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomImageGetFileName(GeomID_t         GID,
+LINKTOADDON void STDCALL TecUtilGeomImageGetFileName(Geom_ID         GID,
                                                      TP_GIVES char** FileName);
 
 /**
@@ -13080,9 +12786,9 @@ LINKTOADDON void STDCALL TecUtilGeomImageGetFileName(GeomID_t         GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomImageSetWidth(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Width)
- *    INTEGER*8                GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          Width
  * </FortranSyntax>
  *
@@ -13098,7 +12804,7 @@ LINKTOADDON void STDCALL TecUtilGeomImageGetFileName(GeomID_t         GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomImageSetWidth(GeomID_t GID,
+LINKTOADDON void STDCALL TecUtilGeomImageSetWidth(Geom_ID GID,
                                                   double  Width);
 
 /**
@@ -13117,9 +12823,9 @@ LINKTOADDON void STDCALL TecUtilGeomImageSetWidth(GeomID_t GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomImageSetHeight(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Height)
- *    INTEGER*8                GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          Height
  * </FortranSyntax>
  *
@@ -13135,59 +12841,8 @@ LINKTOADDON void STDCALL TecUtilGeomImageSetWidth(GeomID_t GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomImageSetHeight(GeomID_t GID,
+LINKTOADDON void STDCALL TecUtilGeomImageSetHeight(Geom_ID GID,
                                                    double  Height);
-
-/**
- * Get the raw width and height of an image geometry.
- *
- * @param GID
- *   Geometry ID. Must be an image geometry
- *
- * @param Width
- *   Receives the raw width of the specified image geometry.
- *
- * @param Height
- *   Receives the raw height of the specified image geometry.
- *
- *
- * @pre <em>Width</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>Height</em>
- *   Pointer must be a valid address or NULL.
- * @pre @e GID must be a valid geometry ID.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilGeomImageGetRawSize(
- *   &           GID,
- *   &           Width,
- *   &           Height)
- *    INTEGER*8                GID
- *    REAL*8          Width
- *    REAL*8          Height
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Get the raw width and height of an image in an image geometry.
- *
- * @code
- *   double Width;
- *   double Height;
- *   TecUtilGeomImageGetRawSize(GID, &Width, &Height);
- * @endcode
- *
- * @ingroup Geom
- *
- * @since 15.1
- */
-LINKTOADDON void STDCALL TecUtilGeomImageGetRawSize(GeomID_t        GID,
-                                                    TP_OUT double* Width,
-                                                    TP_OUT double* Height);
-
 
 /**
  *   Get the width and height of an image geometry.
@@ -13212,10 +12867,10 @@ LINKTOADDON void STDCALL TecUtilGeomImageGetRawSize(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomImageGetSize(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Width,
  *   &           Height)
- *    INTEGER*8                GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          Width
  *    REAL*8          Height
  * </FortranSyntax>
@@ -13234,7 +12889,7 @@ LINKTOADDON void STDCALL TecUtilGeomImageGetRawSize(GeomID_t        GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomImageGetSize(GeomID_t        GID,
+LINKTOADDON void STDCALL TecUtilGeomImageGetSize(Geom_ID        GID,
                                                  TP_OUT double* Width,
                                                  TP_OUT double* Height);
 
@@ -13250,8 +12905,8 @@ LINKTOADDON void STDCALL TecUtilGeomImageGetSize(GeomID_t        GID,
  *
  *
  * <FortranSyntax>
- *    SUBROUTINE TecUtilGeomImageResetAspectRati(GID)
- *    INTEGER*8 GID
+ *    SUBROUTINE TecUtilGeomImageResetAspectRati(GIDPtr)
+ *    POINTER(GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -13271,7 +12926,7 @@ LINKTOADDON void STDCALL TecUtilGeomImageGetSize(GeomID_t        GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomImageResetAspectRatio(GeomID_t GID);
+LINKTOADDON void STDCALL TecUtilGeomImageResetAspectRatio(Geom_ID GID);
 
 
 
@@ -13290,17 +12945,17 @@ LINKTOADDON void STDCALL TecUtilGeomImageResetAspectRatio(GeomID_t GID);
  *
  * #internalattributes exclude_alldoc
  */
-LINKTOADDON Boolean_t STDCALL TecUtilGeomImageGetImage(GeomID_t                 GID,
-                                                       TP_OUT int32_t*          Width,
-                                                       TP_OUT int32_t*          Height,
-                                                       TP_ARRAY_GIVES uint8_t** RGBData);
+LINKTOADDON Boolean_t STDCALL TecUtilGeomImageGetImage(Geom_ID                 GID,
+                                                       TP_OUT ScreenDim_t*     Width,
+                                                       TP_OUT ScreenDim_t*     Height,
+                                                       TP_ARRAY_GIVES Byte_t** RGBData);
 
 
 /**
  * Get the geometry macro function command.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @param MacroFunctionCmd
  *   Character string containing the macro command. You must free this string
@@ -13318,10 +12973,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilGeomImageGetImage(GeomID_t                 
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilGeomGetMacroFunctionCmd(
- *   &                   GID,
+ *   &                   GIDPtr,
  *   &                   MacroFunctionCmd,
  *   &                   MacroFunctionCmdLength)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    CHARACTER*(*)   MacroFunctionCmd
  *    INTEGER*4       MacroFunctionCmdLength
  * </FortranSyntax>
@@ -13332,33 +12987,29 @@ LINKTOADDON Boolean_t STDCALL TecUtilGeomImageGetImage(GeomID_t                 
  * @ingroup Geom
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilGeomGetMacroFunctionCmd(GeomID_t         GID,
+LINKTOADDON Boolean_t STDCALL TecUtilGeomGetMacroFunctionCmd(Geom_ID         GID,
                                                              TP_GIVES char** MacroFunctionCmd);
 
-
-
 /**
- * Create an image geometry by reading it from the specified file and placing it at the specified
- * location at the requested size, or height. Use the geometry ID returned from this function as an
- * argument to the family of TecUtilGeomImage functions used to set other image geometry attributes.
+ * Create an image geometry. Use the ID obtained from this function to set
+ * geometry attributes such as position and coordinates system.
  *
  * @param FName
  *   Image file to attach. The format of this file must be Microsoft Windows
  *   Bitmap (*.bmp), JPEG (*.jpg or *.jpeg) or Portable Network Graphics
  *   (*.png)
  *
- * @param XPos
+ * @param CornerX
  *   X coordinate for the location to initially place the image (frame
  *   coordinates).
  *
- * @param YPos
+ * @param CornerY
  *   Y coordinate for the location to initially place the image (frame
  *   coordinates).
  *
  * @param Size
- *   The initial size, or height, of the image in frame units. The initial width in frame units is
- *   set automatically based on the width to height aspect ratio of the image. You may change the
- *   size later using TecUtilGeomImageSetWidth() and TecUtilGeomImageSetHeight().
+ *   The default size of the image. You may change the size later using
+ *   TecUtilImageSetWidth() and TecUtilImageSetHeight().
  *
  * @return
  *   If successfully created, then the return is a valid ID that you may use to
@@ -13374,13 +13025,13 @@ LINKTOADDON Boolean_t STDCALL TecUtilGeomGetMacroFunctionCmd(GeomID_t         GI
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomImageCreate(
  *   &           FName,
- *   &           XPos,
- *   &           YPos,
+ *   &           CornerX,
+ *   &           CornerY,
  *   &           Size,
  *   &           ResultPtr)
  *    CHARACTER*(*)  FName
- *    REAL*8         XPos
- *    REAL*8         YPos
+ *    REAL*8         CornerX
+ *    REAL*8         CornerY
  *    REAL*8         Size
  *    POINTER        (ResultPtr, Result)
  *
@@ -13389,74 +13040,20 @@ LINKTOADDON Boolean_t STDCALL TecUtilGeomGetMacroFunctionCmd(GeomID_t         GI
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * Create an image geometry anchored at (0.1,0.1) with a size of 0.5, using the file "somefile.jpg":
+ *   Create an image geometry anchored at (0.1,0.1) with a size of 0.5, using the file "myimage.png":
  *
  * @code
- *   GeomID_t G;
- *   G = TecUtilGeomImageCreate("c:\\somefile.jpg", 0.1, 0.1, 0.5);
+ *   Geom_ID G;
+ *   G = TecUtilGeomImageCreate("c:\\myimage.png",0.1,0.1,0.5);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeomImageCreate(const char *FName,
-                                                    double      XPos,
-                                                    double      YPos,
-                                                    double      Size);
-/**
- * Create an image positioned and scaled according to values specified in the World File.
- * The image will be positioned in Grid coordinate system and drawn before data.
- *
- * @param ImageFleName 
- *   Image file to attach. The format of this file must be Microsoft Windows
- *   Bitmap (*.bmp), JPEG (*.jpg or *.jpeg) or Portable Network Graphics
- *   (*.png)
- *
- * @param WorldFleName 
- *   World file name that specifies the image position and scaling. @sa https://en.wikipedia.org/wiki/World_file
- *
- * @return
- *   If successfully created, then the return is a valid ID that you may use to
- *   further set attributes for this geometry. Otherwise, \ref TECUTILBADID is
- *   returned. If the return value is \ref TECUTILBADID, then the most likely
- *   cause is files do not exist or are malformed.
- *
- *
- * @pre <em>ImageFleName</em>
- *   String must have a valid address and non-zero length.
- *
- * @pre <em>VALID_NON_ZERO_LEN_STR(WorldFileName)</em>
- *   String must have a valid address and non-zero length.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilGeoRefImageCreate(
- *   &           ImageFleName,
- *   &           WorldFileName,
- *   &           ResultPtr)
- *    CHARACTER*(*) ImageFleName 
- *    CHARACTER*(*) WorldFileName 
- *    POINTER        (ResultPtr, Result)
- *
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Create an image geometry using the file "myimage.png" and the World file "myimage.pgw":
- *
- * @code
- *   GeomID_t G;
- *   G = TecUtilGeoRefImageCreate("c:\\myimage.png", "c:\\myimage.pgw");
- * @endcode
- *
- * @since 18.2
- *
- * @ingroup Geom
- *
- */
-LINKTOADDON GeomID_t STDCALL TecUtilGeoRefImageCreate(const char *ImageFleName,
-                                                      const char *WorldFileName);
+LINKTOADDON Geom_ID STDCALL TecUtilGeomImageCreate(const char *FName,
+                                                   double      CornerX,
+                                                   double      CornerY,
+                                                   double      Size);
 
 /**
  * Get the base geometry attached to the current frame.
@@ -13480,14 +13077,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeoRefImageCreate(const char *ImageFleName,
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeomGetBase(void);
+LINKTOADDON Geom_ID STDCALL TecUtilGeomGetBase(void);
 
 /**
  * Get the next geometry in the list of geometries attached to the current
  * frame.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   Returns the ID of the next geometry or \ref TECUTILBADID if there are no
@@ -13498,9 +13095,9 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomGetBase(void);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomGetNext(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ResultPtr)
- *    INTEGER*8      GID
+ *    POINTER        (GIDPtr, GID)
  *    POINTER        (ResultPtr, Result)
  * </FortranSyntax>
  *
@@ -13510,7 +13107,7 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomGetBase(void);
  *   Change all geometries in the current frame to be red:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomGetBase();
  *   while ( g != TECUTILBADID )
  *     {
@@ -13522,14 +13119,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomGetBase(void);
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetNext(GeomID_t GID);
+LINKTOADDON Geom_ID       STDCALL TecUtilGeomGetNext(Geom_ID GID);
 
 /**
  * Get the previous geometry in the list of geometries attached to the current
  * frame.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   Returns the ID of the previous geometry or \ref TECUTILBADID if GID was
@@ -13540,9 +13137,9 @@ LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetNext(GeomID_t GID);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomGetPrev(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ResultPtr)
- *    INTEGER*8                GID
+ *    POINTER        (GIDPtr, GID)
  *    POINTER        (ResultPtr, Result)
  * </FortranSyntax>
  *
@@ -13552,7 +13149,7 @@ LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetNext(GeomID_t GID);
  *   Create a circle with color of the previous circle:
  *
  * @code
- *   GeomID_t new_geom, prev_geom;
+ *   Geom_ID new_geom, prev_geom;
  *   new_geom = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   prev_geom = TecUtilGeomGetPrev(new_geom);
  *   while ( prev_geom != TECUTILBADID &&
@@ -13565,7 +13162,7 @@ LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetNext(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetPrev(GeomID_t GID);
+LINKTOADDON Geom_ID       STDCALL TecUtilGeomGetPrev(Geom_ID GID);
 
 /**
  */
@@ -13573,7 +13170,7 @@ LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetPrev(GeomID_t GID);
  *   Set the clipping properties of a text object.
  *
  * @param TID
- *   Unique ID for the text object
+ *   ID of the text object
  *
  * @param Clipping
  *   New clipping property for the text object. The possible values are: Clipping_ClipToViewport and
@@ -13584,9 +13181,9 @@ LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetPrev(GeomID_t GID);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetClipping(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Clipping)
- *    INTEGER*8       TID
+ *    POINTER        (TIDPtr, TID)
  *    INTEGER*4       Clipping
  * </FortranSyntax>
  *
@@ -13596,7 +13193,7 @@ LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetPrev(GeomID_t GID);
  *   Create a texts string "Test Text Object" and set the clipping to "ClipToFrame":
  *
  * @code
- *   TextID_t TID;
+ *   Text_ID TID;
  *   TID = TecUtilTextCreate(CoordSys_Frame,20,30,
  *                           Units_Point,
  *                           15,"Test Text Object");
@@ -13606,7 +13203,7 @@ LINKTOADDON GeomID_t       STDCALL TecUtilGeomGetPrev(GeomID_t GID);
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetClipping(TextID_t    TID,
+LINKTOADDON void       STDCALL TecUtilTextSetClipping(Text_ID    TID,
                                                       Clipping_e Clipping);
 /**
  */
@@ -13616,7 +13213,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetClipping(TextID_t    TID,
  * the text object is drawn.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to a text object.
  *
  * @param XOrThetaPos
  *   The text object's X or Theta anchor position.
@@ -13632,11 +13229,11 @@ LINKTOADDON void       STDCALL TecUtilTextSetClipping(TextID_t    TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetAnchorPos(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           XOrThetaPos,
  *   &           YOrRPos,
  *   &           ZPos)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    REAL*8          XOrThetaPos
  *    REAL*8          YOrRPos
  *    REAL*8          ZPos
@@ -13648,7 +13245,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetClipping(TextID_t    TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetAnchorPos(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextSetAnchorPos(Text_ID TID,
                                                        double  XOrThetaPos,
                                                        double  YOrRPos,
                                                        double  ZPos);
@@ -13660,7 +13257,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetAnchorPos(TextID_t TID,
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON void       STDCALL TecUtilTextSetXYPos(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextSetXYPos(Text_ID TID,
                                                    double XPos,
                                                    double YPos);
 /**
@@ -13669,7 +13266,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetXYPos(TextID_t TID,
  * its visual appearance in the original coordinate and unit system.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to the text object.
  *
  * @param PositionCoordSys
  *   Coordinate system in which the text is positioned. The possible values
@@ -13678,16 +13275,18 @@ LINKTOADDON void       STDCALL TecUtilTextSetXYPos(TextID_t TID,
  * @param HeightUnits
  *   Units for the character height of the text. If CoordSys is
  *   \ref CoordSys_Frame, units must be \ref Units_Frame or \ref Units_Point.
+ *   If CoordSys is \ref CoordSys_Grid, units must be \ref Units_Frame or
+ *   \ref Units_Grid.
  *
  * @pre @e TID must be a valid text ID.
  *
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetCoordSysAndUnits(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           PositionCoordSys,
  *   &           HeightUnits)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       PositionCoordSys
  *    INTEGER*4       HeightUnits
  * </FortranSyntax>
@@ -13699,7 +13298,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetXYPos(TextID_t TID,
  *   Then, change the text to be positioned and sized in the frame coordinate system :
  *
  * @code
- *   TextID_t Text;
+ *   Text_ID Text;
  *   Text = TecUtilTextCreate(CoordSys_Grid, 0.25, 0.25,
  *                            Units_Grid, 0.25, "Hello.");
  *   if (Text != TECUTILBADID)
@@ -13722,14 +13321,14 @@ LINKTOADDON void       STDCALL TecUtilTextSetXYPos(TextID_t TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetCoordSysAndUnits(TextID_t    TID,
+LINKTOADDON void       STDCALL TecUtilTextSetCoordSysAndUnits(Text_ID    TID,
                                                               CoordSys_e PositionCoordSys,
                                                               Units_e    HeightUnits);
 /**
  * Set the zone or map to which the text object is associated (if it is attached).
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to the text object.
  *
  * @param ZoneOrMap
  *   Zone or Map.
@@ -13739,9 +13338,9 @@ LINKTOADDON void       STDCALL TecUtilTextSetCoordSysAndUnits(TextID_t    TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetZoneOrMap(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           ZoneOrMap)
- *    INTEGER*8 TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       ZoneOrMap
  * </FortranSyntax>
  *
@@ -13753,13 +13352,13 @@ LINKTOADDON void       STDCALL TecUtilTextSetCoordSysAndUnits(TextID_t    TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetZoneOrMap(TextID_t    TID,
+LINKTOADDON void       STDCALL TecUtilTextSetZoneOrMap(Text_ID    TID,
                                                        EntIndex_t ZoneOrMap);
 /**
  * Indicate if the text object should be attached to a zone or map.
  *
  * @param TID
- *   Unique ID for the text object
+ *   Handle to a text object.
  *
  * @param Attached
  *   Set to TRUE to attach, FALSE otherwise.
@@ -13769,10 +13368,10 @@ LINKTOADDON void       STDCALL TecUtilTextSetZoneOrMap(TextID_t    TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetAttached(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Attached)
- *    INTEGER*8     TID
- *    INTEGER*4     Attached
+ *    POINTER         (TIDPtr, TID)
+ *    INTEGER*4       Attached
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -13783,13 +13382,13 @@ LINKTOADDON void       STDCALL TecUtilTextSetZoneOrMap(TextID_t    TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetAttached(TextID_t    TID,
+LINKTOADDON void       STDCALL TecUtilTextSetAttached(Text_ID    TID,
                                                       Boolean_t Attached);
 /**
  *   Set the color of a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param Color
  *   Text color. The possible values are: Black_C, Blue_C, Red_C, Green_C, Cyan_C, Purple_C, Yellow_C,
@@ -13800,9 +13399,9 @@ LINKTOADDON void       STDCALL TecUtilTextSetAttached(TextID_t    TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetColor(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Color)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       Color
  * </FortranSyntax>
  *
@@ -13812,40 +13411,27 @@ LINKTOADDON void       STDCALL TecUtilTextSetAttached(TextID_t    TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetColor(TextID_t  TID,
-                                                   int32_t   Color);
+LINKTOADDON void       STDCALL TecUtilTextSetColor(Text_ID      TID,
+                                                   ColorIndex_t Color);
 /**
  *   Set the font for a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to the text object.
  *
  * @param Font
- *   Text font. The possible values are:
- *   Font_Helvetica,
- *   Font_HelveticaBold,
- *   Font_HelveticaItalic,
- *   Font_HelveticaItalicBold,
- *   Font_Greek,
- *   Font_Math,
- *   Font_UserDefined,
- *   Font_Times,
- *   Font_TimesItalic,
- *   Font_TimesItalicBold,
- *   Font_TimesBold,
- *   Font_Courier,
- *   Font_CourierBold,
- *   Font_CourierItalic,
- *   Font_CourierItalicBold.
+ *   Text font. The possible values are: Font_Helvetica, Font_HelveticaBold, Font_Greek, Font_Math,
+ *   Font_UserDefined, Font_Times, Font_TimesItalic, Font_TimesItalicBold, Font_TimesBold,
+ *   Font_Courier, Font_CourierBold
  *
  * @pre @e TID must be a valid text ID.
  *
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetFont(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Font)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       Font
  * </FortranSyntax>
  *
@@ -13858,7 +13444,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetColor(TextID_t  TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetFont(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextSetFont(Text_ID TID,
                                                   Font_e  Font);
 
 /**
@@ -13872,7 +13458,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetFont(TextID_t TID,
  * replacement will be selected.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to the text object.
  * @param FontFamily
  *     Requested typeface family name.
  * @param IsBold
@@ -13888,11 +13474,11 @@ LINKTOADDON void       STDCALL TecUtilTextSetFont(TextID_t TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetTypeface(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           FontFamily,
  *   &           IsBold,
  *   &           IsItalic)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    CHARACTER*(*)   FontFamily
  *    INTEGER*4       IsBold
  *    INTEGER*4       IsItalic
@@ -13908,7 +13494,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetFont(TextID_t TID,
  *
  * @since 12.2.1.96181
  */
-LINKTOADDON void STDCALL TecUtilTextSetTypeface(TextID_t     TID,
+LINKTOADDON void STDCALL TecUtilTextSetTypeface(Text_ID     TID,
                                                 const char* FontFamily,
                                                 Boolean_t   IsBold,
                                                 Boolean_t   IsItalic);
@@ -13917,7 +13503,7 @@ LINKTOADDON void STDCALL TecUtilTextSetTypeface(TextID_t     TID,
  * Set the character height for a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to the text object.
  *
  * @param Height
  *   Character height in the current text size units.
@@ -13927,9 +13513,9 @@ LINKTOADDON void STDCALL TecUtilTextSetTypeface(TextID_t     TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetHeight(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Height)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    REAL*8          Height
  * </FortranSyntax>
  *
@@ -13941,13 +13527,13 @@ LINKTOADDON void STDCALL TecUtilTextSetTypeface(TextID_t     TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetHeight(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextSetHeight(Text_ID TID,
                                                     double  Height);
 /**
  *   Set the type of the box surrounding the text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param TextBoxType
  *   Text box type. The possible values are: TextBox_None, TextBox_Filled, TextBox_Hollow
@@ -13957,9 +13543,9 @@ LINKTOADDON void       STDCALL TecUtilTextSetHeight(TextID_t TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextBoxSetType(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           TextBoxType)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       TextBoxType
  * </FortranSyntax>
  *
@@ -13969,7 +13555,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetHeight(TextID_t TID,
  *   Create a hollow boxed text label.
  *
  * @code
- *   TextID_t Text;
+ *   Text_ID Text;
  *   Text = TecUtilTextCreate(CoordSys_Frame,50.0,50.0,Units_Points,
  *                              30.0,"Hi Mom");
  *   TecUtilTextBoxSetType(Text, TextBox_Hollow);
@@ -13978,13 +13564,13 @@ LINKTOADDON void       STDCALL TecUtilTextSetHeight(TextID_t TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextBoxSetType(TextID_t   TID,
+LINKTOADDON void       STDCALL TecUtilTextBoxSetType(Text_ID   TID,
                                                      TextBox_e TextBoxType);
 /**
  *   Set the margin between the text and the box surrounding the text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param Margin
  *   Margin between the text and the box in percentage of the text height
@@ -13994,9 +13580,9 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetType(TextID_t   TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextBoxSetMargin(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Margin)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    REAL*8          Margin
  * </FortranSyntax>
  *
@@ -14006,7 +13592,7 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetType(TextID_t   TID,
  *   Create a boxed text label with a box margin of 60 percent of the height of the text:
  *
  * @code
- *   TextID_t Text;
+ *   Text_ID Text;
  *   Text = TecUtilTextCreate(CoordSys_Frame,50.0,50.0,Units_Points,30.0,
  *                            "Hi Mom");
  *   TecUtilTextBoxSetType(Text, TextBox_Hollow);
@@ -14016,13 +13602,13 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetType(TextID_t   TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextBoxSetMargin(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextBoxSetMargin(Text_ID TID,
                                                        double  Margin);
 /**
  *   Set the line thickness of the box surrounding the text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param LineThickness
  *   Line thickness of the box, in frame units
@@ -14032,9 +13618,9 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetMargin(TextID_t TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextBoxSetLineThickness(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           LineThickness)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    REAL*8          LineThickness
  * </FortranSyntax>
  *
@@ -14044,13 +13630,13 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetMargin(TextID_t TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextBoxSetLineThickness(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextBoxSetLineThickness(Text_ID TID,
                                                               double  LineThickness);
 /**
  *   Set the line color for the box surrounding a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param BoxColor
  *   Line color of the box. The possible values are: Black_C, Blue_C, Red_C, Green_C, Cyan_C, Purple_C,
@@ -14061,9 +13647,9 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetLineThickness(TextID_t TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextBoxSetColor(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           BoxColor)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       BoxColor
  * </FortranSyntax>
  *
@@ -14073,7 +13659,7 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetLineThickness(TextID_t TID,
  *   Create a boxed text label with the box color set to red.
  *
  * @code
- *   TextID_t Text;
+ *   Text_ID Text;
  *   Text = TecUtilTextCreate(CoordSys_Frame,50.0,50.0,Units_Point,
  *                            30.0,"Hi Mom");
  *   TecUtilTextBoxSetType(Text, TextBox_Hollow);
@@ -14083,13 +13669,13 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetLineThickness(TextID_t TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextBoxSetColor(TextID_t  TID,
-                                                      int32_t   BoxColor);
+LINKTOADDON void       STDCALL TecUtilTextBoxSetColor(Text_ID      TID,
+                                                      ColorIndex_t BoxColor);
 /**
  *   Set the fill color of the box surrounding a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param BoxFillColor
  *   Fill color of the box. The possible values are: Black_C, Blue_C, Red_C, Green_C, Cyan_C, Purple_C,
@@ -14100,9 +13686,9 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetColor(TextID_t  TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextBoxSetFillColor(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           BoxFillColor)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       BoxFillColor
  * </FortranSyntax>
  *
@@ -14112,7 +13698,7 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetColor(TextID_t  TID,
  *   Create a filled boxed text label with a fill color of blue.
  *
  * @code
- *   TextID_t Text;
+ *   Text_ID Text;
  *   Text = TecUtilTextCreate(CoordSys_Frame,50.0,50.0,Units_Point,30.0,
  *                            "Hi Mom");
  *   TecUtilTextBoxSetType(Text, TextBox_Filled);
@@ -14122,13 +13708,13 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetColor(TextID_t  TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextBoxSetFillColor(TextID_t  TID,
-                                                          int32_t   BoxFillColor);
+LINKTOADDON void       STDCALL TecUtilTextBoxSetFillColor(Text_ID      TID,
+                                                          ColorIndex_t BoxFillColor);
 /**
  *   Set the angle in degrees for a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param Angle
  *   Text angle in degrees that must be between the inclusive angles of -360 and 360.
@@ -14138,9 +13724,9 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetFillColor(TextID_t  TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetAngle(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Angle)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    REAL*8          Angle
  * </FortranSyntax>
  *
@@ -14150,13 +13736,13 @@ LINKTOADDON void       STDCALL TecUtilTextBoxSetFillColor(TextID_t  TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetAngle(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextSetAngle(Text_ID TID,
                                                    double  Angle);
 /**
  *   Set the anchor style for a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param Anchor
  *   Anchor style. The possible values are: TextAnchor_Left, TextAnchor_Center, TextAnchor_Right,
@@ -14168,9 +13754,9 @@ LINKTOADDON void       STDCALL TecUtilTextSetAngle(TextID_t TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetAnchor(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Anchor)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       Anchor
  * </FortranSyntax>
  *
@@ -14180,43 +13766,14 @@ LINKTOADDON void       STDCALL TecUtilTextSetAngle(TextID_t TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetAnchor(TextID_t      TID,
+LINKTOADDON void       STDCALL TecUtilTextSetAnchor(Text_ID      TID,
                                                     TextAnchor_e Anchor);
-
-/**
- * Set the text type style for a text object.
- *
- * @param TID
- *   Unique ID for the text object.
- *
- * @param TextType 
- *   Text type style. The possible values are: TextType_Regular, TextType_LaTeX.
- *
- * @pre @e TID must be a valid text ID.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilTextSetType(
- *   &           TID,
- *   &           Type)
- *    INTEGER*8       TID
- *    INTEGER*4       Type 
- * </FortranSyntax>
- *
- *
- * @ingroup Text
- *
- * @since 17.3
- */
-LINKTOADDON void       STDCALL TecUtilTextSetType(TextID_t      TID,
-                                                  TextType_e    TextType);
-
 /**
  *   Set the line spacing for a text object. Line spacing is dependent on the height of the text and
  *   the size unit system in which it is drawn.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to the text object.
  *
  * @param LineSpacing
  *   Vertical spacing between multiple lines of a text object. Multiple lines are achieved by inserting
@@ -14227,9 +13784,9 @@ LINKTOADDON void       STDCALL TecUtilTextSetType(TextID_t      TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetLineSpacing(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           LineSpacing)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    REAL*8          LineSpacing
  * </FortranSyntax>
  *
@@ -14239,7 +13796,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetType(TextID_t      TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetLineSpacing(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextSetLineSpacing(Text_ID TID,
                                                          double  LineSpacing);
 /**
  *   Set the scope of the text object. Text with local scope is displayed only in the frame in which it
@@ -14247,7 +13804,7 @@ LINKTOADDON void       STDCALL TecUtilTextSetLineSpacing(TextID_t TID,
  *   frames, that is, those frames using the same data set as the one in which the text was created.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to the text object.
  *
  * @param Scope
  *   Text scope. The possible values are Scope_Local or Scope_Global.
@@ -14257,9 +13814,9 @@ LINKTOADDON void       STDCALL TecUtilTextSetLineSpacing(TextID_t TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilTextSetScope(
- *   &           TID,
+ *   &           TIDPtr,
  *   &           Scope)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    INTEGER*4       Scope
  * </FortranSyntax>
  *
@@ -14269,13 +13826,13 @@ LINKTOADDON void       STDCALL TecUtilTextSetLineSpacing(TextID_t TID,
  * @ingroup Text
  *
  */
-LINKTOADDON void       STDCALL TecUtilTextSetScope(TextID_t TID,
+LINKTOADDON void       STDCALL TecUtilTextSetScope(Text_ID TID,
                                                    Scope_e Scope);
 /**
  *   Set the macro function command associated with a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to the text object.
  *
  * @param Command
  *   Macro function command string.
@@ -14291,9 +13848,9 @@ LINKTOADDON void       STDCALL TecUtilTextSetScope(TextID_t TID,
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilTextSetMacroFunctionCmd(
- *   &                   TID,
+ *   &                   TIDPtr,
  *   &                   Command)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    CHARACTER*(*)   Command
  * </FortranSyntax>
  *
@@ -14303,13 +13860,13 @@ LINKTOADDON void       STDCALL TecUtilTextSetScope(TextID_t TID,
  * @ingroup Text
  *
  */
-LINKTOADDON Boolean_t  STDCALL TecUtilTextSetMacroFunctionCmd(TextID_t     TID,
+LINKTOADDON Boolean_t  STDCALL TecUtilTextSetMacroFunctionCmd(Text_ID     TID,
                                                               const char *Command);
 /**
  *   Set the text string for a text object.
  *
  * @param TID
- *   Unique ID for the text object.
+ *   Handle to the text object.
  *
  * @param TextString
  *   String copied into the text object.
@@ -14325,9 +13882,9 @@ LINKTOADDON Boolean_t  STDCALL TecUtilTextSetMacroFunctionCmd(TextID_t     TID,
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilTextSetString(
- *   &                   TID,
+ *   &                   TIDPtr,
  *   &                   TextString)
- *    INTEGER*8       TID
+ *    POINTER         (TIDPtr, TID)
  *    CHARACTER*(*)   TextString
  * </FortranSyntax>
  *
@@ -14337,7 +13894,7 @@ LINKTOADDON Boolean_t  STDCALL TecUtilTextSetMacroFunctionCmd(TextID_t     TID,
  * @ingroup Text
  *
  */
-LINKTOADDON Boolean_t  STDCALL TecUtilTextSetString(TextID_t     TID,
+LINKTOADDON Boolean_t  STDCALL TecUtilTextSetString(Text_ID     TID,
                                                     const char *TextString);
 
 /**
@@ -14346,7 +13903,7 @@ LINKTOADDON Boolean_t  STDCALL TecUtilTextSetString(TextID_t     TID,
  *   Set the clipping properties of a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of the geometry
  *
  * @param Clipping
  *   New clipping property for the geometry. The possible values are: Clipping_ClipToViewport and
@@ -14357,9 +13914,9 @@ LINKTOADDON Boolean_t  STDCALL TecUtilTextSetString(TextID_t     TID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetClipping(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Clipping)
- *    INTEGER*8 GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       Clipping
  * </FortranSyntax>
  *
@@ -14369,7 +13926,7 @@ LINKTOADDON Boolean_t  STDCALL TecUtilTextSetString(TextID_t     TID,
  *   Create a red circle and set the clipping to "ClipToFrame":
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   TecUtilGeomSetClipping(g, Clipping_ClipToFrame);
  * @endcode
@@ -14377,7 +13934,7 @@ LINKTOADDON Boolean_t  STDCALL TecUtilTextSetString(TextID_t     TID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetClipping(GeomID_t    GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetClipping(Geom_ID    GID,
                                                       Clipping_e Clipping);
 /**
  */
@@ -14387,7 +13944,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetClipping(GeomID_t    GID,
  *   geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param XPos
  *   X-anchor position of geometry
@@ -14403,11 +13960,11 @@ LINKTOADDON void       STDCALL TecUtilGeomSetClipping(GeomID_t    GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetAnchorPos(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           XPos,
  *   &           YPos,
  *   &           ZPos)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          XPos
  *    REAL*8          YPos
  *    REAL*8          ZPos
@@ -14419,7 +13976,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetClipping(GeomID_t    GID,
  *   Create a circle and then move it:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   TecUtilRedraw();
  *   TecUtilGeomSetAnchorPos(45., 45., 0.);
@@ -14429,19 +13986,19 @@ LINKTOADDON void       STDCALL TecUtilGeomSetClipping(GeomID_t    GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetAnchorPos(GeomID_t GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetAnchorPos(Geom_ID GID,
                                                        double  XPos,
                                                        double  YPos,
                                                        double  ZPos);
 /**
  * @deprecated
- *   Please use TecUtilGeomSetAnchorPos() instead.
+ *   Please use TecUtilGeomGetAnchorPos() instead.
  *
  * @ingroup Geom
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetXYZAnchorPos(GeomID_t GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetXYZAnchorPos(Geom_ID GID,
                                                           double  XPos,
                                                           double  YPos,
                                                           double  ZPos);
@@ -14451,7 +14008,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetXYZAnchorPos(GeomID_t GID,
  * to a zone or Line-mapping.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param ZoneOrMap
  *   Zone number or mapping number to which the geometry should be attached
@@ -14461,9 +14018,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetXYZAnchorPos(GeomID_t GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetZoneOrMap(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ZoneOrMap)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       ZoneOrMap
  * </FortranSyntax>
  *
@@ -14473,14 +14030,14 @@ LINKTOADDON void       STDCALL TecUtilGeomSetXYZAnchorPos(GeomID_t GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetZoneOrMap(GeomID_t    GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetZoneOrMap(Geom_ID    GID,
                                                        EntIndex_t ZoneOrMap);
 /**
  * Set whether or not a geometry is attached to a zone or Line-mapping. Use
  * TecUtilGeom() to set which zone or Line-mapping the geometry is attached to.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   Id of the geometry.
  *
  * @param Attached
  *   TRUE to attach the geometry to a zone or an Line-mapping.
@@ -14490,9 +14047,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetZoneOrMap(GeomID_t    GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetAttached(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Attached)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       Attached
  * </FortranSyntax>
  *
@@ -14502,7 +14059,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetZoneOrMap(GeomID_t    GID,
  *   Attach a geometry to zone or mapping 5:
  *
  * @code
- *   extern GeomID_t g; // created elsewhere
+ *   extern Geom_ID g; // created elsewhere
  *   TecUtilGeomSetAttached(g, TRUE);
  *   TecUtilGeomSetZoneOrMap(g, 5);
  * @endcode
@@ -14510,13 +14067,13 @@ LINKTOADDON void       STDCALL TecUtilGeomSetZoneOrMap(GeomID_t    GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetAttached(GeomID_t   GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetAttached(Geom_ID   GID,
                                                       Boolean_t Attached);
 /**
  *   Set the line color of a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of the geometry
  *
  * @param Color
  *   New line color for the geometry. The possible values are: Black_C, Blue_C, Red_C, Green_C, Cyan_C,
@@ -14527,9 +14084,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetAttached(GeomID_t   GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetColor(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Color)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       Color
  * </FortranSyntax>
  *
@@ -14539,7 +14096,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetAttached(GeomID_t   GID,
  *   Create a red circle:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   TecUtilGeomSetColor(g, Red_C);
  * @endcode
@@ -14547,14 +14104,14 @@ LINKTOADDON void       STDCALL TecUtilGeomSetAttached(GeomID_t   GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomSetColor(GeomID_t  GID,
-                                             int32_t   Color);
+LINKTOADDON void       STDCALL TecUtilGeomSetColor(Geom_ID      GID,
+                                                   ColorIndex_t Color);
 /**
  * Set the fill color of a geometry. Use TecUtilGeomSetIsFilled() to specify
  * whether or not a geometry is filled with color.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of the geometry
  *
  * @param FillColor
  *   New fill color for the geometry. The possible values are: Black_C, Blue_C, Red_C, Green_C, Cyan_C,
@@ -14565,9 +14122,9 @@ LINKTOADDON void STDCALL TecUtilGeomSetColor(GeomID_t  GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetFillColor(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           FillColor)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       FillColor
  * </FortranSyntax>
  *
@@ -14577,7 +14134,7 @@ LINKTOADDON void STDCALL TecUtilGeomSetColor(GeomID_t  GID,
  *   Create a red circle filled with yellow:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   TecUtilGeomSetColor(g, Red_C);
  *   TecUtilGeomSetFillColor(g, Yellow_C);
@@ -14587,14 +14144,14 @@ LINKTOADDON void STDCALL TecUtilGeomSetColor(GeomID_t  GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomSetFillColor(GeomID_t  GID,
-                                                 int32_t   FillColor);
+LINKTOADDON void       STDCALL TecUtilGeomSetFillColor(Geom_ID      GID,
+                                                       ColorIndex_t FillColor);
 /**
  *   Set whether or not a geometry is filled with a color. Use TecUtilGeomSetFillColor() to specify the
  *   actual color to fill the geometry with.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param IsFilled
  *   TRUE to fill the geometry, FALSE to not fill.
@@ -14604,9 +14161,9 @@ LINKTOADDON void STDCALL TecUtilGeomSetFillColor(GeomID_t  GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetIsFilled(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           IsFilled)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       IsFilled
  * </FortranSyntax>
  *
@@ -14616,13 +14173,13 @@ LINKTOADDON void STDCALL TecUtilGeomSetFillColor(GeomID_t  GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetIsFilled(GeomID_t   GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetIsFilled(Geom_ID   GID,
                                                       Boolean_t IsFilled);
 /**
  *   Set the line pattern for a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param LinePattern
  *   Line pattern for the geometry. The possible values are LinePattern_Solid, LinePattern_Dashed,
@@ -14633,9 +14190,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetIsFilled(GeomID_t   GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetLinePattern(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           LinePattern)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       LinePattern
  * </FortranSyntax>
  *
@@ -14645,7 +14202,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetIsFilled(GeomID_t   GID,
  *   Create a dotted circle:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   TecUtilGeomSetLinePattern(g, LinePattern_Dotted);
  * @endcode
@@ -14653,13 +14210,13 @@ LINKTOADDON void       STDCALL TecUtilGeomSetIsFilled(GeomID_t   GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetLinePattern(GeomID_t       GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetLinePattern(Geom_ID       GID,
                                                          LinePattern_e LinePattern);
 /**
  *   Set the line pattern length for a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param PatternLength
  *   Length of the line pattern in frame units.
@@ -14669,9 +14226,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetLinePattern(GeomID_t       GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetPatternLength(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PatternLength)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          PatternLength
  * </FortranSyntax>
  *
@@ -14681,7 +14238,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetLinePattern(GeomID_t       GID,
  *   Create two concentric dashed circles of different line pattern lengths (two and ten percent):
  *
  * @code
- *   GeomID_t g1, g2;
+ *   Geom_ID g1, g2;
  *   g1 = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 20.);
  *   TecUtilGeomSetLinePattern(g1, Pattern_Dashed);
  *   TecUtilGeomSetPatternLength(g1, 2.);
@@ -14693,13 +14250,13 @@ LINKTOADDON void       STDCALL TecUtilGeomSetLinePattern(GeomID_t       GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetPatternLength(GeomID_t GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetPatternLength(Geom_ID GID,
                                                            double  PatternLength);
 /**
  *   Set the line thickness for a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param LineThickness
  *   Thickness of the lines in frame units
@@ -14709,9 +14266,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetPatternLength(GeomID_t GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetLineThickness(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           LineThickness)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          LineThickness
  * </FortranSyntax>
  *
@@ -14721,7 +14278,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetPatternLength(GeomID_t GID,
  *   Create a circle with five percent thick lines:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   TecUtilGeomSetLineThickness(g, 5.);
  * @endcode
@@ -14729,7 +14286,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetPatternLength(GeomID_t GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetLineThickness(GeomID_t GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetLineThickness(Geom_ID GID,
                                                            double  LineThickness);
 /**
  *   Set the number of points used to draw a circle or an ellipse geometry.
@@ -14745,9 +14302,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetLineThickness(GeomID_t GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomEllipseSetNumPoints(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           NumEllipsePts)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       NumEllipsePts
  * </FortranSyntax>
  *
@@ -14757,7 +14314,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetLineThickness(GeomID_t GID,
  *   Create a circle approximated by only five points. (This will look like a pentagon.)
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeomCircleCreate(CoordSys_Frame, 50., 50., 25.);
  *   TecUtilGeomEllipseSetNumPoints(g, 5);
  * @endcode
@@ -14765,8 +14322,8 @@ LINKTOADDON void       STDCALL TecUtilGeomSetLineThickness(GeomID_t GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomEllipseSetNumPoints(GeomID_t GID,
-                                                              int32_t NumEllipsePts);
+LINKTOADDON void       STDCALL TecUtilGeomEllipseSetNumPoints(Geom_ID     GID,
+                                                              SmInteger_t NumEllipsePts);
 /**
  *   Set the arrowhead style for a geometry.
  *
@@ -14782,9 +14339,9 @@ LINKTOADDON void       STDCALL TecUtilGeomEllipseSetNumPoints(GeomID_t GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomArrowheadSetStyle(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ArrowheadStyle)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       ArrowheadStyle
  * </FortranSyntax>
  *
@@ -14794,7 +14351,7 @@ LINKTOADDON void       STDCALL TecUtilGeomEllipseSetNumPoints(GeomID_t GID,
  *   Create a line with a filled arrowhead at the end:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeom2DLineSegmentCreate(CoordSys_Frame, 5., 5., 95., 95.);
  *   TecUtilGeomArrowheadSetAttach(g, ArrowheadAttachment_AtEnd);
  *   TecUtilGeomArrowheadSetStyle(g, ArrowheadStyle_Filled);
@@ -14803,7 +14360,7 @@ LINKTOADDON void       STDCALL TecUtilGeomEllipseSetNumPoints(GeomID_t GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetStyle(GeomID_t          GID,
+LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetStyle(Geom_ID          GID,
                                                             ArrowheadStyle_e ArrowheadStyle);
 /**
  *   Set the arrowhead attachment for a geometry.
@@ -14820,9 +14377,9 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetStyle(GeomID_t          GI
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomArrowheadSetAttach(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ArrowheadAttachment)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       ArrowheadAttachment
  * </FortranSyntax>
  *
@@ -14832,7 +14389,7 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetStyle(GeomID_t          GI
  *   Create a line with arrowheads at both ends:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeom2DLineSegmentCreate(CoordSys_Frame, 5., 5., 95., 95.);
  *   TecUtilGeomArrowheadSetAttach(g, ArrowheadAttachment_AtBothEnds);
  * @endcode
@@ -14840,7 +14397,7 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetStyle(GeomID_t          GI
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAttach(GeomID_t               GID,
+LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAttach(Geom_ID               GID,
                                                              ArrowheadAttachment_e ArrowheadAttachment);
 /**
  *   Set the arrowhead size for a geometry.
@@ -14856,9 +14413,9 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAttach(GeomID_t           
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomArrowheadSetSize(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ArrowheadSize)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          ArrowheadSize
  * </FortranSyntax>
  *
@@ -14868,7 +14425,7 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAttach(GeomID_t           
  *   Create a line with a ten percent (frame units) arrowhead at the end:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeom2DLineSegmentCreate(CoordSys_Frame, 5., 5., 95., 95.);
  *   TecUtilGeomArrowheadSetAttach(g, ArrowheadAttachment_AtEnd);
  *   TecUtilGeomArrowheadSetSize(g, 10.);
@@ -14877,7 +14434,7 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAttach(GeomID_t           
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetSize(GeomID_t  GID,
+LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetSize(Geom_ID  GID,
                                                            double   ArrowheadSize);
 /**
  *   Set the arrowhead angle for a geometry.
@@ -14893,9 +14450,9 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetSize(GeomID_t  GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomArrowheadSetAngle(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           ArrowheadAngle)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          ArrowheadAngle
  * </FortranSyntax>
  *
@@ -14905,7 +14462,7 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetSize(GeomID_t  GID,
  *   Create a line with a 15 degree arrowhead at the end:
  *
  * @code
- *   GeomID_t g;
+ *   Geom_ID g;
  *   g = TecUtilGeom2DLineSegmentCreate(CoordSys_Frame, 5., 5., 95., 95.);
  *   TecUtilGeomArrowheadSetAttach(g, ArrowheadAttachment_AtEnd);
  *   TecUtilGeomArrowheadSetAngle(g, 15.);
@@ -14914,14 +14471,14 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetSize(GeomID_t  GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAngle(GeomID_t  GID,
+LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAngle(Geom_ID  GID,
                                                             double   ArrowheadAngle);
 
 /**
  *   Sets the draw order of a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of the geometry
  *
  * @param DrawOrder
  *   Must be DrawOrder_BeforeData or DrawOrder_AfterData.
@@ -14932,9 +14489,9 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAngle(GeomID_t  GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetDrawOrder(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           DrawOrder)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       DrawOrder
  * </FortranSyntax>
  *
@@ -14944,7 +14501,7 @@ LINKTOADDON void       STDCALL TecUtilGeomArrowheadSetAngle(GeomID_t  GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetDrawOrder(GeomID_t     GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetDrawOrder(Geom_ID     GID,
                                                        DrawOrder_e DrawOrder);
 
 /**
@@ -14960,8 +14517,8 @@ LINKTOADDON void       STDCALL TecUtilGeomSetDrawOrder(GeomID_t     GID,
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomImageGetUseRatio(GID)
- *    INTEGER*8 GID
+ *    INTEGER*4 FUNCTION TecUtilGeomImageGetUseRatio(GIDPtr)
+ *    POINTER (GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -14976,13 +14533,13 @@ LINKTOADDON void       STDCALL TecUtilGeomSetDrawOrder(GeomID_t     GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomImageGetUseRatio(GeomID_t GID);
+LINKTOADDON Boolean_t   STDCALL TecUtilGeomImageGetUseRatio(Geom_ID GID);
 
 /**
  *   Gets the draw order of a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry.
  *
  * @return
  *   The draw order of the geometry. Returns either DrawOrder_BeforeData or DrawOrder_AfterData.
@@ -14992,8 +14549,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomImageGetUseRatio(GeomID_t GID)
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomGetDrawOrder(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomGetDrawOrder(GIDPtr)
+ *    POINTER (GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -15008,13 +14565,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilGeomImageGetUseRatio(GeomID_t GID)
  * @ingroup Geom
  *
  */
-LINKTOADDON DrawOrder_e STDCALL TecUtilGeomGetDrawOrder(GeomID_t GID);
+LINKTOADDON DrawOrder_e STDCALL TecUtilGeomGetDrawOrder(Geom_ID GID);
 
 /**
  *   Set the scope for a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param Scope
  *   Scope of geometry. The possible values are:Scope_Local (Show in the current frame
@@ -15025,9 +14582,9 @@ LINKTOADDON DrawOrder_e STDCALL TecUtilGeomGetDrawOrder(GeomID_t GID);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetScope(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Scope)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       Scope
  * </FortranSyntax>
  *
@@ -15037,7 +14594,7 @@ LINKTOADDON DrawOrder_e STDCALL TecUtilGeomGetDrawOrder(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetScope(GeomID_t  GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetScope(Geom_ID  GID,
                                                    Scope_e  Scope);
 /**
  *   Set the position coordinate system for a geometry. This will convert all values in the geometry as
@@ -15055,9 +14612,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetScope(GeomID_t  GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSetPositionCoordSys(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           CoordSys)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       CoordSys
  * </FortranSyntax>
  *
@@ -15069,7 +14626,7 @@ LINKTOADDON void       STDCALL TecUtilGeomSetScope(GeomID_t  GID,
  *   coordinates would indicate until the next time the view for that frame is changed.
  *
  * @code
- *   GeomID_t  g;
+ *   Geom_ID  g;
  *   g = TecUtilGeom2DLineSegmentCreate(CoordSys_Frame, 5, 5, 95, 95);
  *   TecUtilGeomSetPositionCoordSys(CoordSys_Grid);
  * @endcode
@@ -15077,13 +14634,13 @@ LINKTOADDON void       STDCALL TecUtilGeomSetScope(GeomID_t  GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void       STDCALL TecUtilGeomSetPositionCoordSys(GeomID_t    GID,
+LINKTOADDON void       STDCALL TecUtilGeomSetPositionCoordSys(Geom_ID    GID,
                                                               CoordSys_e CoordSys);
 /**
  *   Set the macro function command for a geometry.
  *
  * @param GID
- *   Unique ID for the geom object
+ *   ID of a geometry
  *
  * @param Command
  *   Macro function (and parameters) to be executed when the user holds down Ctrl and clicks the right
@@ -15097,9 +14654,9 @@ LINKTOADDON void       STDCALL TecUtilGeomSetPositionCoordSys(GeomID_t    GID,
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilGeomSetMacroFunctionCmd(
- *   &                   GID,
+ *   &                   GIDPtr,
  *   &                   Command)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    CHARACTER*(*)   Command
  * </FortranSyntax>
  *
@@ -15110,14 +14667,14 @@ LINKTOADDON void       STDCALL TecUtilGeomSetPositionCoordSys(GeomID_t    GID,
  *   clicks the right mouse button on the geometry.
  *
  * @code
- *   extern GeomID_t g; // created elsewhere
+ *   extern Geom_ID g; // created elsewhere
  *   TecUtilGeomSetMacroFunctionCmd(g, "PlotData");
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON Boolean_t  STDCALL TecUtilGeomSetMacroFunctionCmd(GeomID_t     GID,
+LINKTOADDON Boolean_t  STDCALL TecUtilGeomSetMacroFunctionCmd(Geom_ID     GID,
                                                               const char *Command);
 /**
  *   Forces drop of opening banner. If this function is not called, the opening banner will stay up
@@ -15195,7 +14752,7 @@ LINKTOADDON void STDCALL TecUtilPopMainProcessWindow(void);
  *
  *
  * @pre <em>Text</em>
- *   Pointer must be a valid address and non-NULL.
+ *   String must have a valid address and non-zero length.
  *
  *
  * <FortranSyntax>
@@ -15223,7 +14780,7 @@ LINKTOADDON void STDCALL TecUtilPopMainProcessWindow(void);
  *   Create a simple text label:
  *
  * @code
- *   TextID_t Text;
+ *   Text_ID Text;
  *   Text = TecUtilTextCreate(CoordSys_Frame, 50.0, 50.0,
  *                            Units_Point, 30.0, "Hello");
  * @endcode
@@ -15231,7 +14788,7 @@ LINKTOADDON void STDCALL TecUtilPopMainProcessWindow(void);
  * @ingroup Text
  *
  */
-LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
+LINKTOADDON Text_ID STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
                                               double      PosX,
                                               double      PosY,
                                               Units_e     HeightUnits,
@@ -15255,26 +14812,13 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
  * Name:
  *   SV_TEXT
  * Type:
- *   const char *
+ *   char *
  * Arg Function:
  *   TecUtilArgListAppendString()
  * Required:
  *   Yes
  * Notes:
  *   String for the text object.  Cannot be NULL.
- *
- * Name:
- *   SV_MACROFUNCTIONCOMMAND
- * Type:
- *   const char *
- * Arg Function:
- *   TecUtilArgListAppendString()
- * Required:
- *   No
- * Default:
- *   NULL
- * Notes:
- *   String for the macro function object.
  *
  * Name:
  *   SV_XPOS
@@ -15309,7 +14853,7 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
- *   CoordSys_Frame
+ *   CoordSys_Frame 
  * Required:
  *   No
  * Notes:
@@ -15330,21 +14874,9 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
  *   This option is mutually exclusive with SV_FONTFAMILY, SV_ISBOLD, and
  *   SV_ISITALIC.
  *   Font used to render the text may have any of the following values:
- *   Font_Helvetica,
- *   Font_HelveticaBold,
- *   Font_HelveticaItalic,
- *   Font_HelveticaItalicBold,
- *   Font_Greek,
- *   Font_Math,
- *   Font_UserDefined,
- *   Font_Times,
- *   Font_TimesItalic,
- *   Font_TimesItalicBold,
- *   Font_TimesBold,
- *   Font_Courier,
- *   Font_CourierBold,
- *   Font_CourierItalic,
- *   Font_CourierItalicBold.
+ *   Font_Helvetica, Font_HelveticaBold Font_Greek, Font_Math,
+ *   Font_UserDefined, Font_Times, Font_TimesItalic, Font_TimesBold,
+ *   Font_TimesItalicBold, Font_Courier, Font_CourierBold
  *
  * Name:
  *   SV_FONTFAMILY
@@ -15547,20 +15079,6 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
  *   equal to zero and less than or equal to 2000
  *
  * Name:
- *   SV_TEXTTYPE
- * Type:
- *   TextType_e
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   TextType_Regular
- * Required:
- *   No
- * Notes:
- *   Specifies what type of text to create. The possible values are: TextType_Regular,
- *   TextType_LaTeX.
- *
- * Name:
  *   SV_ATTACHTOZONE
  * Type:
  *   Boolean_t
@@ -15581,12 +15099,12 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Required:
- *   Yes if SV_ATTACHTOZONE is set to TRUE
+ *   Only if SV_ATTACHTOZONE is set to TRUE
  * Notes:
  *   Zone or line map to which the text will be attached, provided the
  *   SV_ATTACHTOZONE parameter is set to TRUE.
  * </ArgListTable>
- *
+ *   
  * @return
  *   If successfully created then the return value is a valid ID that you
  *   may use to further set attributes for this text object. Otherwise,
@@ -15608,7 +15126,7 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
  *   Create a simple text label:
  *
  * @code
- *   TextID_t TextID;
+ *   Text_ID TextID;
  *   ArgList_pa ArgList;
  *   ArgList = TecUtilArgListAlloc();
  *   if (ArgList != NULL)
@@ -15622,7 +15140,7 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreate(CoordSys_e  PositionCoordSys,
  * @ingroup Text
  *
  */
-LINKTOADDON TextID_t STDCALL TecUtilTextCreateX(ArgList_pa ArgList);
+LINKTOADDON Text_ID STDCALL TecUtilTextCreateX(ArgList_pa ArgList);
 
 /**
  *   Create a 3D text label in Tecplot.
@@ -15650,7 +15168,7 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreateX(ArgList_pa ArgList);
  *
  *
  * @pre <em>Text</em>
- *   Pointer must be a valid address and non-NULL.
+ *   String must have a valid address and non-zero length.
  *
  *
  * <FortranSyntax>
@@ -15678,7 +15196,7 @@ LINKTOADDON TextID_t STDCALL TecUtilTextCreateX(ArgList_pa ArgList);
  * @ingroup Text
  *
  */
-LINKTOADDON TextID_t STDCALL TecUtilText3DCreate(double      PosX,
+LINKTOADDON Text_ID STDCALL TecUtilText3DCreate(double      PosX,
                                                 double      PosY,
                                                 double      PosZ,
                                                 Units_e     HeightUnits,
@@ -15688,7 +15206,7 @@ LINKTOADDON TextID_t STDCALL TecUtilText3DCreate(double      PosX,
  *   Get the position of the four corners of the box surrounding the text object.
  *
  * @param T
- *   Unique ID for the text object.
+ *   Handle to a text object.
  *
  * @param X1
  *   Returned X-Coordinate for bottom left corner of the text box.
@@ -15768,7 +15286,7 @@ LINKTOADDON TextID_t STDCALL TecUtilText3DCreate(double      PosX,
  *   Obtain the four corners of the text referenced by T.
  *
  * @code
- *   // variable T of type TextID_t already obtained at this point.
+ *   // variable T of type Text_ID already obtained at this point.
  *   double X1,Y1,X2,Y2,X3,Y3,X4,Y4;
  *   TecUtilTextBoxGetPosition(T,&X1,&Y1,&X2,&Y2,&X3,&Y3,&X4,&Y4);
  * @endcode
@@ -15776,7 +15294,7 @@ LINKTOADDON TextID_t STDCALL TecUtilText3DCreate(double      PosX,
  * @ingroup Text
  *
  */
-LINKTOADDON void STDCALL TecUtilTextBoxGetPosition(TextID_t        T,
+LINKTOADDON void STDCALL TecUtilTextBoxGetPosition(Text_ID        T,
                                                    TP_OUT double* X1,
                                                    TP_OUT double* Y1,
                                                    TP_OUT double* X2,
@@ -15829,14 +15347,14 @@ LINKTOADDON void STDCALL TecUtilTextBoxGetPosition(TextID_t        T,
  *   Create a square of width 0.5 and anchored at (0.1, 0.1):
  *
  * @code
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeomSquareCreate(CoordSys_Grid,0.1,0.1,0.5);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeomSquareCreate(CoordSys_e PositionCoordSys,
+LINKTOADDON Geom_ID STDCALL TecUtilGeomSquareCreate(CoordSys_e PositionCoordSys,
                                                     double     CornerX,
                                                     double     CornerY,
                                                     double     Size);
@@ -15885,14 +15403,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomSquareCreate(CoordSys_e PositionCoordSys
  *   Create a circle at 0.5, 0.5, with a radius of 0.2:
  *
  * @code
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeomCircleCreate(CoordSys_Grid,0.5,0.5,0.2);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeomCircleCreate(CoordSys_e PositionCoordSys,
+LINKTOADDON Geom_ID STDCALL TecUtilGeomCircleCreate(CoordSys_e PositionCoordSys,
                                                     double     CenterX,
                                                     double     CenterY,
                                                     double     Radius);
@@ -15945,14 +15463,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomCircleCreate(CoordSys_e PositionCoordSys
  *   Create a rectangle anchored at (0.1, 0.1), with a width of 0.2 and a height of 0.3:
  *
  * @code
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeomRectangleCreate(.1,.1,0.2,0.3);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeomRectangleCreate(CoordSys_e PositionCoordSys,
+LINKTOADDON Geom_ID STDCALL TecUtilGeomRectangleCreate(CoordSys_e PositionCoordSys,
                                                        double     CornerX,
                                                        double     CornerY,
                                                        double     Width,
@@ -16007,14 +15525,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomRectangleCreate(CoordSys_e PositionCoord
  *   of length 0.3:
  *
  * @code
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeomEllipseCreate(CoordSys_Grid, .5,.5,.2,.3);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeomEllipseCreate(CoordSys_e PositionCoordSys,
+LINKTOADDON Geom_ID STDCALL TecUtilGeomEllipseCreate(CoordSys_e PositionCoordSys,
                                                      double     CenterX,
                                                      double     CenterY,
                                                      double     HAxis,
@@ -16076,17 +15594,17 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomEllipseCreate(CoordSys_e PositionCoordSy
  * @code
  *   double X[4] = {.2,.5,.6,.4}; //x coords of the polyline
  *   double Y[4] = {.2,.5,.1,.7}; //y coords of the polyline
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeom2DPolylineCreate(CoordSys_Grid,X,Y,4);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeom2DPolylineCreate(CoordSys_e    PositionCoordSys,
-                                                         const double* PtsX_Array,
-                                                         const double* PtsY_Array,
-                                                         LgIndex_t     NumPts);
+LINKTOADDON Geom_ID STDCALL TecUtilGeom2DPolylineCreate(CoordSys_e PositionCoordSys,
+                                                        double    *PtsX_Array,
+                                                        double    *PtsY_Array,
+                                                        LgIndex_t  NumPts);
 
 /**
  * Create a 3-D polyline geometry. Use the ID obtained from this function to
@@ -16148,18 +15666,18 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom2DPolylineCreate(CoordSys_e    PositionC
  *   double X[4] = {.2,.5,.6,.4}; //x coords of the polyline
  *   double Y[4] = {.2,.5,.1,.7}; //y coords of the polyline
  *   double Z[4] = {.1,.2,.3,.4}; //z coords of the polyline
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeom3DPolylineCreate(X,Y,Z,4)
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeom3DPolylineCreate(const double* PtsX_Array,
-                                                         const double* PtsY_Array,
-                                                         const double* PtsZ_Array,
-                                                         LgIndex_t     NumPts);
-/**                                                                  
+LINKTOADDON Geom_ID STDCALL TecUtilGeom3DPolylineCreate(double   *PtsX_Array,
+                                                        double   *PtsY_Array,
+                                                        double   *PtsZ_Array,
+                                                        LgIndex_t NumPts);
+/**
  *   Create a 2-D multi-polyline geometry. After creating the 2-D
  *   multi-polyline geometry, you must assign values to the points in it with
  *   TecUtilGeom2DPolylineSetPoint() or TecUtilGeom2DMPolySetPolyline(). Use
@@ -16209,7 +15727,7 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom3DPolylineCreate(const double* PtsX_Arra
  *   double y_polyline_1 = { 0.0, 1.0, 0.0 };
  *   double x_polyline_2 = { 1.0, 2.0 }; // two points
  *   double y_polyline_2 = { 1.0, 0.0 };
- *   GeomID_t g;
+ *   Geom_ID g;
  *
  *   g = TecUtilGeom2DMPolyCreate(CoordSys_Grid, Z, pts_per_line);
  *   TecUtilGeom2DMPolySetPolyline(g, 1, x_polyline_1, y_polyline_1);
@@ -16219,9 +15737,9 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom3DPolylineCreate(const double* PtsX_Arra
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeom2DMPolyCreate(CoordSys_e       PositionCoordSys,
-                                                      int32_t          NumPolys,
-                                                      const LgIndex_t* NumPointsInPolylines_Array);
+LINKTOADDON Geom_ID STDCALL TecUtilGeom2DMPolyCreate(CoordSys_e PositionCoordSys,
+                                                     LgIndex_t  NumPolys,
+                                                     LgIndex_t  *NumPointsInPolylines_Array);
 
 /**
  * Create a 3-D multi-polyline geometry. After creating the 3-D multi-polyline,
@@ -16264,7 +15782,7 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom2DMPolyCreate(CoordSys_e       PositionC
  *   double x_polyline_2[] = { 1.0, 2.0 }; // two points
  *   double y_polyline_2[] = { 1.0, 0.0 };
  *   double z_polyline_2[] = { 0.5, 0.5 };
- *   GeomID_t g;
+ *   Geom_ID g;
  *
  *   g = TecUtilGeom3DMPolyCreate(2, pts_per_line);
  *   TecUtilGeom3DMPolySetPolyline(g, 1, x_polyline_1,
@@ -16276,8 +15794,8 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom2DMPolyCreate(CoordSys_e       PositionC
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeom3DMPolyCreate(int32_t          NumPolys,
-                                                      const LgIndex_t* NumPointsInPolylines_Array);
+LINKTOADDON Geom_ID STDCALL TecUtilGeom3DMPolyCreate(LgIndex_t NumPolys,
+                                                     LgIndex_t *NumPointsInPolylines_Array);
 /**
  * Create a 2-D arc. The arc is currently implemented as a 2-D polyline
  * geometry, thus, the type of object returned is a 2-D polyline geometry
@@ -16334,14 +15852,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom3DMPolyCreate(int32_t          NumPolys,
  *   (a 2-D polyline with 56 points, one point at each degree between 35 and 90):
  *
  * @code
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeomArcCreate(CoordSys_Grid, .3,.3,.5,35,90);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeomArcCreate(CoordSys_e PositionCoordSys,
+LINKTOADDON Geom_ID STDCALL TecUtilGeomArcCreate(CoordSys_e PositionCoordSys,
                                                  double     CenterX,
                                                  double     CenterY,
                                                  double     Radius,
@@ -16396,7 +15914,7 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomArcCreate(CoordSys_e PositionCoordSys,
  *   Create a 2-D line geometry from (0.1, 0.2) to (0.5, 0.6):
  *
  * @code
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeom2DLineSegmentCreate(CoordSys_Grid,
  *                                      .1,.2,.5,.6);
  * @endcode
@@ -16404,7 +15922,7 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeomArcCreate(CoordSys_e PositionCoordSys,
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeom2DLineSegmentCreate(CoordSys_e PositionCoordSys,
+LINKTOADDON Geom_ID STDCALL TecUtilGeom2DLineSegmentCreate(CoordSys_e PositionCoordSys,
                                                            double     X1,
                                                            double     Y1,
                                                            double     X2,
@@ -16462,14 +15980,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom2DLineSegmentCreate(CoordSys_e PositionC
  *   Create a 3-D line geometry from (0.1, 0.2, 0.2) to (0.5, 0.6, 0.1):
  *
  * @code
- *   GeomID_t G;
+ *   Geom_ID G;
  *   G = TecUtilGeom3DLineSegmentCreate(.1,.2,.2,.5,.6,.1);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilGeom3DLineSegmentCreate(double X1,
+LINKTOADDON Geom_ID STDCALL TecUtilGeom3DLineSegmentCreate(double X1,
                                                            double Y1,
                                                            double Z1,
                                                            double X2,
@@ -16488,8 +16006,8 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom3DLineSegmentCreate(double X1,
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomMPolyGetPolylineCnt(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomMPolyGetPolylineCnt(GIDPtr)
+ *    POINTER (GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -16498,14 +16016,14 @@ LINKTOADDON GeomID_t STDCALL TecUtilGeom3DLineSegmentCreate(double X1,
  *   To determine the number of polylines in a multi-polyline geometry:
  *
  * @code
- *   extern GeomID_t g; //created elsewhere, must be a multi-polyline geometry
+ *   extern Geom_ID g; //created elsewhere, must be a multi-polyline geometry
  *   LgIndex_t npolylines = TecUtilGeomMPolyGetPolylineCnt(g);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPolylineCnt(GeomID_t GID);
+LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPolylineCnt(Geom_ID GID);
 /**
  *   Get the number of points in a polyline geometry.
  *
@@ -16519,8 +16037,8 @@ LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPolylineCnt(GeomID_t GID);
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilGeomPolyGetPointCount(GID)
- *    INTEGER*8  GID
+ *    INTEGER*4 FUNCTION TecUtilGeomPolyGetPointCount(GIDPtr)
+ *    POINTER (GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -16529,7 +16047,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPolylineCnt(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON LgIndex_t STDCALL TecUtilGeomPolyGetPointCount(GeomID_t GID);
+LINKTOADDON LgIndex_t STDCALL TecUtilGeomPolyGetPointCount(Geom_ID GID);
 /**
  *   Get information about the number of points in a polyline of a multi-polyline geometry.
  *
@@ -16547,9 +16065,9 @@ LINKTOADDON LgIndex_t STDCALL TecUtilGeomPolyGetPointCount(GeomID_t GID);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilGeomMPolyGetPointCount(
- *   &                   GID,
+ *   &                   GIDPtr,
  *   &                   PolyNum)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PolyNum
  * </FortranSyntax>
  *
@@ -16559,15 +16077,15 @@ LINKTOADDON LgIndex_t STDCALL TecUtilGeomPolyGetPointCount(GeomID_t GID);
  *   To determine the number of points in the second polyline of a multi-polyline geometry:
  *
  * @code
- *   extern GeomID_t g; //created elsewhere, must be a multi-polyline geometry
+ *   extern Geom_ID g; //created elsewhere, must be a multi-polyline geometry
  *   LgIndex_t npts_2nd_polyline = TecUtilGeomMPolyGetPointCount(g, 2);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPointCount(GeomID_t   GID,
-                                                            int32_t   PolyNum);
+LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPointCount(Geom_ID   GID,
+                                                            LgIndex_t PolyNum);
 /**
  *   Gets the 2-D (X,Y) value of point in a 2-D multi-polyline geometry.
  *
@@ -16599,12 +16117,12 @@ LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPointCount(GeomID_t   GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom2DMPolyGetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PolyNum,
  *   &           PointIndex,
  *   &           X,
  *   &           Y)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PolyNum
  *    INTEGER*4       PointIndex
  *    REAL*8          X
@@ -16618,15 +16136,15 @@ LINKTOADDON LgIndex_t STDCALL TecUtilGeomMPolyGetPointCount(GeomID_t   GID,
  *
  * @code
  *   double X,Y;
- *   extern GeomID_t g; // assume this was allocated somewhere
+ *   extern Geom_ID g; // assume this was allocated somewhere
  *   TecUtilGeom2DMPolyGetPoint(g,2,10,&X,&Y);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom2DMPolyGetPoint(GeomID_t        GID,
-                                                    int32_t        PolyNum,
+LINKTOADDON void STDCALL TecUtilGeom2DMPolyGetPoint(Geom_ID        GID,
+                                                    LgIndex_t      PolyNum,
                                                     LgIndex_t      PointIndex,
                                                     TP_OUT double* X,
                                                     TP_OUT double* Y);
@@ -16657,11 +16175,11 @@ LINKTOADDON void STDCALL TecUtilGeom2DMPolyGetPoint(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom2DPolylineGetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PointIndex,
  *   &           X,
  *   &           Y)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PointIndex
  *    REAL*8          X
  *    REAL*8          Y
@@ -16674,14 +16192,14 @@ LINKTOADDON void STDCALL TecUtilGeom2DMPolyGetPoint(GeomID_t        GID,
  *
  * @code
  *   double X,Y;
- *   extern GeomID_t g; // allocated somewhere else
+ *   extern Geom_ID g; // allocated somewhere else
  *   TecUtilGeom2DPolylineGetPoint(g,2,&X,&Y);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom2DPolylineGetPoint(GeomID_t        GID,
+LINKTOADDON void STDCALL TecUtilGeom2DPolylineGetPoint(Geom_ID        GID,
                                                        LgIndex_t      PointIndex,
                                                        TP_OUT double* X,
                                                        TP_OUT double* Y);
@@ -16710,12 +16228,12 @@ LINKTOADDON void STDCALL TecUtilGeom2DPolylineGetPoint(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom2DMPolySetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PolyNum,
  *   &           PointIndex,
  *   &           X,
  *   &           Y)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PolyNum
  *    INTEGER*4       PointIndex
  *    REAL*8          X
@@ -16728,15 +16246,15 @@ LINKTOADDON void STDCALL TecUtilGeom2DPolylineGetPoint(GeomID_t        GID,
  *   Set the value of the tenth point in the second polyline of a 2-D multi-polyline geometry:
  *
  * @code
- *   extern GeomID_t g; // assume this was allocated somewhere
+ *   extern Geom_ID g; // assume this was allocated somewhere
  *   TecUtilGeom2DMPolySetPoint(g,2,10,1.5,2.2);//set to (1.5,2.2)
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPoint(GeomID_t   GID,
-                                                    int32_t   PolyNum,
+LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPoint(Geom_ID   GID,
+                                                    LgIndex_t PolyNum,
                                                     LgIndex_t PointIndex,
                                                     double    X,
                                                     double    Y);
@@ -16761,11 +16279,11 @@ LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPoint(GeomID_t   GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom2DPolylineSetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PointIndex,
  *   &           X,
  *   &           Y)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PointIndex
  *    REAL*8          X
  *    REAL*8          Y
@@ -16777,7 +16295,7 @@ LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPoint(GeomID_t   GID,
  *   Set the second point of a 2-D polyline geometry:
  *
  * @code
- *   extern GeomID_t g; // allocated somewhere else
+ *   extern Geom_ID g; // allocated somewhere else
  *
  *   // set to (1.1,2.5)
  *   TecUtilGeom2DPolylineSetPoint(g,2,1.1,2.5);
@@ -16786,7 +16304,7 @@ LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPoint(GeomID_t   GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom2DPolylineSetPoint(GeomID_t   GID,
+LINKTOADDON void STDCALL TecUtilGeom2DPolylineSetPoint(Geom_ID   GID,
                                                        LgIndex_t PointIndex,
                                                        double    X,
                                                        double    Y);
@@ -16819,11 +16337,11 @@ LINKTOADDON void STDCALL TecUtilGeom2DPolylineSetPoint(GeomID_t   GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom2DMPolySetPolyline(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PolyNum,
  *   &           X_Array,
  *   &           Y_Array)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PolyNum
  *    REAL*8          X_Array
  *    REAL*8          Y_Array
@@ -16835,10 +16353,10 @@ LINKTOADDON void STDCALL TecUtilGeom2DPolylineSetPoint(GeomID_t   GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPolyline(GeomID_t      GID,
-                                                       int32_t       PolyNum,
-                                                       const double* X_Array,
-                                                       const double* Y_Array);
+LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPolyline(Geom_ID   GID,
+                                                       LgIndex_t PolyNum,
+                                                       double    *X_Array,
+                                                       double    *Y_Array);
 /**
  *   Get the 3-D (X, Y, Z) value of point in a 3-D multi-polyline geometry.
  *
@@ -16876,13 +16394,13 @@ LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPolyline(GeomID_t      GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom3DMPolyGetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PolyNum,
  *   &           PointIndex,
  *   &           X,
  *   &           Y,
  *   &           Z)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PolyNum
  *    INTEGER*4       PointIndex
  *    REAL*8          X
@@ -16897,15 +16415,15 @@ LINKTOADDON void STDCALL TecUtilGeom2DMPolySetPolyline(GeomID_t      GID,
  *
  * @code
  *   double X,Y,Z;
- *   extern GeomID_t g; // assume this was allocated somewhere
+ *   extern Geom_ID g; // assume this was allocated somewhere
  *   TecUtilGeom3DMPolyGetPoint(g,2,10,&X,&Y,&Z);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom3DMPolyGetPoint(GeomID_t        GID,
-                                                    int32_t        PolyNum,
+LINKTOADDON void STDCALL TecUtilGeom3DMPolyGetPoint(Geom_ID        GID,
+                                                    LgIndex_t      PolyNum,
                                                     LgIndex_t      PointIndex,
                                                     TP_OUT double* X,
                                                     TP_OUT double* Y,
@@ -16943,12 +16461,12 @@ LINKTOADDON void STDCALL TecUtilGeom3DMPolyGetPoint(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom3DPolylineGetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PointIndex,
  *   &           X,
  *   &           Y,
  *   &           Z)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PointIndex
  *    REAL*8          X
  *    REAL*8          Y
@@ -16962,14 +16480,14 @@ LINKTOADDON void STDCALL TecUtilGeom3DMPolyGetPoint(GeomID_t        GID,
  *
  * @code
  *   double X,Y,Z;
- *   extern GeomID_t g; // allocated somewhere else
+ *   extern Geom_ID g; // allocated somewhere else
  *   TecUtilGeom3DPolylineGetPoint(g,2,&X,&Y,&Z);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom3DPolylineGetPoint(GeomID_t        GID,
+LINKTOADDON void STDCALL TecUtilGeom3DPolylineGetPoint(Geom_ID        GID,
                                                        LgIndex_t      PointIndex,
                                                        TP_OUT double* X,
                                                        TP_OUT double* Y,
@@ -17002,13 +16520,13 @@ LINKTOADDON void STDCALL TecUtilGeom3DPolylineGetPoint(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom3DMPolySetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PolyNum,
  *   &           PointIndex,
  *   &           X,
  *   &           Y,
  *   &           Z)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PolyNum
  *    INTEGER*4       PointIndex
  *    REAL*8          X
@@ -17022,7 +16540,7 @@ LINKTOADDON void STDCALL TecUtilGeom3DPolylineGetPoint(GeomID_t        GID,
  *   Set the value of the tenth point in the second polyline of a 3-D multi-polyline geometry:
  *
  * @code
- *   extern GeomID_t g; // assume this was allocated somewhere
+ *   extern Geom_ID g; // assume this was allocated somewhere
  *   // set to (2.3,5.4,1.1)
  *   TecUtilGeom3DMPolySetPoint(g,2,10,2.3,5.4,1.1);
  * @endcode
@@ -17030,8 +16548,8 @@ LINKTOADDON void STDCALL TecUtilGeom3DPolylineGetPoint(GeomID_t        GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPoint(GeomID_t   GID,
-                                                    int32_t   PolyNum,
+LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPoint(Geom_ID   GID,
+                                                    LgIndex_t PolyNum,
                                                     LgIndex_t PointIndex,
                                                     double    X,
                                                     double    Y,
@@ -17060,12 +16578,12 @@ LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPoint(GeomID_t   GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom3DPolylineSetPoint(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PointIndex,
  *   &           X,
  *   &           Y,
  *   &           Z)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PointIndex
  *    REAL*8          X
  *    REAL*8          Y
@@ -17078,7 +16596,7 @@ LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPoint(GeomID_t   GID,
  *   Set the second point of a 3-D polyline geometry:
  *
  * @code
- *   extern GeomID_t g; // allocated somewhere else
+ *   extern Geom_ID g; // allocated somewhere else
  *   TecUtilGeom3DPolylineSetPoint(g,2,1.1,2.5,1.0);
  *   // set to (1.1,2.5,1.0)
  * @endcode
@@ -17086,7 +16604,7 @@ LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPoint(GeomID_t   GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom3DPolylineSetPoint(GeomID_t   GID,
+LINKTOADDON void STDCALL TecUtilGeom3DPolylineSetPoint(Geom_ID   GID,
                                                        LgIndex_t PointIndex,
                                                        double    X,
                                                        double    Y,
@@ -17127,12 +16645,12 @@ LINKTOADDON void STDCALL TecUtilGeom3DPolylineSetPoint(GeomID_t   GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeom3DMPolySetPolyline(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           PolyNum,
  *   &           X_Array,
  *   &           Y_Array,
  *   &           Z_Array)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    INTEGER*4       PolyNum
  *    REAL*8          X_Array
  *    REAL*8          Y_Array
@@ -17145,11 +16663,11 @@ LINKTOADDON void STDCALL TecUtilGeom3DPolylineSetPoint(GeomID_t   GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPolyline(GeomID_t      GID,
-                                                       int32_t       PolyNum,
-                                                       const double* X_Array,
-                                                       const double* Y_Array,
-                                                       const double* Z_Array);
+LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPolyline(Geom_ID   GID,
+                                                       LgIndex_t PolyNum,
+                                                       double    *X_Array,
+                                                       double    *Y_Array,
+                                                       double    *Z_Array);
 /**
  *   Return the radius of a circle geometry.
  *
@@ -17163,8 +16681,8 @@ LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPolyline(GeomID_t      GID,
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilGeomCircleGetRadius(GID)
- *    INTEGER*8  GID
+ *    REAL*8 FUNCTION TecUtilGeomCircleGetRadius(GIDPtr)
+ *    POINTER         (GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -17173,7 +16691,7 @@ LINKTOADDON void STDCALL TecUtilGeom3DMPolySetPolyline(GeomID_t      GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON double STDCALL TecUtilGeomCircleGetRadius(GeomID_t GID);
+LINKTOADDON double STDCALL TecUtilGeomCircleGetRadius(Geom_ID GID);
 /**
  *   Set the radius of a circle geometry.
  *
@@ -17188,9 +16706,9 @@ LINKTOADDON double STDCALL TecUtilGeomCircleGetRadius(GeomID_t GID);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomCircleSetRadius(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Radius)
- *    INTEGER*8  GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          Radius
  * </FortranSyntax>
  *
@@ -17207,7 +16725,7 @@ LINKTOADDON double STDCALL TecUtilGeomCircleGetRadius(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomCircleSetRadius(GeomID_t GID,
+LINKTOADDON void STDCALL TecUtilGeomCircleSetRadius(Geom_ID GID,
                                                     double  Radius);
 /**
  *   Get the size of a square geometry.
@@ -17222,8 +16740,8 @@ LINKTOADDON void STDCALL TecUtilGeomCircleSetRadius(GeomID_t GID,
  *
  *
  * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilGeomSquareGetSize(GID)
- *    INTEGER*8  GID
+ *    REAL*8 FUNCTION TecUtilGeomSquareGetSize(GIDPtr)
+ *    POINTER (GIDPtr, GID)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -17232,14 +16750,14 @@ LINKTOADDON void STDCALL TecUtilGeomCircleSetRadius(GeomID_t GID,
  *   Get the size of a square geometry:
  *
  * @code
- *   extern GeomID_t g; // must be a square
+ *   extern Geom_ID g; // must be a square
  *   double size = TecUtilGeomSquareGetSize(g);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON double STDCALL TecUtilGeomSquareGetSize(GeomID_t GID);
+LINKTOADDON double STDCALL TecUtilGeomSquareGetSize(Geom_ID GID);
 /**
  *   Set the size of a square geometry.
  *
@@ -17254,9 +16772,9 @@ LINKTOADDON double STDCALL TecUtilGeomSquareGetSize(GeomID_t GID);
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomSquareSetSize(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Size)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          Size
  * </FortranSyntax>
  *
@@ -17273,7 +16791,7 @@ LINKTOADDON double STDCALL TecUtilGeomSquareGetSize(GeomID_t GID);
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomSquareSetSize(GeomID_t GID,
+LINKTOADDON void STDCALL TecUtilGeomSquareSetSize(Geom_ID GID,
                                                   double  Size);
 /**
  *   Get the width and height of a rectangle geometry.
@@ -17298,10 +16816,10 @@ LINKTOADDON void STDCALL TecUtilGeomSquareSetSize(GeomID_t GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomRectangleGetSize(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Width,
  *   &           Height)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          Width
  *    REAL*8          Height
  * </FortranSyntax>
@@ -17313,14 +16831,14 @@ LINKTOADDON void STDCALL TecUtilGeomSquareSetSize(GeomID_t GID,
  *
  * @code
  *   double W,H;
- *   extern GeomID_t g; // must be a rectangle
+ *   extern Geom_ID g; // must be a rectangle
  *   TecUtilGeomRectangleGetSize(g,&W,&H);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomRectangleGetSize(GeomID_t        GID,
+LINKTOADDON void STDCALL TecUtilGeomRectangleGetSize(Geom_ID        GID,
                                                      TP_OUT double* Width,
                                                      TP_OUT double* Height);
 /**
@@ -17340,10 +16858,10 @@ LINKTOADDON void STDCALL TecUtilGeomRectangleGetSize(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomRectangleSetSize(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           Width,
  *   &           Height)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          Width
  *    REAL*8          Height
  * </FortranSyntax>
@@ -17354,14 +16872,14 @@ LINKTOADDON void STDCALL TecUtilGeomRectangleGetSize(GeomID_t        GID,
  *   Set the width and height of a rectangle:
  *
  * @code
- *   extern GeomID_t g; // must be a rectangle
+ *   extern Geom_ID g; // must be a rectangle
  *   TecUtilGeomRectangleSetSize(g,4,1);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomRectangleSetSize(GeomID_t GID,
+LINKTOADDON void STDCALL TecUtilGeomRectangleSetSize(Geom_ID GID,
                                                      double  Width,
                                                      double  Height);
 /**
@@ -17387,10 +16905,10 @@ LINKTOADDON void STDCALL TecUtilGeomRectangleSetSize(GeomID_t GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomEllipseGetSize(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           HAxis,
  *   &           VAxis)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          HAxis
  *    REAL*8          VAxis
  * </FortranSyntax>
@@ -17401,7 +16919,7 @@ LINKTOADDON void STDCALL TecUtilGeomRectangleSetSize(GeomID_t GID,
  *   Get the length of the axes of an ellipse:
  *
  * @code
- *   extern GeomID_t g; // must be an ellipse
+ *   extern Geom_ID g; // must be an ellipse
  *   double A,B;
  *   TecUtilGeomEllipseGetSize(g,&A,&B);
  * @endcode
@@ -17409,7 +16927,7 @@ LINKTOADDON void STDCALL TecUtilGeomRectangleSetSize(GeomID_t GID,
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomEllipseGetSize(GeomID_t        GID,
+LINKTOADDON void STDCALL TecUtilGeomEllipseGetSize(Geom_ID        GID,
                                                    TP_OUT double* HAxis,
                                                    TP_OUT double* VAxis);
 /**
@@ -17429,10 +16947,10 @@ LINKTOADDON void STDCALL TecUtilGeomEllipseGetSize(GeomID_t        GID,
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilGeomEllipseSetSize(
- *   &           GID,
+ *   &           GIDPtr,
  *   &           HAxis,
  *   &           VAxis)
- *    INTEGER*8       GID
+ *    POINTER         (GIDPtr, GID)
  *    REAL*8          HAxis
  *    REAL*8          VAxis
  * </FortranSyntax>
@@ -17443,16 +16961,51 @@ LINKTOADDON void STDCALL TecUtilGeomEllipseGetSize(GeomID_t        GID,
  *   Set the major and minor axes of an ellipse:
  *
  * @code
- *   extern GeomID_t g; // must be an ellipse
+ *   extern Geom_ID g; // must be an ellipse
  *   TecUtilGeomEllipseGetSize(g,2.0,1.0);
  * @endcode
  *
  * @ingroup Geom
  *
  */
-LINKTOADDON void STDCALL TecUtilGeomEllipseSetSize(GeomID_t GID,
+LINKTOADDON void STDCALL TecUtilGeomEllipseSetSize(Geom_ID GID,
                                                    double  HAxis,
                                                    double  VAxis);
+
+/**
+ * Get the number of custom label sets.
+ *
+ * @since
+ *   14.1
+ *
+ * @return
+ *   The number of custom label sets in the dataset attached to the current frame.
+ *
+ * @sa TecUtilCustomLabelsGet, TecUtilCustomLabelsAppend
+ *
+ * @pre Must have one or more frames.
+ *
+ *
+ * <FortranSyntax>
+ *    INTEGER*4 FUNCTION TecUtilCustomLabelsGetNumSets()
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ *   Determine if the current frame's dataset has any custom labels.
+ *
+ * @code
+ *   if (TecUtilCustomLabelsGetNumSets() > 0)
+ *     {
+ *       // there are custom labels, do something
+ *     }
+ * @endcode
+ *
+ * @ingroup DataSetInfo
+ *
+ */
+LINKTOADDON LgIndex_t STDCALL TecUtilCustomLabelsGetNumSets(void);
 
 /**
  * Get the custom label set.
@@ -17503,42 +17056,7 @@ LINKTOADDON void STDCALL TecUtilGeomEllipseSetSize(GeomID_t GID,
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilCustomLabelsGet(TP_GIVES StringList_pa * LabelList, int32_t WhichSet);
-
-/**
- * Get the number of custom label sets.
- *
- * @since
- *   14.1
- *
- * @return
- *   The number of custom label sets in the dataset attached to the current frame.
- *
- * @sa TecUtilCustomLabelsGet, TecUtilCustomLabelsAppend
- *
- * @pre Must have one or more frames.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilCustomLabelsGetNumSets()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Determine if the current frame's dataset has any custom labels.
- *
- * @code
- *   if (TecUtilCustomLabelsGetNumSets() > 0)
- *     {
- *       // there are custom labels, do something
- *     }
- * @endcode
- *
- * @ingroup DataSetInfo
- *
- */
-LINKTOADDON int32_t STDCALL TecUtilCustomLabelsGetNumSets(void);
+LINKTOADDON Boolean_t STDCALL TecUtilCustomLabelsGet(StringList_pa * LabelList, LgIndex_t WhichSet);
 
 /**
  * Append a custom label set to data set.
@@ -17659,7 +17177,7 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilGetCurLayoutFName(void);
  * @ingroup Variables
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVariableIsLocked(EntIndex_t            Var,
+LINKTOADDON Boolean_t STDCALL TecUtilVariableIsLocked(EntIndex_t            Var,
                                                       TP_OUT VarLockMode_e* VarLockMode,
                                                       TP_GIVES char**       LockOwner);
 /**
@@ -17808,9 +17326,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetLockOn(const char *LockString);
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilDataSetLockOff(const char *LockString);
-
-
-
 /**
  * Query to see of the data set attached to the current frame is locked.
  *
@@ -17844,32 +17359,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetLockOff(const char *LockString);
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsLocked(TP_GIVES char** LockString);
-
-
-/* not public yet ...
- * Attach an orphaned dataset to a frame.
- *
- * @param orphanedDatasetID
- *   Unique ID of the dataset to attach to a frame.
- *
- * @param frameID
- *   Unique ID of the frame to receive the orphaned dataset
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetAttachOrphanedToFrameByUniqueID(UniqueID_t orphanedDatasetID,
-                                                                            UniqueID_t frameID);
-
-/* not public yet ...
- * Attach an orphaned dataset to a frame.
- *
- * @param orphanedDatasetOffset
- *   offset of the orphaned dataset to attach to a frame.
- *
- * @param frameID
- *   Unique ID of the frame to receive the orphaned dataset
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetAttachOrphanedToFrameByOffset(EntIndex_t orphanedDatasetOffset,
-                                                                          UniqueID_t frameID);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetIsLocked(TP_GIVES char** LockString);
 
 /**
  * Shows or hides the wait cursor and optionally displays a wait message.
@@ -17957,7 +17447,7 @@ LINKTOADDON void STDCALL TecUtilUndoStateEnd(Boolean_t DoInvalidate,
  * @ingroup Undo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilUndoCanUndo(void);
+LINKTOADDON Boolean_t STDCALL TecUtilUndoCanUndo(void);
 /**
  * Undo the last operation.
  *
@@ -18431,7 +17921,7 @@ LINKTOADDON void STDCALL TecUtilThreadWaitForCondition(Condition_pa Condition,
  *   TecUtilThreadMutexLock(MyMutex);
  *
  *   Boolean_t TimedOut = FALSE;
- *   const int32_t OneMinute = 60*1000L;
+ *   const Int32_t OneMinute = 60*1000L;
  *
  *   // loop to make sure another thread didn't sneak in and take the message
  *   while (QueueIsEmpty(MyMessageQueue) && !TimedOut)
@@ -18468,7 +17958,7 @@ LINKTOADDON void STDCALL TecUtilThreadWaitForCondition(Condition_pa Condition,
  */
 LINKTOADDON ConditionAwakeReason_e STDCALL TecUtilThreadTimedWaitForCondition(Condition_pa Condition,
                                                                               Mutex_pa     Mutex,
-                                                                              int32_t      WaitPeriodInMS);
+                                                                              Int32_t      WaitPeriodInMS);
 
 /**
  * Allocates a job control variable for associating jobs submitted to Tecplot's
@@ -18667,7 +18157,7 @@ LINKTOADDON void STDCALL TecUtilThreadPoolAddJob(ThreadPoolJob_pf Job,
  * @since 13.2.0.19661
  * @ingroup Utilities
  */
-LINKTOADDON int32_t STDCALL TecUtilThreadPoolPoolSize(void);
+LINKTOADDON int STDCALL TecUtilThreadPoolPoolSize(void);
 
 /**
  * Returns this worker thread's unique offset. Worker threads in this thread's pool are sequentially
@@ -18691,7 +18181,7 @@ LINKTOADDON int32_t STDCALL TecUtilThreadPoolPoolSize(void);
  * @since 13.2.0.19661
  * @ingroup Utilities
  */
-LINKTOADDON int32_t STDCALL TecUtilThreadPoolJobThreadOffset(void);
+LINKTOADDON int STDCALL TecUtilThreadPoolJobThreadOffset(void);
 
 /**
  * Blocks the calling thread until all jobs associated with the job control are
@@ -18750,7 +18240,7 @@ LINKTOADDON void STDCALL TecUtilThreadPoolWait(JobControl_pa JobControl);
  *
  * @ingroup Utilities
  */
-LINKTOADDON int32_t STDCALL TecUtilThreadPoolGetNumConcurrentJobs(void);
+LINKTOADDON int STDCALL TecUtilThreadPoolGetNumConcurrentJobs(void);
 
 /**
  * Creates a new page.
@@ -18892,7 +18382,7 @@ LINKTOADDON void STDCALL TecEngPagePrintPreviewSetActive(Boolean_t IsActive);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngPagePrintPreviewIsActive(void);
+LINKTOADDON Boolean_t STDCALL TecEngPagePrintPreviewIsActive(void);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Register a callback called whenever an offscreen image needs to be constructed.
@@ -18901,14 +18391,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngPagePrintPreviewIsActive(void);
  *    11.2-0-054
  *
  * @param OffscreenImageCreateCallback
- *   callback function responsible for creation of a new offscreen image.
+ *   callback function responsible for creation of a new offscreenimage.
  * @param RegrationClientData
- *   Any client data that is needed by the OffscreenImageCreateCallback callback function
+ *   Any client data that is needed by the NewCurrentPage callback function
  *   (other than the page client data)
  *
  * @sa TecEngOffscreenImageDestroyRegisterCallback
  * @sa TecEngOffscreenImageGetRGBRowRegisterCallback
- * @sa TecEngOffscreenImageClearCacheRegisterCallback
  *
  * <PythonSyntax>
  * </PythonSyntax>
@@ -18927,14 +18416,13 @@ LINKTOADDON void STDCALL TecEngOffscreenImageCreateRegisterCallback(OffscreenIma
  *    11.2-0-054
  *
  * @param OffscreenImageDestroyCallback
- *   callback function responsible for destruction of a new offscreen image.
+ *   callback function responsible for creation of a new offscreenimage.
  * @param RegrationClientData
- *   Any client data that is needed by the OffscreenImageDestroyCallback callback function
+ *   Any client data that is needed by the NewCurrentPage callback function
  *   (other than the page client data)
  *
  * @sa TecEngOffscreenImageCreateRegisterCallback
  * @sa TecEngOffscreenImageGetRGBRowRegisterCallback
- * @sa TecEngOffscreenImageClearCacheRegisterCallback
  *
  * <PythonSyntax>
  * </PythonSyntax>
@@ -18943,36 +18431,8 @@ LINKTOADDON void STDCALL TecEngOffscreenImageCreateRegisterCallback(OffscreenIma
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON void STDCALL TecEngOffscreenImageDestroyRegisterCallback(
-    OffscreenImageDestroyCallback_pf OffscreenImageDestroyCallback,
-    ArbParam_t                       RegistrationClientData);
-
-/* - NO DOXYGEN COMMENT GENERATION -
-* Register a callback called whenever an offscreen image caches should to be cleared.
-*
-* @since
-*    2018.3
-*
-* @param OffscreenImageClearCacheCallback
-*   callback function responsible for clearing offscreen image cache (if any)
-* @param RegrationClientData
-*   Any client data that is needed by the OffscreenImageClearCacheCallbackcallback function
-*   (other than the page client data)
-*
-* @sa TecEngOffscreenImageCreateRegisterCallback
-* @sa TecEngOffscreenImageGetRGBRowRegisterCallback
-* @sa TecEngOffscreenImageDestroyRegisterCallback
-*
-* <PythonSyntax>
-* </PythonSyntax>
-*
-* @ingroup TecEng
-*
-* #internalattributes exclude_all, exclude_alldoc
-*/
-LINKTOADDON void STDCALL TecEngOffscreenImageClearCacheRegisterCallback(
-    OffscreenImageClearCacheCallback_pf OffscreenImageClearCacheCallback,
-    ArbParam_t                          RegistrationClientData);
+LINKTOADDON void STDCALL TecEngOffscreenImageDestroyRegisterCallback(OffscreenImageDestroyCallback_pf OffscreenImageDestroyCallback,
+                                                                     ArbParam_t                       RegistrationClientData);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Executes offscreen rendering.
@@ -18984,7 +18444,7 @@ LINKTOADDON void STDCALL TecEngOffscreenImageClearCacheRegisterCallback(
  *   The region to be exported. This argument should be passed to TecEngRenderOffscreenImage.
  *
  * @param ImageHandle
- *  ImageHandle that will be requested to set the current OpenGL context. This handle would,
+ *  ImageHandle that will be requested to set the current OpenGL context. This handle would, 
  *  normally, be created by the function that was registered via TecEngOffscreenImageCreateRegisterCallback.
  *
  * @sa TecEngOffscreenImageCreateRegisterCallback
@@ -19004,14 +18464,13 @@ LINKTOADDON Boolean_t STDCALL TecEngRenderOffscreenImage(
  *    11.2-0-054
  *
  * @param OffscreenImageGetRGBRowCallback
- *   callback function responsible for creation of a new offscreen image.
+ *   callback function responsible for creation of a new offscreenimage.
  * @param RegrationClientData
- *   Any client data that is needed by the OffscreenImageGetRGBRowCallback callback function
+ *   Any client data that is needed by the NewCurrentPage callback function
  *   (other than the page client data)
  *
  * @sa TecEngOffscreenImageCreateRegisterCallback
  * @sa TecEngOffscreenImageDestroyRegisterCallback
- * @sa TecEngOffscreenImageClearCacheRegisterCallback
  *
  * <PythonSyntax>
  * </PythonSyntax>
@@ -19023,7 +18482,7 @@ LINKTOADDON Boolean_t STDCALL TecEngRenderOffscreenImage(
 LINKTOADDON void STDCALL TecEngOffscreenImageGetRGBRowRegisterCallback(OffscreenImageGetRGBRowCallback_pf OffscreenImageGetRGBRowCallback,
                                                                        ArbParam_t                         RegistrationClientData);
 
-#if defined MSWIN
+#if defined MSWIN 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Register a callback that will be called for printing an image.
  *
@@ -19103,18 +18562,6 @@ LINKTOADDON void STDCALL TecEngDoTUAssert(const char *type,
                                           const char *utility);
 
 /* - NO DOXYGEN COMMENT GENERATION -
- * Indicates if at least the non-graphical part of the Tecplot engine is initialized.
- * @since
- *     2017.2
- * @return
- *     TRUE if the Tecplot engine is initialized, FALSE otherwise.
- *
- * @ingroup TecEng
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngIsInitialized(void);
-
-/* - NO DOXYGEN COMMENT GENERATION -
  * Initializes the non-graphical part of the Tecplot engine. This function must
  * be called before TecEngStartup().
  *
@@ -19151,7 +18598,7 @@ LINKTOADDON TecEngInitReturnCode_e STDCALL TecEngInit(int                       
                                                       StateModernizationLevel_e modernizationLevel);
 
 /**
- * Update a contour group. This function is only needed in UI code where immediate
+ * Update a contour group. This function is only needed in UI code where immediate 
  * update of contour coloring is important.
  *
  * @since
@@ -19175,7 +18622,7 @@ LINKTOADDON TecEngInitReturnCode_e STDCALL TecEngInit(int                       
  * @ingroup Contour
  *
  */
-LINKTOADDON Boolean_t STDCALL TecAppUpdateGlobalContour(int32_t ContourGroup);
+LINKTOADDON Boolean_t STDCALL TecAppUpdateGlobalContour(SmInteger_t ContourGroup);
 
 /**
  * Initializes contour style if not already initialized.
@@ -19199,7 +18646,7 @@ LINKTOADDON Boolean_t STDCALL TecAppUpdateGlobalContour(int32_t ContourGroup);
  * <PythonSyntax>
  * </PythonSyntax>
  */
-LINKTOADDON Boolean_t STDCALL TecAppContourAutoAssignStyle(int32_t specificContourGroup);
+LINKTOADDON Boolean_t STDCALL TecAppContourAutoAssignStyle(SmInteger_t specificContourGroup);
 
 
 /**
@@ -19220,6 +18667,29 @@ LINKTOADDON Boolean_t STDCALL TecAppContourAutoAssignStyle(int32_t specificConto
  */
 LINKTOADDON Boolean_t STDCALL TecAppRGBChannelAutoAssign(void);
 
+/**
+ * Install a color map group. This function is only needed in UI code where immediate 
+ * update of color map group is important.
+ *
+ * @since
+ *   14.2
+ *
+ * @param ColorMapGroup
+ *   The color map group that will be installed.
+ *
+ * <FortranSyntax>
+ *    SUBROUTINE FUNCTION TecAppColorMapInstallGroup(
+ *   &                  ColorMapGroup)
+ *    INTEGER*4 ColorMapGroup
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ * @ingroup Contour
+ *
+ */
+LINKTOADDON void STDCALL TecAppColorMapInstallGroup(SmInteger_t ColorMapGroup);
 
 /**
  *
@@ -19239,7 +18709,7 @@ LINKTOADDON Boolean_t STDCALL TecAppRGBChannelAutoAssign(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppLayoutFilenameIsValid(void);
+LINKTOADDON Boolean_t STDCALL TecAppLayoutFilenameIsValid(void);
 
 /**
  *
@@ -19304,7 +18774,7 @@ LINKTOADDON Boolean_t STDCALL TecAppGetAddonHelpAbout(TP_GIVES char** AddonHelpA
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Retrieve information about the runtime environment.
-
+ 
  * @since
  * 14.2
  *
@@ -19323,10 +18793,9 @@ LINKTOADDON Boolean_t STDCALL TecAppGetAddonHelpAbout(TP_GIVES char** AddonHelpA
  */
 LINKTOADDON Boolean_t STDCALL TecAppGetRuntimeEnvironment(TP_GIVES char** info);
 
-
 /* - NO DOXYGEN COMMENT GENERATION -
- * Retrieve information about the device.
-
+ * Retrieve information about the platform.
+ 
  * @since
  * 14.2
  *
@@ -19343,28 +18812,7 @@ LINKTOADDON Boolean_t STDCALL TecAppGetRuntimeEnvironment(TP_GIVES char** info);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON Boolean_t STDCALL TecAppGetDeviceInfo(TP_GIVES char** info);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Retrieve information about the application configuration.
-
- * @since
- * 14.2
- *
- * @param info
- *   Address to which an allocated copy of the information is assigned.
- *
- * @return
- *   TRUE if the string was allocated, FALSE otherwise.
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON Boolean_t STDCALL TecAppGetConfigInfo(TP_GIVES char** info);
+LINKTOADDON Boolean_t STDCALL TecAppGetPlatform(TP_GIVES char** info);
 
 /* - NO DOXYGEN COMMENT GENERATION -
 * Retrieve the system temp folder for application data.
@@ -19388,11 +18836,58 @@ LINKTOADDON Boolean_t STDCALL TecAppGetConfigInfo(TP_GIVES char** info);
 
 LINKTOADDON Boolean_t STDCALL TecAppGetTempDir(char** info);
 
+/* - NO DOXYGEN COMMENT GENERATION -
+ * Retrieves the Help About Tecplot SDK... information for
+ * display in the parent application's Help dialog.
+ *
+ * @deprecated
+ *   Please use TecAppGetHelpAbout
+ *
+ * @since
+ *   11.2-0-495
+ *
+ * @param HelpAboutInfo
+ *   Address to which an allocated copy the help about information is assigned.
+ *
+ * @return
+ *   TRUE if the string was allocated, FALSE otherwise.
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ * @ingroup TecEng
+ *
+ * #internalattributes exclude_all, exclude_alldoc
+ */
+LINKTOADDON Boolean_t STDCALL TecEngGetHelpAbout(TP_GIVES char** HelpAboutInfo);
+
+/**
+ * This function is intended to be used only be used by SDK parent applications.
+ * Retrieves the Help About Tecplot SDK... information for
+ * display in the parent application's Help dialog.
+ *
+ * @since
+ *   14.1-0-24645
+ *
+ * @param HelpAboutInfo
+ *   Address to which an allocated copy the help about information is assigned.
+ *
+ * @return
+ *   TRUE if the string was allocated, FALSE otherwise.
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ * @ingroup TecApp
+ *
+ * #internalattributes exclude_all, exclude_alldoc
+ */
+LINKTOADDON Boolean_t STDCALL TecAppGetHelpAbout(TP_GIVES char** HelpAboutInfo);
 
 /**
  * Returns the state of OkToAutoSaveLayout engine variable
  * @since
- *  14.2
+ *  14.2   
  *
  * @return
  *   TRUE if Layout was already saved and can be auto saved.
@@ -19404,7 +18899,7 @@ LINKTOADDON Boolean_t STDCALL TecAppGetTempDir(char** info);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppQueryOkToAutoSaveLayout(void);
+LINKTOADDON Boolean_t STDCALL TecAppQueryOkToAutoSaveLayout(void);
 
 /**
  * Determine if there is a data set attached to any page.
@@ -19421,13 +18916,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppQueryOkToAutoSaveLayout(void);
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppQueryIsAnyDataSetAvailable(void);
+LINKTOADDON Boolean_t STDCALL TecAppQueryIsAnyDataSetAvailable(void);
 
 /**
  * Skips the execution of the default button action in the next event.
  *
  * @since
- *  14.2
+ *  14.2   
  *
  * <PythonSyntax>
  * </PythonSyntax>
@@ -19445,7 +18940,7 @@ LINKTOADDON void STDCALL TecAppSkipDefaultButtonActionOnNextEvent(void);
  * @since
  *   14.2
  *
- * @param GeomID_t
+ * @param Geom_ID
  *   ptr to geometry details currently used
  *
  * @return
@@ -19461,7 +18956,7 @@ LINKTOADDON void STDCALL TecAppSkipDefaultButtonActionOnNextEvent(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON void STDCALL TecAppUpdateDefaultGeom(GeomID_t GID);
+LINKTOADDON void STDCALL TecAppUpdateDefaultGeom(Geom_ID GID);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Registers a callback to be notified whenever the Tecplot engine needs to
@@ -19717,14 +19212,14 @@ LINKTOADDON void STDCALL TecEngProcessBusyEventsRegisterCallback(ProcessBusyEven
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Registers callback function that will be called every time the engine returns from the last call
- * to a TecUtil/TecEng/TecApp. Tecplot SDK Integration Manager will react to this callback by
+ * to a TecUtil/TecEng/TecApp. Tecplot SDK Integration Manager will react to this callback by 
  * scheduling a zero-timeout timer for the detection of the idle state.
  *
  * @since
  *   14.1
  *
  * @param EngineNotBusyCallback
- *   The callback function that will be called when engine returns from the last call to a
+ *   The callback function that will be called when engine returns from the last call to a 
  *   TecUtil/TecEng/TecApp. Use NULL to unregister a previously registered callback function.
  * @param ClientData
  *   Client data that was registered with the callback.
@@ -19821,7 +19316,7 @@ LINKTOADDON void STDCALL TecEngDialogLaunchDropRegisterCallbacks(Dialog_e       
  */
 LINKTOADDON void STDCALL TecEngDotPitchRegisterCallback(DotPitchCallback_pf DotPitchCallback,
                                                         ArbParam_t          ClientData);
-
+                                                                                                             
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Registers a callback to be notified whenever the Tecplot engine needs to
@@ -19873,33 +19368,6 @@ LINKTOADDON void STDCALL TecEngScreenSizeRegisterCallback(ScreenSizeCallback_pf 
 LINKTOADDON void STDCALL TecEngDialogMessageBoxRegisterCallback(DialogMessageBoxCallback_pf DialogMessageBoxCallback,
                                                                 ArbParam_t                  ClientData);
 
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Registers a callback to be notified whenever the Tecplot engine needs to
- * launch a dialog for file selection.  This currently is only needed by the $!PROMPTFORFILENAME
- * macro command.  The TecUtil functions for file selection are routed through addonuiaction
- *
- * @since
- *   15.2
- *
- * @param DialogSelectFileCallback
- *   Callback function to retrieve a filename. This blocks
- *   until the dialog is dismissed.
- * @param ClientData
- *   Any client data that is needed by the registered function.
- *
- * @sa TecEngInit
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecEng
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON void STDCALL TecEngDialogSelectFileRegisterCallback(DialogSelectFileCallback_pf DialogSelectFileCallback,
-                                                                ArbParam_t                  ClientData);
-
 /* - NO DOXYGEN COMMENT GENERATION -
  * Registers a callback to be notified whenever the Tecplot engine needs to
  * prompt the user to input into a simple text field.
@@ -19908,7 +19376,7 @@ LINKTOADDON void STDCALL TecEngDialogSelectFileRegisterCallback(DialogSelectFile
  *   14.2
  *
  * @param DialogGetSimpleText
- *   Dialog callback function. The dialog callback should not return until
+ *   Dialog callback function. The dialog callback should not return until 
  *   the dialog is dismissed.
  * @param ClientData
  *   Any client data that is needed by the registered dialog message box
@@ -20006,6 +19474,28 @@ LINKTOADDON void STDCALL TecEngProgressMonitorRegisterCallback(ProgressMonitorCa
                                                                ProgressMonitorStartCallback_pf  ProgressMonitorStartCallback,
                                                                ProgressMonitorFinishCallback_pf ProgressMonitorFinishCallback,
                                                                ArbParam_t                       RegistrationClientData);
+
+/* - NO DOXYGEN COMMENT GENERATION -
+ * Registers a callback to handle requests for timers.
+ *
+ * @since
+ *   12.0.1.5642
+ *
+ * @param TimerCallback
+ *   Callback that will be called when Tecplot Engine has has requested an event timer to be created.
+ *
+ * @param ClientData
+ *   Any client data that is needed by the registered timer function.
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ * @ingroup TecEng
+ *
+ * #internalattributes exclude_all, exclude_alldoc
+ */
+LINKTOADDON void STDCALL TecEngTimerRegisterCallback(TimerCallback_pf TimerCallback,
+                                                     ArbParam_t       RegistrationClientData);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Starts a previously initialized Tecplot engine so that it is ready to use.
@@ -20181,7 +19671,7 @@ LINKTOADDON void STDCALL TecEngPageDamaged(Boolean_t  DoFullReset,
  *
  * @ingroup Lock
  *
- * #internalattributes exclude_tecplotdoc
+ * #internalattributes exclude_all, exclude_tecplotdoc
  */
 LINKTOADDON void STDCALL TecUtilParentLockStart(Boolean_t ShutdownImplicitRecording);
 
@@ -20243,7 +19733,7 @@ LINKTOADDON void STDCALL TecUtilParentLockFinish(void);
  * @endcode
  *
  */
-int32_t STDCALL FExtFileExists(const char *FName);
+LgIndex_t STDCALL FExtFileExists(const char *FName);
 
 
 
@@ -20272,7 +19762,7 @@ int32_t STDCALL FExtFileExists(const char *FName);
  *       Endif
  * @endcode
  */
-int32_t STDCALL FExtGetFGlueVersion(void);
+LgIndex_t STDCALL FExtGetFGlueVersion(void);
 
 
 /**
@@ -20308,8 +19798,8 @@ int32_t STDCALL FExtGetFGlueVersion(void);
  *       Endif
  * @endcode
  */
-int32_t STDCALL FExtGetIntFromCString(const char *S,
-                                      LgIndex_t  *IRetValue);
+LgIndex_t STDCALL FExtGetIntFromCString(const char *S,
+                                        LgIndex_t  *IRetValue);
 
 
 
@@ -20353,8 +19843,8 @@ int32_t STDCALL FExtGetIntFromCString(const char *S,
  *       Endif
  * @endcode
  */
-int32_t STDCALL FExtGetReal8FromCString(const char *S,
-                                        double     *RetValue);
+LgIndex_t STDCALL FExtGetReal8FromCString(const char *S,
+                                          double     *RetValue);
 
 
 
@@ -20779,9 +20269,9 @@ LINKTOADDON void STDCALL TecUtilViewDealloc(TP_RECEIVES_GIVES ViewState_pa* View
  *   callback. For custom face map load callbacks Tecplot is responsible for
  *   allocating the face map, beginning an assignment context and ending it
  *   after the loader callback returns. The callback only need deliver face map
- *   information to Tecplot with calls to TecUtilDataFaceMapAssignBConns() of TecUtilDataFaceMapAssignBConns64(),
- *   TecUtilDataFaceMapAssignElems(), TecUtilDataFaceMapAssignElems64(), TecUtilDataFaceMapAssignNodes() or TecUtilDataFaceMapAssignNodes64(),
- *   TecUtilDataFaceMapAssignElemToNodeMap() or TecUtilDataFaceMapAssignElemToNodeMap64()
+ *   information to Tecplot with calls to TecUtilDataFaceMapAssignBConns(),
+ *   TecUtilDataFaceMapAssignElems(), TecUtilDataFaceMapAssignNodes() or 
+ *   TecUtilDataFaceMapAssignElemToNodeMap().
  *
  * @since
  *     11.2-1-0
@@ -20809,38 +20299,7 @@ LINKTOADDON void STDCALL TecUtilViewDealloc(TP_RECEIVES_GIVES ViewState_pa* View
  */
 LINKTOADDON void STDCALL TecUtilDataFaceMapBeginAssign(FaceMap_pa FaceMap);
 
-/**
- * If the number of polytope faces, face nodes, boundary faces and boundary
- * connections was not known at the time the zone was created and registered it
- * must be assigned with this function prior to attempting to assign the face
- * nodes via TecUtilDataFaceMapAssignNodes(), TecUtilDataFaceMapAssignNodes64(),
- * TecUtilDataFaceMapAssignBConns(), or TecUtilDataFaceMapAssignBConns64()
- *
- * @since
- *     2019.1
- *
- * @param faceMap
- *     Face map reference received by the face map load callback registered with
- *     TecUtilDataFaceMapCustomLOD().
- * @param numUniqueFaces
- *     Number of unique faces.
- * @param numNodesOfUniqueFaces
- *     Total number of nodes for the unique faces. This is not the same value
- *     as the total number of unique nodes. For example if a face map defined
- *     two triangle polygons that share a common face, numUniqueFaces would be
- *     5 and numNodesOfUniqueFaces would be 5*2=10, not 4.
- * @param numBndryFaces
- *     Number of boundary faces.
- * @param numBndryConns
- *     Number of boundary face connections.
- *
- * @return TRUE if successful, FALSE otherwise.
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapSetDeferredMetadata(FaceMap_pa faceMap,
-                                                                    LgIndex_t  numUniqueFaces,
-                                                                    LgIndex_t  numNodesOfUniqueFaces,
-                                                                    LgIndex_t  numBndryFaces,
-                                                                    LgIndex_t  numBndryConns);
+
 /**
  * Assigns the supplied face nodes to the open face-mapping
  * assignment context. The faces for the nodes are implicitly given
@@ -20852,13 +20311,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapSetDeferredMetadata(FaceMap_pa f
  * That is, the nth face defined by TecUtilDataFaceMapAssignNodes
  * must correspond to the nth pair of neighboring elements
  * passed into TecUtilDataFaceMapAssignElems.
- * This function can only be used if the face node value range does not requires the
- * use of 64-bit signed integers.
- *
- *
- * @pre <em>faceMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
  *
  * This function is \ref threadsafe.
  *
@@ -20870,26 +20322,33 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapSetDeferredMetadata(FaceMap_pa f
  *     nodes are assigned.
  * @param NumFaces
  *     The number of faces being delivered.
- * @param NumFaceNodes_Array
+ * @param NumFaceNodes
  *     Array of face nodes counts dimensioned by NumFaces for
  *     ZoneType_FEPolyhedron, NULL for homogeneous polytope data such as
  *     ZoneType_FEPolygon where the number of nodes per face defined by the
  *     zone type.
- * @param FaceNodes_Array
+ * @param FaceNodes
  *     Array of face nodes for the supplied faces dimensioned by
- *     the sum of the members of the NumFaceNodes array.  This array type
- *     must be int32_t*.
+ *     the sum of the members of the NumFaceNodes array.
+ *
+ *
+ * @pre <em>FaceMap</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
+ * @pre <em>FaceNodes</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilDataFaceMapAssignNodes (
  *   &           FaceMapPtr,
  *   &           NumFaces,
- *   &           NumFaceNodes_Array,
+ *   &           NumFaceNodes,
  *   &           FaceNodes)
  *    POINTER   (FaceMapPtr, FaceMap)
  *    INTEGER*4 NumFaces
- *    INTEGER*4 NumFaceNodes_Array(*)
- *    INTEGER*4 FaceNodes_Array(*)
+ *    INTEGER*4 NumFaceNodes(*)
+ *    INTEGER*4 FaceNodes(*)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -20900,73 +20359,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapSetDeferredMetadata(FaceMap_pa f
  */
 LINKTOADDON void STDCALL TecUtilDataFaceMapAssignNodes(FaceMap_pa       FaceMap,
                                                        LgIndex_t        NumFaces,
-                                                       const int32_t*   NumFaceNodes_Array,
-                                                       const int32_t*   FaceNodes_Array);
-
-/**
- * Assigns the supplied face nodes to the open face-mapping
- * assignment context. The faces for the nodes are implicitly given
- * sequential face numbers. This function can deliver all the face
- * nodes at once or one or more faces at a time. Calls to this
- * routine may be intermingled with calls to
- * TecUtilDataFaceMapAssignElems64. The only requirement is that the
- * nodes and elements be delivered in the same order.
- * That is, the nth face defined by TecUtilDataFaceMapAssignNodes
- * must correspond to the nth pair of neighboring elements
- * passed into TecUtilDataFaceMapAssignElems64.
- * This function can only be used if the face node value range requires the
- * use of 64-bit signed integers.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *     11.2-1-0
- *
- * @param FaceMap
- *     An open face-mapping assignment context to which the face
- *     nodes are assigned.
- * @param NumFaces
- *     The number of faces being delivered.
- * @param NumFaceNodes_Array
- *     Array of face nodes counts dimensioned by NumFaces for
- *     ZoneType_FEPolyhedron, NULL for homogeneous polytope data such as
- *     ZoneType_FEPolygon where the number of nodes per face defined by the
- *     zone type.
- * @param FaceNodes_Array
- *     Array of face nodes for the supplied faces dimensioned by
- *     the sum of the members of the NumFaceNodes array.  This array type
- *     must be int64_t*.
- *
- *
- * @pre <em>FaceMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(FaceNodes)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilDataFaceMapAssignNodes64 (
- *   &           FaceMapPtr,
- *   &           NumFaces,
- *   &           NumFaceNodes_Array,
- *   &           FaceNodes)
- *    POINTER   (FaceMapPtr, FaceMap)
- *    INTEGER*4 NumFaces
- *    INTEGER*4 NumFaceNodes_Array(*)
- *    INTEGER*8 FaceNodes_Array(*)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup PolyhedralData
- *
- */
-LINKTOADDON void STDCALL TecUtilDataFaceMapAssignNodes64(FaceMap_pa       FaceMap,
-                                                         LgIndex_t        NumFaces,
-                                                         const int32_t*   NumFaceNodes_Array,
-                                                         const int64_t*   FaceNodes_Array);
+                                                       const LgIndex_t *NumFaceNodes,
+                                                       const LgIndex_t *FaceNodes);
 
 
 /**
@@ -20979,9 +20373,6 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignNodes64(FaceMap_pa       FaceMa
  * That is, the nth face defined by TecUtilDataFaceMapAssignNodes
  * must correspond to the nth pair of neighboring elements
  * passed into TecUtilDataFaceMapAssignElems.
- * This function MUST be used if the underlying data type for the nodemap array
- * is 32-bit integers otherwise use TecUtilDataFaceMapAssignElems64().
- * See TecUtilDataNodeGetRawItemType() for more information.
  *
  * This function is \ref threadsafe.
  *
@@ -20993,21 +20384,21 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignNodes64(FaceMap_pa       FaceMa
  *     left and right elements are assigned.
  * @param NumFaces
  *     The number of faces being delivered.
- * @param FaceLeftElems_Array
- *     int32_t array of face left elements for the supplied faces
+ * @param FaceLeftElems
+ *     Array of face left elements for the supplied faces
  *     dimensioned by NumFaces.
- * @param FaceRightElems_Array
- *     int32_t array of face right elements for the supplied faces
+ * @param FaceRightElems
+ *     Array of face right elements for the supplied faces
  *     dimensioned by NumFaces.
  *
  *
  * @pre <em>FaceMap</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @pre <em>VALID_REF(FaceLeftElems)</em>
+ * @pre <em>FaceLeftElems</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @pre <em>VALID_REF(FaceRightElems)</em>
+ * @pre <em>FaceRightElems</em>
  *   Pointer must be a valid address and non-NULL.
  *
  *
@@ -21015,12 +20406,12 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignNodes64(FaceMap_pa       FaceMa
  *    SUBROUTINE TecUtilDataFaceMapAssignElems (
  *   &           FaceMapPtr,
  *   &           NumFaces,
- *   &           FaceLeftElems_Array,
- *   &           FaceRightElems_Array)
+ *   &           FaceLeftElems,
+ *   &           FaceRightElems)
  *    POINTER   (FaceMapPtr, FaceMap)
  *    INTEGER*4 NumFaces
- *    INTEGER*4 FaceLeftElems_Array(*)
- *    INTEGER*4 FaceRightElems_Array(*)
+ *    INTEGER*4 FaceLeftElems(*)
+ *    INTEGER*4 FaceRightElems(*)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -21031,73 +20422,11 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignNodes64(FaceMap_pa       FaceMa
  */
 LINKTOADDON void STDCALL TecUtilDataFaceMapAssignElems(FaceMap_pa        FaceMap,
                                                        LgIndex_t         NumFaces,
-                                                       const int32_t    *FaceLeftElems_Array,
-                                                       const int32_t    *FaceRightElems_Array);
+                                                       const LgIndex_t  *FaceLeftElems,
+                                                       const LgIndex_t  *FaceRightElems);
 
-/**
- * Assigns the supplied face left and right elements to the
- * open face-mapping assignment context. The faces for the
- * elements are implicitly given sequential face numbers.
- * Calls to this routine may be intermingled with calls to
- * TecUtilDataFaceMapAssignNodes. The only requirement is that the
- * nodes and elements be delivered in the same order.
- * That is, the nth face defined by TecUtilDataFaceMapAssignNodes
- * must correspond to the nth pair of neighboring elements
- * passed into TecUtilDataFaceMapAssignElems64.
- * This function MUST be used if the underlying data type for the nodemap array
- * is 64-bit integers otherwise use TecUtilDataFaceMapAssignElems().
- * See TecUtilDataNodeGetRawItemType() for more information.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *     11.2-1-0
- *
- * @param FaceMap
- *     An open face-mapping assignment context to which the face
- *     left and right elements are assigned.
- * @param NumFaces
- *     The number of faces being delivered.
- * @param FaceLeftElems_Array
- *     int64_t array of face left elements for the supplied faces
- *     dimensioned by NumFaces.
- * @param FaceRightElems_Array
- *     int64_t array of face right elements for the supplied faces
- *     dimensioned by NumFaces.
- *
- *
- * @pre <em>FaceMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(FaceLeftElems)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(FaceRightElems)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilDataFaceMapAssignElems (
- *   &           FaceMapPtr,
- *   &           NumFaces,
- *   &           FaceLeftElems_Array,
- *   &           FaceRightElems_Array)
- *    POINTER   (FaceMapPtr, FaceMap)
- *    INTEGER*4 NumFaces
- *    INTEGER*8 FaceLeftElems_Array(*)
- *    INTEGER*8 FaceRightElems_Array(*)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup PolyhedralData
- *
- */
-LINKTOADDON void STDCALL TecUtilDataFaceMapAssignElems64(FaceMap_pa        FaceMap,
-                                                         LgIndex_t         NumFaces,
-                                                         const int64_t    *FaceLeftElems_Array,
-                                                         const int64_t    *FaceRightElems_Array);
+
+
 
 /**
  * Assigns the supplied boundary connected elements and zones
@@ -21115,18 +20444,16 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignElems64(FaceMap_pa        FaceM
  *     face elements (and zones if appropriate) are assigned.
  * @param NumBndryFaces
  *     The number of boundary faces being delivered.
- * @param NumBndryConns_Array
+ * @param NumBndryConns
  *     Array of boundary connection counts dimensioned by
  *     NumBndryFaces.
- * @param FaceBndryElems_Array
- *     int32_t Array of boundary connected elements for the supplied faces
+ * @param FaceBndryElems
+ *     Array of boundary connected elements for the supplied faces
  *     dimensioned by the sum of the members of the NumBndryConns
  *     array. If only a portion of a boundary face has adjacent
  *     elements, use TECUTIL_NO_NEIGHBORING_ELEM for the first
  *     neighboring element, and follow this with the actual elements.
- *     This function MUST be used if the underlying data type for the nodemap array
- *     is 32-bit integers.  See TecUtilDataNodeGetRawItemType().
- * @param FaceBndryElemZones_Array
+ * @param FaceBndryElemZones
  *     Array of zone numbers indicating which zone each of the
  *     elements in the FaceBndryElems array resides in.
  *     It has the same dimension as the FaceBndryElems array.
@@ -21142,13 +20469,13 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignElems64(FaceMap_pa        FaceM
  * @pre <em>FaceMap</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @pre <em>VALID_REF(NumBndryConns)</em>
+ * @pre <em>NumBndryConns</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @pre <em>VALID_REF(FaceBndryElems)</em>
+ * @pre <em>FaceBndryElems</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @pre <em>VALID_REF(FaceBndryElemZones)</em>
+ * @pre <em>FaceBndryElemZones</em>
  *   Pointer must be a valid address and non-NULL.
  *
  *
@@ -21156,110 +20483,27 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignElems64(FaceMap_pa        FaceM
  *    SUBROUTINE TecUtilDataFaceMapAssignBConns (
  *   &           FaceMapPtr,
  *   &           NumBndryFaces,
- *   &           NumBndryConns_Array,
- *   &           FaceBndryElems_Array,
- *   &           FaceBndryElemZones_Array)
+ *   &           NumBndryConns,
+ *   &           FaceBndryElems,
+ *   &           FaceBndryElemZones)
  *    POINTER   (FaceMapPtr, FaceMap)
  *    INTEGER*4 NumBndryFaces
- *    INTEGER*4 NumBndryConns_Array(*)
- *    INTEGER*4 FaceBndryElems_Array(*)
- *    INTEGER*4 FaceBndryElemZones_Array(*)
+ *    INTEGER*4 NumBndryConns(*)
+ *    INTEGER*4 FaceBndryElems(*)
+ *    INTEGER*4 FaceBndryElemZones(*)
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
- *
- * @sa TecUtilDataFaceMapAssignBConns64()
  *
  * @ingroup PolyhedralData
  *
  */
 LINKTOADDON void STDCALL TecUtilDataFaceMapAssignBConns(FaceMap_pa        FaceMap,
-                                                        int32_t           NumBndryFaces,
-                                                        const int32_t    *NumBndryConns_Array,
-                                                        const int32_t    *FaceBndryElems_Array,
-                                                        const EntIndex_t *FaceBndryElemZones_Array);
-
-/**
- * Assigns the supplied boundary connected elements and zones
- * to the open face-mapping assignment context. The
- * boundary faces were assigned using a negative number for the
- * left or right element of the face.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *     11.2-1-0
- *
- * @param FaceMap
- *     An open face-mapping assignment context to which the boundary
- *     face elements (and zones if appropriate) are assigned.
- * @param NumBndryFaces
- *     The number of boundary faces being delivered.
- * @param NumBndryConns_Array
- *     Array of boundary connection counts dimensioned by
- *     NumBndryFaces.
- * @param FaceBndryElems_Array
- *     int32_t Array of boundary connected elements for the supplied faces
- *     dimensioned by the sum of the members of the NumBndryConns
- *     array. If only a portion of a boundary face has adjacent
- *     elements, use TECUTIL_NO_NEIGHBORING_ELEM for the first
- *     neighboring element, and follow this with the actual elements.
- *     This function MUST be used if the underlying data type for the nodemap array
- *     is 64-bit integers.  See TecUtilDataNodeGetRawItemType().
- * @param FaceBndryElemZones_Array
- *     Array of zone numbers indicating which zone each of the
- *     elements in the FaceBndryElems array resides in.
- *     It has the same dimension as the FaceBndryElems array.
- *     For boundary faces that are only partially bounded by
- *     neighboring elements (indicated by TECUTIL_NO_NEIGHBORING_ELEM
- *     in the FaceBndryElems array), use TECUTIL_NO_NEIGHBORING_ZONE
- *     for the zone numbers corresponding to the 0-th entry in
- *     FaceBndryElems. Also use TECUTIL_NO_NEIGHBORING_ZONE to indicate
- *     the boundary element is in the current zone (do not use
- *     the current zone number).
- *
- *
- * @pre <em>FaceMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(NumBndryConns)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(FaceBndryElems)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(FaceBndryElemZones)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilDataFaceMapAssignBConns (
- *   &           FaceMapPtr,
- *   &           NumBndryFaces,
- *   &           NumBndryConns_Array,
- *   &           FaceBndryElems_Array,
- *   &           FaceBndryElemZones_Array)
- *    POINTER   (FaceMapPtr, FaceMap)
- *    INTEGER*4 NumBndryFaces
- *    INTEGER*4 NumBndryConns_Array(*)
- *    INTEGER*8 FaceBndryElems_Array(*)
- *    INTEGER*4 FaceBndryElemZones_Array(*)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilDataFaceMapAssignBConns()
- *
- * @ingroup PolyhedralData
- *
- */
-LINKTOADDON void STDCALL TecUtilDataFaceMapAssignBConns64(FaceMap_pa        FaceMap,
-                                                          int32_t           NumBndryFaces,
-                                                          const int32_t    *NumBndryConns_Array,
-                                                          const int64_t    *FaceBndryElems_Array,
-                                                          const EntIndex_t *FaceBndryElemZones_Array);
+                                                        LgIndex_t         NumBndryFaces,
+                                                        const LgIndex_t  *NumBndryConns,
+                                                        const LgIndex_t  *FaceBndryElems,
+                                                        const EntIndex_t *FaceBndryElemZones);
 
 
 /**
@@ -21275,8 +20519,8 @@ LINKTOADDON void STDCALL TecUtilDataFaceMapAssignBConns64(FaceMap_pa        Face
  *   allocating the face map, beginning an assignment context and ending it
  *   after the loader callback returns. The callback only need deliver face map
  *   information to Tecplot with calls to TecUtilDataFaceMapAssignBConns(),
- *   TecUtilDataFaceMapAssignElems(), TecUtilDataFaceMapAssignNodes() or
- *   TecUtilDataFaceMapAssignElemToNodeMap or TecUtilDataFaceMapAssignElemToNodeMap64()
+ *   TecUtilDataFaceMapAssignElems(), TecUtilDataFaceMapAssignNodes() or 
+ *   TecUtilDataFaceMapAssignElemToNodeMap().
  *
  * @since
  *     11.2-1-0
@@ -21364,13 +20608,13 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceMapGetClientData(FaceMap_pa FaceMa
  * face map data into the Tecplot prepared face map backing.  Tecplot is responsible
  * for allocating and freeing the space for the face map backing.  In addition, the
  * add-on must supply the CleanupCallback() callback to receive notification of when
- * the face map is no longer needed. Optionally, the add-on may supply the UnloadCallback()
- * callback to receive notification of when the face map is being unloaded. Supplying
- * NULL for the UnloadCallback() callback instructs Tecplot to assume
+ * the face map is no longer needed.  Optionally, the add-on may supply the UnloadCallback()
+ * callback to receive notification of when the face map is being unloaded.  Most add-ons
+ * should supply NULL for the UnloadCallback() callback, instructing Tecplot to assume
  * responsibility for unloading the face map and re-loading it in an efficient form.
  *
  * @par Note:
- *     If using deferred assignment by calling TecUtilDataFaceMapAssignElemToNodeMap or TecUtilDataFaceMapAssignElemToNodeMap64()
+ *     If using deferred assignment by calling TecUtilDataFaceMapAssignElemToNodeMap(),
  *     then NumFaces and NumFaceNodes should both be 0 since the number of unique faces
  *     and the number of faces nodes for them is determined by Tecplot.
  *
@@ -21381,36 +20625,19 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceMapGetClientData(FaceMap_pa FaceMa
  *   Zone for which the face map will now be custom load-on-demand.
  *
  * @param NumFaces
- *   Total number of unique faces. If this value is not known at the time of
- *   registration it can be set to zero, along with NumFaceNodes,
- *   NumFaceBndryFaces, and NumFaceBndryConns and then supplied within the load
- *   callback prior to delivering the face nodes. For details, see
- *   TecUtilDataFaceMapSetDeferredMetadata().
+ *   Total number of unique faces.
  *
  * @param NumFaceNodes
- *   Total number of nodes for the unique faces. This is not the number of
- *   unique nodes which was given when the zone was added. For example if a face
- *   map defined two triangle polygons that share a common face, NumFaces would
- *   be 5 and NumFaceNodes would be 5*2=10, not 4. If this value is not known at
- *   the time of registration it can be set to zero, along with NumFaces,
- *   NumFaceBndryFaces, and NumFaceBndryConns and then supplied within the load
- *   callback prior to delivering the face nodes.  For details, see
- *   TecUtilDataFaceMapSetDeferredMetadata().
+ *   Total number of nodes for all faces. This is not the number of unique
+ *   nodes but the total number. For example if a face map defined two
+ *   triangles polygons that share a common face, NumFaces would be 5
+ *   and NumFaceNodes would be 6, not 4.
  *
  * @param NumFaceBndryFaces
- *   Total number of faces boundary faces or zero if there are no connections.
- *   If this value is not known at the time of registration it can also be set
- *   to zero, along with NumFaces, NumFaceNodes, and NumFaceBndryConns and then
- *   supplied within the load callback prior to delivering the face nodes. For
- *   details, see TecUtilDataFaceMapSetDeferredMetadata().
+ *   Total number of faces boundary faces.
  *
  * @param NumFaceBndryConns
- *   Total number of boundary connected elements or element/zone pairs or zero
- *   if there are no connections. If this value is not known at the time of
- *   registration it can also be set to zero, along with NumFaces, NumFaceNodes,
- *   and NumFaceBndryFaces and then supplied within the load callback prior to
- *   delivering the face nodes.  For details, see
- *   TecUtilDataFaceMapSetDeferredMetadata().
+ *   Total number of boundary connected elements or element/zone pairs.
  *
  * @param LoadCallback
  *   Tecplot calls this callback when the face map is to be loaded. The
@@ -21524,7 +20751,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceMapGetClientData(FaceMap_pa FaceMa
  *   .
  *   .
  *   LgIndex_t NumFaces          = ... // number of unique faces
- *   LgIndex_t NumFaceNodes      = ... // total number of nodes for the unique faces
+ *   LgIndex_t NumFaceNodes      = ... // total number of face nodes
  *   LgIndex_t NumFaceBndryFaces = ... // total number of boundary faces
  *   LgIndex_t NumFaceBndryConns = ... // total number of boundary face Connections
  *   MyFaceMapClientData_s *MyClientData = (MyFaceMapClientData_s *)malloc(sizeof(MyFaceMapClientData_s));
@@ -21539,7 +20766,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceMapGetClientData(FaceMap_pa FaceMa
  *                                      NumFaceBndryFaces,
  *                                      NumFaceBndryConns,
  *                                      MyFaceMapLoader,
- *                                      MyFaceMapUnload,
+ *                                      MyFaceMapUnload, // most add-ons should pass NULL instead of MyFaceMapUnload
  *                                      MyFaceMapCleanup,
  *                                      (ArbParam_t)MyClientData);
  * @endcode
@@ -21548,10 +20775,9 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceMapGetClientData(FaceMap_pa FaceMa
  * </PythonSyntax>
  *
  * @sa TecUtilDataFaceMapAlloc(), TecUtilDataConnectShare(),
- *     TecUtilDataFaceMapSetDeferredMetadata(),
  *     TecUtilDataFaceMapBeginAssign(), TecUtilDataFaceMapAssignNodes(),
  *     TecUtilDataFaceMapAssignZones(), TecUtilDataFaceMapEndAssign(),
- *     TecUtilDataFaceMapAssignElemToNodeMap or TecUtilDataFaceMapAssignElemToNodeMap64()
+ *     TecUtilDataFaceMapAssignElemToNodeMap()
  *
  * @ingroup PolyhedralData
  */
@@ -21632,107 +20858,16 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapAlloc(EntIndex_t Zone,
                                                       LgIndex_t  NumFaceBndryConns);
 
 /**
- * Assigns the nodes of each element to a polytope zone without having to
+ * Assigns the nodes of each element to a polytope zone without having to 
  * provide the nodes and adjacent elements of each unique face, generating the
  * required connectivity information.  The assignment must be made for all
  * elements of the zone at once.  This function is used inside a face map load
  * callback specified by TecUtilDataFaceMapCustomLOD().
  *
- * This function MUST be used if the underlying data type for the nodemap array
- * is 64-bit integers.  See TecUtilDataNodeGetRawItemType.
- *
  * If the number of faces in the zone (KMax) was not specified when the zone was
  * created (see TecUtilDataSetAddZoneX()), this function will count the faces
- * and set the target zone's KMax as a side effect.
- *
- * This function is \ref threadsafe.
- *
- * @par Note:
- *     This function is mutually exclusive with calls to TecUtilDataFaceMapAssignNodes(),
- *     TecUtilDataFaceMapAssignElems() and TecUtilDataFaceMapAssignBConns().  These
- *     functions should be preferred if the nodes and adjacent element information is
- *     readily available.
- *
- * @since
- *     15.3
- *
- * @param faceMap
- *     An open face-mapping assignment context that uses the element to node
- *     map to determine the nodes and elements for each unique face.
- *
- * @param numElements
- *     The number of elements being represented by the accompanying arrays.  This
- *     value must be the number of elements for the zone.
- *
- * @param facesPerElem_Array
- *     Array of the number of faces contained in each element.
- *
- * @param nodesPerFace_Array
- *     Array of the number of nodes contained in each face for each element.
- *     NULL for homogeneous polytope zones such as FEPolygon zones where the
- *     number of nodes per face is defined by the zone type.
- *
- * @param elemToNodeMap_Array
- *     64-bit integer array of one based nodes for each polygonal element or the nodes for
- *     each face of each polyhedral element.  See main description above.
- *
- * @return
- *     TRUE if the assignment succeeded, FALSE otherwise.
- *
- * @pre Current frame must have a data set with at least one zone.
- *
- * @pre <em>faceMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(facesPerElem)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VALID_REF(elemToNodeMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataFaceMapAssignElemToNodeMap64(
- *   &           faceMapPtr,
- *   &           numElements,
- *   &           facesPerElem_Array,
- *   &           nodesPerFace_Array,
- *   &           elemToFaceMap_Array)
- *    POINTER   (faceMapPtr, faceMap)
- *    INTEGER*4 numElements
- *    INTEGER*4 facesPerElem_Array(*)
- *    INTEGER*4 nodesPerFace_Array(*)
- *    INTEGER*8 elemToFaceMap_Array(*)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup PolyhedralData
- *
- * @sa TecUtilDataFaceMapAssignElemToNodeMap
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapAssignElemToNodeMap64(FaceMap_pa     faceMap,
-                                                                      LgIndex_t      numElements,
-                                                                      const int32_t* facesPerElem_Array,
-                                                                      const int32_t* nodesPerFace_Array,
-                                                                      const int64_t* elemToNodeMap_Array);
-
-/**
- * Assigns the nodes of each element to a polytope zone without having to
- * provide the nodes and adjacent elements of each unique face, generating the
- * required connectivity information.  The assignment must be made for all
- * elements of the zone at once.  This function is used inside a face map load
- * callback specified by TecUtilDataFaceMapCustomLOD().
- *
- * This function MUST be used if the underlying data type for the nodemap array
- * is 32-bit integers.  See TecUtilDataNodeGetRawItemType.
- *
- * If the number of faces in the zone (KMax) was not specified when the zone was
- * created (see TecUtilDataSetAddZoneX()), this function will count the faces
- * and set the target zone's KMax as a side effect.
- *
+ * and set the target zone's KMax as a side effect. 
+ *  
  * This function is \ref threadsafe.
  *
  * @par Note:
@@ -21745,52 +20880,48 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapAssignElemToNodeMap64(FaceMap_pa
  *     12.1.1.7895
  *
  * @param faceMap
- *     An open face-mapping assignment context that uses the element to node
+ *     An open face-mapping assignment context that uses the element to node 
  *     map to determine the nodes and elements for each unique face.
  *
  * @param numElements
- *     The number of elements being represented by the accompanying arrays.  This
+ *     The number of elements being represented by the accompanying arrays.  This 
  *     value must be the number of elements for the zone.
  *
- * @param facesPerElem_Array
+ * @param facesPerElem
  *     Array of the number of faces contained in each element.
  *
- * @param nodesPerFace_Array
- *     Array of the number of nodes contained in each face for each element.
- *     NULL for homogeneous polytope zones such as FEPolygon zones where the
+ * @param nodesPerFace
+ *     Array of the number of nodes contained in each face for each element.  
+ *     NULL for homogeneous polytope zones such as FEPolygon zones where the 
  *     number of nodes per face is defined by the zone type.
  *
- * @param elemToNodeMap_Array
- *     32-bit integer array of one based nodes for each polygonal element or the nodes for
- *     each face of each polyhedral element.  See main description above.
+ * @param elemToNodeMap
+ *     Array of one based nodes for each polygonal element or the nodes for
+ *     each face of each polyhedral element.  
  *
- * @return
- *     TRUE if the assignment succeeded, FALSE otherwise.
- *
- * @pre Current frame must have a data set with at least one zone.
  *
  * @pre <em>faceMap</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @pre <em>VALID_REF(facesPerElem)</em>
+ * @pre <em>facesPerElem</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @pre <em>VALID_REF(elemToNodeMap)</em>
+ * @pre <em>elemToNodeMap</em>
  *   Pointer must be a valid address and non-NULL.
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataFaceMapAssignElemToNodeMap(
+ *    SUBROUTINE TecUtilDataFaceMapAssignElemToNodeMap (
  *   &           faceMapPtr,
  *   &           numElements,
- *   &           facesPerElem_Array,
- *   &           nodesPerFace_Array,
- *   &           elemToFaceMap_Array)
+ *   &           facesPerElem,
+ *   &           nodesPerFace,
+ *   &           elemToFaceMap)
  *    POINTER   (faceMapPtr, faceMap)
  *    INTEGER*4 numElements
- *    INTEGER*4 facesPerElem_Array(*)
- *    INTEGER*4 nodesPerFace_Array(*)
- *    INTEGER*4 elemToFaceMap_Array(*)
+ *    INTEGER*4 facesPerElem(*)
+ *    INTEGER*4 nodesPerFace(*)
+ *    INTEGER*4 elemToFaceMap(*)
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -21798,13 +20929,12 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapAssignElemToNodeMap64(FaceMap_pa
  *
  * @ingroup PolyhedralData
  *
- * @sa TecUtilDataFaceMapAssignElemToNodeMap64
  */
-LINKTOADDON Boolean_t STDCALL TecUtilDataFaceMapAssignElemToNodeMap(FaceMap_pa     faceMap,
-                                                                    LgIndex_t      numElements,
-                                                                    const int32_t* facesPerElem_Array,
-                                                                    const int32_t* nodesPerFace_Array,
-                                                                    const int32_t* elemToNodeMap_Array);
+LINKTOADDON void STDCALL TecUtilDataFaceMapAssignElemToNodeMap(FaceMap_pa       faceMap,
+                                                               LgIndex_t        numElements,
+                                                               const LgIndex_t* facesPerElem,
+                                                               const LgIndex_t* nodesPerFace,
+                                                               const LgIndex_t* elemToNodeMap);
 /* - NO DOXYGEN COMMENT GENERATION -
  * Registers a callback called whenever a page is created.
  *
@@ -21869,7 +20999,7 @@ LINKTOADDON void STDCALL TecAppPolarCacheGetInnerGridRadiusAndDelta(TP_OUT doubl
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngThetaAxisIsCompleteCycle(void);
+LINKTOADDON Boolean_t STDCALL TecEngThetaAxisIsCompleteCycle(void);
 
 /**
  * This function is intended to be used only be used by SDK parent applications.
@@ -21885,7 +21015,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngThetaAxisIsCompleteCycle(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppThetaAxisIsCompleteCycle(void);
+LINKTOADDON Boolean_t STDCALL TecAppThetaAxisIsCompleteCycle(void);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Allow/disallow implicit recording of TecUtil function calls.
@@ -21937,7 +21067,7 @@ LINKTOADDON void STDCALL TecAppMacroAllowImplicitRecord(Boolean_t Allow);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngMacroImplicitRecordIsAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecEngMacroImplicitRecordIsAllowed(void);
 
 /**
  * This function is intended to be used only be used by SDK parent applications.
@@ -21953,7 +21083,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngMacroImplicitRecordIsAllowed(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppMacroImplicitRecordIsAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecAppMacroImplicitRecordIsAllowed(void);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Begin recording to the given filename.
@@ -22063,7 +21193,7 @@ LINKTOADDON void STDCALL TecAppMacroRecordCancel(void);
  * Query whether it is okay to begin recording a macro file via TecEngMacroRecordStart.
  *
  * @deprecated
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppMacroRecordIsAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecAppMacroRecordIsAllowed(void);
  *   Use TecAppMacroRecordIsAllowed
  * @since
  *   12.0.1.5149
@@ -22075,7 +21205,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppMacroRecordIsAllowed(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngMacroRecordIsAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecEngMacroRecordIsAllowed(void);
 
 /**
  * This function is intended to be used only be used by SDK parent applications.
@@ -22091,7 +21221,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecEngMacroRecordIsAllowed(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppMacroRecordIsAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecAppMacroRecordIsAllowed(void);
 
 /* - NO DOXYGEN COMMENT GENERATION -
 * Set LicenseValidationCode global variable to InvalidLicenseCode.
@@ -22133,7 +21263,7 @@ LINKTOADDON void STDCALL TecAppSetLicenseIsValid(Boolean_t licenseIsValid);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Registers a callback to be notified whenever layout is opened or saved.
- *
+ * 
  * @since
  *   14.1
  *
@@ -22157,7 +21287,7 @@ LINKTOADDON void STDCALL TecEngMRULayoutFilenameRegisterCallback(MRULayoutFilena
 /* - NO DOXYGEN COMMENT GENERATION -
  * Registers a callback so the engine can query the parent's app OpenGL
  * version string.
- *
+ * 
  * @since
  *   14.1
  *
@@ -22191,7 +21321,7 @@ LINKTOADDON void STDCALL TecEngOpenGLVersionStringRegisterCallback(OpenGLVersion
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON int32_t STDCALL TecAppImportGetNumRegisteredForeignLoaders(void);
+LINKTOADDON int STDCALL TecAppImportGetNumRegisteredForeignLoaders(void);
 
 /**
  * Get the name of a registered foreign loader.
@@ -22212,7 +21342,7 @@ LINKTOADDON int32_t STDCALL TecAppImportGetNumRegisteredForeignLoaders(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderName(int32_t         Loader,
+LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderName(int             Loader,
                                                                TP_GIVES char** Name);
 
 /**
@@ -22257,7 +21387,7 @@ LINKTOADDON void STDCALL TecAppEngineEntryCountDecrement(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON void* STDCALL TecAppImportGetForeignLoaderGUILaunchCallback(int32_t Loader);
+LINKTOADDON void* STDCALL TecAppImportGetForeignLoaderGUILaunchCallback(int Loader);
 
 /**
  * Turns off drawing of pick handles. Turning off the drawing of pick handles does not have an
@@ -22283,7 +21413,7 @@ LINKTOADDON void STDCALL TecAppPickHandlesDisableDrawing(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON Boolean_t STDCALL TecAppRecordUpdateOfSingleGeom(GeomID_t geomId);
+LINKTOADDON Boolean_t STDCALL TecAppRecordUpdateOfSingleGeom(Geom_ID geomId);
 
 /**
  * Get a spaced separated string of file extensions used by the loaders. For example "*.dat *.plt".
@@ -22304,7 +21434,7 @@ LINKTOADDON Boolean_t STDCALL TecAppRecordUpdateOfSingleGeom(GeomID_t geomId);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderExtensions(int32_t         Loader,
+LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderExtensions(int             Loader,
                                                                      TP_GIVES char** Extensions);
 
 /**
@@ -22322,7 +21452,7 @@ LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderExtensions(int32_t    
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppImportGetForeignLoaderCanHandleMultipleFileSelection(int32_t Loader);
+LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderCanHandleMultipleFileSelection(int Loader);
 
 /**
  * Returns if the loader allows using advanced options.
@@ -22331,11 +21461,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppImportGetForeignLoaderCanHandleMult
  *     The number of the registered foreign loader (1-based).
  *
  * @return
- *     - LoaderAdvancedOptions_NotAvailable if Advanced Options are
- *       not available
- *     - LoaderAdvancedOptions_Allow if Advanced Options are allowed
- *     - LoaderAdvancedOptions_ForceLaunch if the loader must launch
- *       its Advanced Options dialog
+ *     TRUE if the loader allows advanced options, FALSE otherwise.
  *
  * @since 14.1
  *
@@ -22343,7 +21469,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppImportGetForeignLoaderCanHandleMult
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON LoaderAdvancedOptions_e STDCALL TecAppImportGetForeignLoaderAllowAdvancedOptions(int32_t Loader);
+LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderAllowAdvancedOptions(int Loader);
 
 /**
  * Returns if the loader allows appending data to current data set.
@@ -22360,24 +21486,7 @@ LINKTOADDON LoaderAdvancedOptions_e STDCALL TecAppImportGetForeignLoaderAllowAdv
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppImportGetForeignLoaderAllowAppending(int32_t Loader);
-
-/**
-* Returns if the loader requires a file name to be selected to launch its Advanced Options dialog.
-*
-* @param Loader
-*     The number of the registered foreign loader (1-based).
-*
-* @return
-*     TRUE if the loader requires a file name to launch the Advanced Options dialog, FALSE otherwise.
-*
-* @since 17.1
-*
-* @ingroup TecApp
-*
-* #internalattributes exclude_all, exclude_alldoc
-*/
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppImportGetForeignLoaderAdvancedOptionsRequireFilename(int32_t Loader);
+LINKTOADDON Boolean_t STDCALL TecAppImportGetForeignLoaderAllowAppending(int Loader);
 
 /**
  * Returns the version of the family of registered loader callbacks.
@@ -22389,7 +21498,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppImportGetForeignLoaderAdvancedOptio
  *     Valid values are LoaderCallbackVersion_V1 for compatibility with DataSetLoader_pf,
  *     DynamicMenuCallback_pf, and DataSetLoaderInstructionOverride_pf family of registered loader
  *     functions and LoaderCallbackVersion_V2 for compatibility with DataLoader_pf,
- *     DataLoaderSelectedV2Callback_pf, and DataLoaderInstructionOverride_pf.
+ *     DataLoaderSelected_pf, and DataLoaderInstructionOverride_pf.
  *
  * @since 14.1
  *
@@ -22397,7 +21506,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppImportGetForeignLoaderAdvancedOptio
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON LoaderCallbackVersion_e STDCALL TecAppImportGetForeignLoaderCallbackVersion(int32_t Loader);
+LINKTOADDON LoaderCallbackVersion_e STDCALL TecAppImportGetForeignLoaderCallbackVersion(int Loader);
 
 /**
  * Returns client data associated with a loader.
@@ -22414,7 +21523,7 @@ LINKTOADDON LoaderCallbackVersion_e STDCALL TecAppImportGetForeignLoaderCallback
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON ArbParam_t* STDCALL TecAppImportGetForeignLoaderClientData(int32_t Loader);
+LINKTOADDON ArbParam_t* STDCALL TecAppImportGetForeignLoaderClientData(int Loader);
 
 /**
  * Returns if the engine had perform a work at startup.
@@ -22427,7 +21536,7 @@ LINKTOADDON ArbParam_t* STDCALL TecAppImportGetForeignLoaderClientData(int32_t L
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppWorkPerformedOnEngineStartup(void);
+LINKTOADDON Boolean_t STDCALL TecAppWorkPerformedOnEngineStartup(void);
 
 /**
  * Returns TRUE if any active slice is a clip plane
@@ -22439,32 +21548,31 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppWorkPerformedOnEngineStartup(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppAnyActiveSliceIsClipPlane(void);
+LINKTOADDON Boolean_t STDCALL TecAppAnyActiveSliceIsClipPlane(void);
 
 /*
- * We are not adding any Doxygen documentation for this function on purpose
+ * We are not adding any Doxygen documentation for this function on purpose 
  * because in the future we are going to move this functionality out of the
  * engine and into the parent app.
  */
-LINKTOADDON int32_t STDCALL TecAppAnimationGetNumSteps(void);
+LINKTOADDON LgIndex_t STDCALL TecAppAnimationGetNumSteps(void);
 
 /*
- * We are not adding any Doxygen documentation for this function on purpose
+ * We are not adding any Doxygen documentation for this function on purpose 
  * because in the future we are going to move this functionality out of the
  * engine and into the parent app.
  */
-LINKTOADDON void STDCALL TecAppAnimationJumpToStep(AnimationStep_e animationStep,
-                                                   LgIndex_t delta);
+LINKTOADDON void STDCALL TecAppAnimationJumpToStep(AnimationStep_e animationStep, LgIndex_t delta);
 
 /*
- * We are not adding any Doxygen documentation for this function on purpose
+ * We are not adding any Doxygen documentation for this function on purpose 
  * because in the future we are going to move this functionality out of the
  * engine and into the parent app.
  */
 LINKTOADDON double STDCALL TecAppAnimationGetSolutionTimeForTimeStep(LgIndex_t timeStep);
 
 /*
- * We are not adding any Doxygen documentation for this function on purpose
+ * We are not adding any Doxygen documentation for this function on purpose 
  * because in the future we are going to move this functionality out of the
  * engine and into the parent app.
  */
@@ -22516,13 +21624,13 @@ LINKTOADDON void STDCALL TecAppGetFontNameList(StringList_pa fontList);
 /**
  * Returns the engine's default (fallback) font
  *
- * @param defaultFontFamily
+ * @param defaultFontFamily 
  *     A pointer to a string where the default font familty will be stored. The
  *     string must be freed by the caller once it's no longer needed.
  *
  * @since 14.1
  *
- * @ingroup TecApp
+ * @ingroup TecApp 
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
@@ -22541,7 +21649,7 @@ LINKTOADDON void STDCALL TecAppGetDefaultFontFamily(char** defaultFontFamily);
  *
  * @return
  *   TRUE if the equation file was successfully parsed.
- *   The equationLines parameter is populated with the lines which should be displayed in the
+ *   The equationLines parameter is populated with the lines which should be displayed in the 
  *   equation list multi-line widget.
  *
  */
@@ -22582,7 +21690,7 @@ LINKTOADDON Boolean_t TecAppLoadEquationFile(const char *fileName, StringList_pa
  *
  * @param jSkip
  *  Index range J Skip
- *
+ * 
  * @param kMin
  *  Index range K Min
  *
@@ -22620,29 +21728,29 @@ LINKTOADDON Boolean_t TecAppWriteEquationFile(
  * Sets the current slice group in the current frame's scratch variables.
  *
  * @param sliceGroup
- *     The new slice group. Note that this value is 0-based.
+ *     The new slice group.
  *
  * @since 14.1
  *
- * @ingroup TecApp
+ * @ingroup TecApp 
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON void STDCALL TecAppUISliceGroupSet(int32_t sliceGroup);
+LINKTOADDON void STDCALL TecAppUISliceGroupSet(SmInteger_t sliceGroup);
 
 /**
  * Returns the current slice group for the current frame
  *
  * @return
- *     The current slice group. Note that this value is 0-based.
+ *     The current slice group.
  *
  * @since 14.1
  *
- * @ingroup TecApp
+ * @ingroup TecApp 
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON int32_t STDCALL TecAppUISliceGroupGet(void);
+LINKTOADDON SmInteger_t STDCALL TecAppUISliceGroupGet(void);
 
 /**
  * Returns whether there are any active zones with a surfaces to plot
@@ -22658,7 +21766,7 @@ LINKTOADDON int32_t STDCALL TecAppUISliceGroupGet(void);
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppPlotContainsSurfacesToPlot(void);
+LINKTOADDON Boolean_t STDCALL TecAppPlotContainsSurfacesToPlot(void);
 
 /**
  * Builds and returns a line map name using the provided format string
@@ -22678,10 +21786,10 @@ LINKTOADDON Boolean_t STDCALL TecAppLineMapGetIntermediateName(EntIndex_t  map,
 
 /**
  * Deposit DataLoadFinish instructions.
- *
+ *  
  * @param ArgList
  *   Set of ArgList entries. This is built using calls to
- *   TecUtilArgListAppendXXXX functions.
+ *   TecUtilArListAppendXXXX functions.
  * <ArgListTable>
  *
  * Name:
@@ -22690,18 +21798,20 @@ LINKTOADDON Boolean_t STDCALL TecAppLineMapGetIntermediateName(EntIndex_t  map,
  *   ReadDataOption_e
  * Arg Function:
  *   TecUtilArgListAppendInt()
+ * Default:
+ *   None
  * Required:
  *   Yes
  * Notes:
  *   Determine how to handle the situation where a data set already exists in the current frame.
  *   The possible values are: ReadDataOption_NewData, ReadDataOption_AppendData and
  *   ReadDataOption_ReplaceData.
- *   Set to ReadDataOption_AppendData to append the new zones to the zones in the
- *   data set that existed prior to using this command. Set to ReadDataOption_NewData
- *   to remove the data set from the active frame prior to reading in
- *   the new data set. If other frames use the same data set they will
- *   continue to use the old one. Set to ReadDataOption_ReplaceData to replace the
- *   data set attached to the active frame and to all other frames
+ *   Set to ReadDataOption_AppendData to append the new zones to the zones in the 
+ *   data set that existed prior to using this command. Set to ReadDataOption_NewData 
+ *   to remove the data set from the active frame prior to reading in 
+ *   the new data set. If other frames use the same data set they will 
+ *   continue to use the old one. Set to ReadDataOption_ReplaceData to replace the 
+ *   data set attached to the active frame and to all other frames 
  *   that use the same data set, with the new data set.
  *
  * </ArgListTable>
@@ -22713,78 +21823,29 @@ LINKTOADDON Boolean_t STDCALL TecAppLineMapGetIntermediateName(EntIndex_t  map,
  * </PythonSyntax>
  * @since 14.2.0.0
  */
-LINKTOADDON void STDCALL TecAppDepositDataLoadOptionsX(ArgList_pa argList);
 
-/* - NO DOXYGEN COMMENT GENERATION -
- * Obtains the basic options (type of data read (append replace, new), and style reset) from the
- * DataLoadState
- *
- * @param readDataOption
- *    The type of read data option that will be applied to loading data
- * @param resetStyle
- *    Set to TRUE if style will be reset, FALSE otherwise
- * @note
- * readDataOption is actually a ReadDataOption_e enumeration and should be cast to that type
- *
- * <FortranSyntax>
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- * @since 14.3.0.0
- */
-LINKTOADDON void STDCALL TecAppGetBaseDataLoadOptions(TP_OUT LgIndex_t* readDataOption,
-                                                      TP_OUT Boolean_t* resetStyle);
+ LINKTOADDON void STDCALL TecAppDepositDataLoadOptionsX(ArgList_pa argList);
 
-/* - NO DOXYGEN COMMENT GENERATION -
- * Invalidates the currently set DataLoad options. This function needs to be called after the
- * data load callback (which calls TecUtilDataLoadStart() and TecUtilDataLoadFinishX()) has done
- * its work.
- *
- * <FortranSyntax>
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- * @since 16.1
- */
-LINKTOADDON void STDCALL TecAppClearDataLoadOptions(void);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Specifies the loader is done with the data in DataLoadState and those data should now be
- * invalidated
- *
- * <FortranSyntax>
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- * @since 14.3.0.0
- */
-LINKTOADDON void STDCALL TecAppDataLoadManualFinish(void);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- *
- * Starts diagnostic macro recording.
- *
- * @param macroFileName
- *   Name of diagnostic macro record file.
- *
- * @param append
- *   True if appending to existing file.
- *
- * @param comment
- *   Information such as platform or machine configuration to add as comment at start of file.
- *
- * @return
- *  TRUE if background macro recording was successfully started, FALSE otherwise.
- *
- * @since
- *  14.1
- */
-LINKTOADDON Boolean_t STDCALL TecAppDiagnosticMacroRecordStart(const char* macroFileName,
-                                                               Boolean_t   append,
-                                                               const char* comment);
+ /* - NO DOXYGEN COMMENT GENERATION -
+  * 
+  * Starts diagnostic macro recording.
+  *
+  * @param macroFileName
+  *   Name of diagnostic macro record file.
+  *
+  * @param append
+  *   True if appending to existing file.
+  *
+  * @param comment
+  *   Information such as platform or machine configuration to add as comment at start of file.
+  *
+  * @result
+  *  TRUE if background macro recording was successfully started, FALSE otherwise.
+  *
+  * @since
+  *  14.1
+  */
+ LINKTOADDON Boolean_t STDCALL TecAppDiagnosticMacroRecordStart(const char* macroFileName, bool append, const char* comment);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Closes diagnostic macro recorder file.
@@ -22809,7 +21870,7 @@ LINKTOADDON Boolean_t STDCALL TecAppDiagnosticMacroRecordStart(const char* macro
 LINKTOADDON void STDCALL TecAppDiagnosticMacroRecordStop(Boolean_t didCrash, const char* comment);
 
 /* - NO DOXYGEN COMMENT GENERATION -
- * Return TRUE if diagnostic macro recording is enabled.
+ * Return true if diagnostic macro recording is enabled.
  *
  * @since
  *   14.1
@@ -22821,7 +21882,7 @@ LINKTOADDON void STDCALL TecAppDiagnosticMacroRecordStop(Boolean_t didCrash, con
  *
  * #internalattributes exclude_all, exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppDiagnosticMacroRecordIsEnabled(void);
+LINKTOADDON Boolean_t STDCALL TecAppDiagnosticMacroRecordIsEnabled(void);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Invalidates undo state. This should only be used in situations where there is some
@@ -22840,448 +21901,4 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppDiagnosticMacroRecordIsEnabled(void
  */
 LINKTOADDON void STDCALL TecAppInvalidateUndo(void);
 
-/* - NO DOXYGEN COMMENT GENERATION -
- * Check if pie charts are enabled.
- * Returns TRUE if any $!GLOBALSCATTER PIECHARTS value has been set.
- *
- * @since
- *   14.4
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
- LINKTOADDON TP_QUERY Boolean_t STDCALL TecAppPieChartScatterSymbolsAreEnabled(void);
-
- /* - NO DOXYGEN COMMENT GENERATION -
- * Check if extended scatter symbols are enabled.
- * Returns TRUE if the scatter symbols are enabled.
- *
- * @since
- *   18.1
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
- LINKTOADDON TP_QUERY Boolean_t TecAppExtendedScatterSymbolsAreEnabled(void);
-
- /**
-  * Saves probe information so it can be repeated exactly as it was performed
-  * later on using TecUtilProbePerform().
-  *
-  * @since
-  *    15.2
-  *
-  * @return
-  *   Returns an abstract handle to a saved probe information which can be used
-  *   later to perform the probe again. The handle needs to be explicitly deallocated
-  *   by the client once it is no longer needed, using TecUtilProbeInfoDealloc().
-  *
-  * @code
-  *  // Save the probe information
-  *  ProbeInfo_pa ProbeInfo = TecUtilProbeInfoGet();
-  *  // ... Perform other probes, maybe even using different callbacks
-  *  // Perform the previous probe again
-  *  TecUtilProbePerform(ProbeInfo);
-  *  TecUtilProbeInfoDealloc(&ProbeInfo); // dealloc the object when finished
-  * @endcode
-  *
-  * <FortranSyntax>
-  *    INTEGER*4 FUNCTION TecUtilProbeInfoGet()
-  * </FortranSyntax>
-  *
-  * <PythonSyntax>
-  * </PythonSyntax>
-  *
-  * @sa TecUtilProbePerform, TecUtilProbeInfoDealloc
-  *
-  * @ingroup probe
-  *
-  */
- LINKTOADDON TP_GIVES ProbeInfo_pa STDCALL TecUtilProbeInfoGet(void);
-
- /**
-  * Performs a probe as specified by the ProbeInfo parameter. It will install
-  * the provided callback only if it is not the active using the same parameters
-  * as they were set when TecUtilProbeInfoGet() was called to fetch the ProbeInfo
-  * pointer. Once the probe is finished the previous callback is reinstalled.
-  *
-  * @param ProbeInfo
-  *   Pointer to the probe info handle.
-  *
-  * @param callback
-  *    Function to call for the provided ProbeInfo.
-  *
-  * @return
-  *   Returns TRUE if the new probe succeeded, FALSE if the probe callback failed
-  *   to be reinstalled (due to being the same) or the probe failed.
-  *
-  * @since
-  *   15.2
-  *
-  * @code
-  *  // Save the probe information
-  *  ProbeInfo_pa ProbeInfo = TecUtilProbeInfoGet();
-  *  // ... Perform other probes, maybe even using different callbacks
-  *  // Perform the probe with the provided callback
-  *  TecUtilProbePerform(ProbeInfo, callback);
-  *  TecUtilProbeInfoDealloc(&ProbeInfo); // dealloc the object when finished
-  * @endcode
-  *
-  * @sa TecUtilProbeInfoGet, TecUtilProbeInfoDealloc
-  *
-  * @ingroup probe
-  */
- LINKTOADDON Boolean_t STDCALL TecUtilProbePerform(ProbeInfo_pa ProbeInfo, ProbeDestinationX_pf callback);
-
- /**
- * Deallocates a saved probe info handle returned by TecUtilProbeInfoGet and sets
- * the pointer to NULL
- *
- * @param ProbeInfo
- *   Pointer to the probe info handle to be deallocated.
- *
- * @since
- *    15.2
- *
- * @code
- *  // Save the probe information
- *  ProbeInfo_pa ProbeInfo = TecUtilProbeInfoGet();
- *  // ... Perform other probes, maybe even using different callbacks
- *  // Perform the previous probe again
- *  TecUtilProbePerform(ProbeInfo);
- *  TecUtilProbeInfoDealloc(&ProbeInfo); // dealloc the object when finished
- * @endcode
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilProbeInfoDealloc(ProbeInfo)
- *    POINTER (ProbeInfoPtr, ProbeInfo)
- * </FortranSyntax>
- *
- * @sa TecUtilProbeInfoGet, TecUtilProbePerform
- *
- * @ingroup probe
- *
- */
- LINKTOADDON void STDCALL TecUtilProbeInfoDealloc(TP_RECEIVES_GIVES ProbeInfo_pa* ProbeInfo);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Returns the maximum possible DPI resolution value for a given export region.
- *
- * @param exportRegion
- *   An enum with the export region to use to calculate the maximum DPI.
- *
- * @return
- *   An int32_t with the maximum DPI value for a given export region.
- *
- * @since
- *   16.2
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
- LINKTOADDON int32_t STDCALL TecAppGetVectorExportMaxDPI(ExportRegion_e exportRegion);
-
- /* - NO DOXYGEN COMMENT GENERATION -
- * Read one or more data files into Tecplot to form a new data set in the current frame
- * or to append them to an existing data set.
- *
- * @note May only be called while running interactively and must not be called in batch
- *       mode.
- *
- * @param filenames
- *   A string list containing the file names to load.
- *
- * @return
- *   TRUE if the data was successfully loaded, FALSE otherwise.
- *
- * @since
- *   16.3
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
- LINKTOADDON Boolean_t STDCALL TecAppLoadClassicPlt(StringList_pa filenames);
-
-
- /* - NO DOXYGEN COMMENT GENERATION -
- * Registers a callback to handle variable matching when appending data.
- *
- * @since
- *   16.3
- *
- * @param MatchVariablesCallback
- *   Match Variable callback function.
- * @param ClientData
- *   Any client data that is needed by the registered key state function.
- *
- * @sa TecEngInit
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecEng
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
- LINKTOADDON void STDCALL TecEngMatchVariablesRegisterCallback(MatchVariablesCallback_pf MatchVariablesCallback,
-                                                               ArbParam_t               ClientData);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Finds a file from Tecplot's startup directory.
- *
- * @param startupName
- *   A friendly name for the startup file.
- *
- * @param baseName
- *   The name of the file (just the file name, no directories)
- *
- * @return
- *   The full path of the startup file or nullptr if some error ocurred.
- *
- * @since
- *   16.3
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON char* STDCALL TecAppStartupFileGetPath(const char* startupName,
-                                                   const char* baseName);
-
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Finds and opens a file from Tecplot's startup directory.
- *
- * @param startupName
- *   A friendly name for the startup file.
- *
- * @param baseName
- *   The name of the file to open (just the file name, no directories)
- *
- * @param magicString
- *   The file's magic string
- *
- * @param version
- *   This will be updated with the file's version number
- *
- * @param isAscii
- *   A boolean stating whether the file is ASCII or Binary
- * @return
- *   A file handle to the open file.
- *
- * @since
- *   16.3
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON FILE* STDCALL TecAppStartupFileOpen(const char*     startupName,
-                                                const char*     baseName,
-                                                const char*     magicString,
-                                                TP_OUT int32_t* version,
-                                                Boolean_t       isAscii);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Creates a default variable name list with simple variable matching.
- *
- * @return
- *   A StringList_pa containing the resulting list of variable names. If the
- *   list is NULL, an error occurred.
- *
- * @param existingVariables
- *   A list containing the variable names that currently exist in the dataset.
- *
- * @param incomingVariableLists
- *   An array of StringList_pa that contain the variable names in the incoming
- *   datasets.
- *
- * @param numIncomingVariableLists
- *   The number lists referenced in the incomingVariables parameter.
- *
- * @param appendUnmatchedVariables
- *   A boolean that states whether unmatched variables should be appended at the
- *   matched variables name lists.
- *
- * @note
- *   The caller of this function is the owner of the existingVariables and
- *   incomingVariableLists parameters and is responsible for their deallocation.
- *
- * @since 17.1
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON StringList_pa TecAppVarNameListCreateDefault(StringList_pa        existingVariables,
-                                                         const StringList_pa* incomingVariableLists,
-                                                         LgIndex_t            numIncomingVariableLists,
-                                                         Boolean_t            appendUnmatchedVariables);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Scan an alias list and see if a VarName exists in the list.
- * If it does not already, then tack it on to the end of the list.
- *
- * @return
- *   TRUE if the variable was successfully added to the list, FALSE otherwise.
- *
- * @param varNameList
- *   A list containing the variable names that currently exist in the dataset.
- *
- * @param varNameListOffset
- *   Offset of the target variable
- *
- * @param varName
- *   Name of the new alias
- *
- * @note
- *   The caller of this function is the owner of the VarNameList parameter and is responsible for their deallocation.
- *
- * @since 17.1
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON Boolean_t TecAppVarNameListAddVarName(StringList_pa varNameList,
-                                                  EntIndex_t    varNameListOffset,
-                                                  const char *  varName);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Return the offset for a variable name (regardless if it is a simple variable
- * name or the fully aliased variable name) from the variable name list for a
- * dataset.
- *
- * @return
- *   Returns the offset of the variable name or BAD_VAR_OFFSET if the variable name is not found.
- *
- * @param VarNameList
- *   A list containing the variable names that currently exist in the dataset.
- *
- * @param VarName
- *   Name of the new alias
- *
- * @note
- *   The caller of this function is the owner of the VarNameList parameter and is responsible for their deallocation.
- *
- * @since 17.1
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON EntIndex_t TecAppVarNameListGetVarOffset(StringList_pa varNameList,
-                                                     const char   *varName);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Set string to display persistent beta message in the workarea
- *
- * @param Message
- *   Message to display
- *
- * @since 17.3
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TecApp
- *
- * #internalattributes exclude_all, exclude_alldoc
- */
-LINKTOADDON Boolean_t TecAppSetPersistentWorkAreaMessage(const char* Message);
-
-/* - NO DOXYGEN COMMENT GENERATION -
-* Query the current recording language.
-*
-* @return
-*   The current recording langauge. Must be currently recording.
-*
-* @since 17.3
-*
-* @ingroup TecApp
-*
-* #internalattributes exclude_all, exclude_alldoc
-*/
-
-LINKTOADDON RecordingLangauge_e TecAppRecordingLangauge(void);
-
-/**
-* Format a time/date string, given a mask.
-*
-* @param inputDate
-*   Date to convert (Excel format).
-*
-* @param formattingMask
-*   Formatting mask. For example: "yyyy-mm", etc.
-*   See the Tecplot User's Manual for a complete description of time/date formatting masks.
-*
-* @param formattedValue
-*   Receives a formatted time/date string if the date can be formatted, otherwise receives a string of one or more '*'s.
-*   The caller must release this string using @ref TecUtilStringDealloc().
-*
-* @return
-*   TRUE if successful, FALSE if there is insufficient memory. If the return value is FALSE, then
-*   @param formattedValue will be set to NULL.
-*
-* Format December 31, 1899 as "yyyy"
-*
-* @code
-*   char *formattedDate = NULL;
-*
-*   // 1.0 == Dec 31, 1899
-*   if (TecUtilFormatTimeDateString(1.0, "yyyy", &formattedDate))
-*   {
-*      // Do something with formattedDate, which has the value "1899".
-*
-*      // Attempting to format using an invalid formatting mask (such as "zzzz") would result in
-*      // an output value of "****". However, the return value would still be @ref TRUE, and
-*      // the string would need to be released with @ref TecUtilStringDealloc().
-*      // The return value is @ref FALSE only if there is insufficient memory.
-*
-*      TecUtilStringDealloc(&formattedDate);
-*   }
-*   else
-*   {
-*       // Out of memory.
-*       // @param formattedDate will be NULL.
-*   }
-* @endcode
-*
-* @since
-*   18.2
-*
-* @ingroup TimeDate
-*/
-LINKTOADDON Boolean_t TecUtilFormatTimeDateString(double inputDate, const char* formattingMask, TP_GIVES char **formattedValue);
 #endif /* _TECUTILO_H */

@@ -116,7 +116,6 @@
 
 /*{{<exclude_all>
   TecUtilIsBusy
-  TecUtiltDataSetDefVarLoadFinish
   </exclude_all>}}*/
 
 
@@ -285,9 +284,9 @@ LINKTOADDON Boolean_t  STDCALL TecUtilArgListAppendArbParam(ArgList_pa  ArgList,
  * @ingroup ArgLists
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilArgListAppendArbParamPtr(ArgList_pa  ArgList,
-                                                              const char* Name,
-                                                              ArbParam_t* Value);
+LINKTOADDON Boolean_t STDCALL TecUtilArgListAppendArbParamPtr(ArgList_pa            ArgList,
+                                                              const char*           Name,
+                                                              TP_IN_OUT ArbParam_t* Value);
 /**
  * Append a double parameter to an argument list.
  *
@@ -376,7 +375,7 @@ LINKTOADDON Boolean_t  STDCALL TecUtilArgListAppendDouble(ArgList_pa  ArgList,
  */
 LINKTOADDON Boolean_t  STDCALL TecUtilArgListAppendDoublePtr(ArgList_pa        ArgList,
                                                              const char*       Name,
-                                                             double*           Value);
+                                                             TP_IN_OUT double* Value);
 /**
  * Append a string to an argument list.
  *
@@ -422,42 +421,6 @@ LINKTOADDON Boolean_t  STDCALL TecUtilArgListAppendDoublePtr(ArgList_pa        A
 LINKTOADDON Boolean_t  STDCALL TecUtilArgListAppendString(ArgList_pa  ArgList,
                                                           const char *Name,
                                                           const char *Value);
-/**
- * An undocumented equivalent to TecUtilArgListAppendArbParamPtr
- * specifically for string pointers, added to support Python.
- * Addons should use TecUtilArgListAppendArbParamPtr instead.
- *
- * @param ArgList
- *   The argument list
- *
- * @param Name
- *   Parameter Name. Use the SV_ constants listed with the extended function.
- *
- * @param Value
- *   Pointer value associated with the parameter name
- *
- * @return
- *   Returns TRUE is append is successful, FALSE otherwise.
- *
- *
- * @pre <em>ArgList</em>
- *   Argument list must be valid.
- *
- * @pre <em>Name</em>
- *   String must have a valid address and non-zero length.
- *
- * @pre <em>Value</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup ArgLists
- *
- * #internalattributes exclude_alldoc
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilArgListAppendStringPtr(ArgList_pa   ArgList,
-                                                            const char*  Name,
-                                                                  char** Value);
 /**
  * Appends a named array reference to the argument list.
  *
@@ -691,10 +654,10 @@ LINKTOADDON void STDCALL TecUtilArgListDealloc(TP_RECEIVES_GIVES ArgList_pa* Arg
  *
  *
  * @ingroup ArgLists
- *
- * #internalattributes exclude_alldoc
+ *   
+ * #internalattributes exclude_alldoc 
  */
-LINKTOADDON int32_t STDCALL TecUtilArgListGetArgCount(ArgList_pa ArgList);
+LINKTOADDON LgIndex_t STDCALL TecUtilArgListGetArgCount(ArgList_pa ArgList);
 
 /**
  * Returns the specified argument's type.
@@ -715,11 +678,11 @@ LINKTOADDON int32_t STDCALL TecUtilArgListGetArgCount(ArgList_pa ArgList);
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON ArgListArgType_e STDCALL TecUtilArgListGetArgTypeByIndex(ArgList_pa ArgList,
-                                                                     int32_t    Index);
+                                                                     LgIndex_t  Index);
 
 /**
  * Returns an allocated copy of the specified argument's name.
@@ -742,45 +705,11 @@ LINKTOADDON ArgListArgType_e STDCALL TecUtilArgListGetArgTypeByIndex(ArgList_pa 
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON TP_GIVES char* STDCALL TecUtilArgListGetArgNameByIndex(ArgList_pa ArgList,
-                                                                   int32_t    Index);
-
-/**
- * Returns the index of the argument with the given name.
- *
- * @since 2017.3
- *
- * @param argList
- *      The argument list.
- * @param name
- *      The argument name.
- * @param index
- *      Receives the index of the argument.
- *
- * @return
- *   Returns TRUE successful, FALSE otherwise.
- *
- *
- * @pre <em>argList</em>
- *   Argument list must be valid.
- *
- * @pre <em>name</em>
- *   String must have a valid address and non-zero length.
- *
- * @pre <em>index</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup ArgLists
- *
- * #internalattributes exclude_alldoc
- */
-LINKTOADDON Boolean_t STDCALL TecUtilArgListGetIndexByArgName(ArgList_pa argList,
-                                                              const char* name,
-                                                              TP_OUT int32_t* index);
+                                                                   LgIndex_t  Index);
 
 /**
  * Returns the ArbParam_t pointer value reference of the specified argument.
@@ -802,11 +731,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilArgListGetIndexByArgName(ArgList_pa argList
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON ArbParam_t* STDCALL TecUtilArgListGetArbParamPtrByIndex(ArgList_pa ArgList,
-                                                                    int32_t    Index);
+                                                                    LgIndex_t  Index);
 
 /**
  * Returns the double pointer value reference of the specified argument. The
@@ -828,11 +757,11 @@ LINKTOADDON ArbParam_t* STDCALL TecUtilArgListGetArbParamPtrByIndex(ArgList_pa A
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON double* STDCALL TecUtilArgListGetDoublePtrByIndex(ArgList_pa ArgList,
-                                                              int32_t    Index);
+                                                              LgIndex_t  Index);
 
 /**
  * Returns the ArbParam_t value of the specified argument. The argument's type
@@ -854,11 +783,11 @@ LINKTOADDON double* STDCALL TecUtilArgListGetDoublePtrByIndex(ArgList_pa ArgList
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON ArbParam_t STDCALL TecUtilArgListGetArbParamByIndex(ArgList_pa ArgList,
-                                                                int32_t    Index);
+                                                                LgIndex_t  Index);
 
 /**
  * Returns the double value of the specified argument. The argument's type must
@@ -880,11 +809,11 @@ LINKTOADDON ArbParam_t STDCALL TecUtilArgListGetArbParamByIndex(ArgList_pa ArgLi
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON double STDCALL TecUtilArgListGetDoubleByIndex(ArgList_pa ArgList,
-                                                          int32_t    Index);
+                                                          LgIndex_t  Index);
 
 /**
  * Returns the array value reference of the specified argument. The argument's
@@ -906,11 +835,11 @@ LINKTOADDON double STDCALL TecUtilArgListGetDoubleByIndex(ArgList_pa ArgList,
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON void* STDCALL TecUtilArgListGetArrayByIndex(ArgList_pa ArgList,
-                                                        int32_t    Index);
+                                                        LgIndex_t  Index);
 
 /**
  * Returns the function value reference of the specified argument. The
@@ -932,11 +861,11 @@ LINKTOADDON void* STDCALL TecUtilArgListGetArrayByIndex(ArgList_pa ArgList,
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON void* STDCALL TecUtilArgListGetFunctionByIndex(ArgList_pa ArgList,
-                                                           int32_t    Index);
+                                                           LgIndex_t  Index);
 
 /**
  * Returns the integer value of the specified argument. The argument's type
@@ -958,11 +887,11 @@ LINKTOADDON void* STDCALL TecUtilArgListGetFunctionByIndex(ArgList_pa ArgList,
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON int STDCALL TecUtilArgListGetIntByIndex(ArgList_pa ArgList,
-                                                    int32_t    Index);
+                                                    LgIndex_t  Index);
 
 /**
  * Returns the Set_pa value reference of the specified argument. The argument's
@@ -984,11 +913,11 @@ LINKTOADDON int STDCALL TecUtilArgListGetIntByIndex(ArgList_pa ArgList,
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON Set_pa STDCALL TecUtilArgListGetSetByIndex(ArgList_pa ArgList,
-                                                       int32_t    Index);
+                                                       LgIndex_t  Index);
 
 /**
  * Returns an allocated copy of the string value of the specified argument. The
@@ -1012,39 +941,11 @@ LINKTOADDON Set_pa STDCALL TecUtilArgListGetSetByIndex(ArgList_pa ArgList,
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON TP_GIVES char* STDCALL TecUtilArgListGetStringByIndex(ArgList_pa ArgList,
-                                                                  int32_t    Index);
-
-/**
- * Returns a pointer to an allocated copy of the string value of the
- * specified argument. The argument's type must match the request.
- *
- * @since 12.0.1
- *
- * @param ArgList
- *     The argument list.
- * @param Index
- *     Index of the argument in question.
- *
- * @return
- *     Pointer to an allocated character string representing the specified
- *     argument's value. The client is responsible for deallocating the result
- *     when it is no longer needed using TecUtilStringDealloc().
- *
- *
- * @pre <em>ArgList</em>
- *   Argument list must be valid.
- *
- *
- * @ingroup ArgLists
- *
- * #internalattributes exclude_alldoc
- */
-LINKTOADDON TP_GIVES char** STDCALL TecUtilArgListGetStringPtrByIndex(ArgList_pa ArgList,
-                                                                      int32_t    Index);
+                                                                  LgIndex_t  Index);
 
 /**
  * Returns the string list value reference of the specified argument. The
@@ -1066,16 +967,13 @@ LINKTOADDON TP_GIVES char** STDCALL TecUtilArgListGetStringPtrByIndex(ArgList_pa
  *
  *
  * @ingroup ArgLists
- *
+ *   
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON StringList_pa STDCALL TecUtilArgListGetStringListByIndex(ArgList_pa ArgList,
-                                                                     int32_t    Index);
+                                                                     LgIndex_t  Index);
 
 /**
- * @deprecated
- * Use TecUtilColorMapRedistributeControlPts instead.
- *
  * Redistribute the control points for the currently active color map so they
  * are evenly spaced across the color spectrum. This is equivalent to clicking
  * Redistribute Control Points in the Workspace/Color Map dialog. Note that
@@ -1130,11 +1028,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilColorMapRedistControlPts(void);
  * @ingroup ColorMap
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilColorMapCopyStandard(ContourColorMap_e ColorMap);
 
+LINKTOADDON Boolean_t STDCALL TecUtilColorMapCopyStandard(ContourColorMap_e ColorMap);
 /* - NO DOXYGEN COMMENT GENERATION -
  * @deprecated
- *  Not necessary in the new colormap system.
+ *  Not necessary in the new colormap system.  
  *
  * Redistribute the control points and reset the RGB values for the currently
  * active color map. This is equivalent to clicking Reset on the
@@ -1181,7 +1079,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilColorMapResetToFactory(void);
  * @ingroup Drawing
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFrameNeedsRedraw(UniqueID_t FrameID);
+LINKTOADDON Boolean_t STDCALL TecUtilFrameNeedsRedraw(UniqueID_t FrameID);
 
 /**
  * Redraw the current frame.
@@ -1657,7 +1555,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFramePushTop(void);
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilFramePush(int32_t FrameNum);
+LINKTOADDON Boolean_t STDCALL TecUtilFramePush(int FrameNum);
 
 /**
  * @deprecated
@@ -1666,7 +1564,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFramePush(int32_t FrameNum);
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilFramePop(int32_t FrameNum);
+LINKTOADDON Boolean_t STDCALL TecUtilFramePop(int FrameNum);
 
 /**
  * Pop the frame on top at a specified position on the paper.
@@ -1802,7 +1700,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameActivateByName(const char *Name);
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilFrameActivateByNumber(int32_t FrameNum);
+LINKTOADDON Boolean_t STDCALL TecUtilFrameActivateByNumber(int FrameNum);
 /**
  *   Activates a frame identified by a unique ID.
  *
@@ -1817,7 +1715,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameActivateByNumber(int32_t FrameNum);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFrameActivateByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -1901,72 +1799,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameActivateAtPosition(double X,
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilFrameDeleteActive(void);
-
-/**
- * Deletes a frame identified by a unique ID.
- *
- * @since
- *   2017.2
- *
- * @param UniqueID
- *   Unique ID of the frame.
- *
- * @return
- *   TRUE if successful, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilFrameDeleteByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
- * </FortranSyntax>
- *
- * @code
- *   {
- *     UniqueID_t id;
- *     TecUtilLockStart(AddOnID);
- *     id = TecUtilFrameGetUniqueID();
- *     TecUtilFrameDeleteByUniqueID(id);
- *     TecUtilLockFinish(AddOnID);
- *   }
- * @endcode
- *
- * @ingroup FrameManagement
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilFrameDeleteByUniqueID(UniqueID_t UniqueID);
-
-
-
-
-/**
- * Deletes a frame identified by frame number.
- *
- * @since
- *   2017.4
- *
- * @param frameNumber
- *   Number of the frame (i.e. position on the stack)
- *
- * @return
- *   TRUE if successful, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilFrameDeleteByNumber(frameNum)
- *    INTEGER*8 frameNum
- * </FortranSyntax>
- *
- * @code
- *   {
- *     TecUtilLockStart(AddOnID);
- *     TecUtilFrameDeleteByUniqueID(3);
- *     TecUtilLockFinish(AddOnID);
- *   }
- * @endcode
- *
- * @ingroup FrameManagement
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilFrameDeleteByNumber(int32_t frameNum);
-
 /**
  *   Pop a frame (specified by name) to the top, but do not activate it.
  *
@@ -2036,7 +1868,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToTopByName(const char *Name);
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToTopByNumber(int32_t FrameNum);
+LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToTopByNumber(int FrameNum);
 /**
  *   Pops a frame identified by a unique ID, but does not activate the frame.
  *
@@ -2051,7 +1883,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToTopByNumber(int32_t FrameNum);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFrameMoveToTopByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -2146,7 +1978,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToBottomByName(const char *Name);
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToBottomByNumber(int32_t FrameNum);
+LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToBottomByNumber(int FrameNum);
 
 /**
  *   Pushes a frame identified by a unique ID. Does not affect which frame
@@ -2163,7 +1995,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToBottomByNumber(int32_t FrameNum)
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFrameMoveToBottomByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -2204,7 +2036,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToBottomByUniqueID(UniqueID_t Uniq
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFrameSetNumberByUniqueID(UniqueID, NewNumber)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  *    INTEGER*4 NewNumber
  * </FortranSyntax>
  *
@@ -2214,8 +2046,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameMoveToBottomByUniqueID(UniqueID_t Uniq
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilFrameSetNumberByUniqueID(UniqueID_t UniqueID,
-                                                              int32_t NewNumber);
+LINKTOADDON Boolean_t STDCALL TecUtilFrameSetNumberByUniqueID(UniqueID_t UniqueID, int NewNumber);
 
 /**
  *   Resize all frames so that they fit inside the hardclip limits of the paper.
@@ -2235,25 +2066,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameSetNumberByUniqueID(UniqueID_t UniqueI
  */
 LINKTOADDON Boolean_t STDCALL TecUtilFrameFitAllToPaper(void);
 
-
-/**
- *   Remove all datasets and annotations from a frame but leave all frame attributes 
- *   (size, position background color etc.) intact.  If this frame was the sole owner
- *   of the dataset the dataset will be deleted.
- *
- * @since 2018.2
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilFrameReset(FrameID)
- *    INTEGER*4       FrameID
- * </FortranSyntax>
- *
- * @ingroup FrameManagement
- *
- */
-LINKTOADDON void STDCALL TecUtilFrameReset(UniqueID_t frameID);
-
-
 /**
  *   This function gets the current background color of the frame.
  *
@@ -2271,7 +2083,7 @@ LINKTOADDON void STDCALL TecUtilFrameReset(UniqueID_t frameID);
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilFrameGetBackgroundColor(void);
+LINKTOADDON ColorIndex_t STDCALL TecUtilFrameGetBackgroundColor(void);
 
 /**
  * Sets the frame background color to the specified color and surveys all basic color assignments
@@ -2284,7 +2096,7 @@ LINKTOADDON int32_t STDCALL TecUtilFrameGetBackgroundColor(void);
  * Exceptions:
  * 1. For geometries and text boxes if the line and fill colors are the same and filling is
  *    active then both lines and fill follow the fill rules above.
- * 2. For zone, slice, iso-surface, and streamtrace object types the basic color shading (e.g.
+ * 2. For zone, slice, iso-surface, and streamtrace object types the basic color shading (i.e.
  *    fill) only follows the fill rules above if lighting effects are not being used.
  *
  * @since
@@ -2298,7 +2110,7 @@ LINKTOADDON int32_t STDCALL TecUtilFrameGetBackgroundColor(void);
  *
  * @ingroup FrameManagement
  */
-LINKTOADDON SetValueReturnCode_e STDCALL TecUtilFrameSetBackgroundColor(int32_t color);
+LINKTOADDON SetValueReturnCode_e STDCALL TecUtilFrameSetBackgroundColor(ColorIndex_t color);
 
 /**
  * Get the name of the current frame.
@@ -2374,42 +2186,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilFrameGetName(TP_GIVES char** Name);
  */
 LINKTOADDON Boolean_t STDCALL TecUtilStyleSetBase(StyleBase_e StyleBase);
 
-/**
- * By default Tecplot loads variables that are employed for a plot leaving the rest in their current
- * state, possibly not even loaded. This function identifies a set of variables in the dataset as
- * needed by the user for exploration and instructs Tecplot to make every effort to keep them loaded
- * in memory the next time an operation is performed.
- *
- * @param DataSetID
- *     The unique ID of the data set.
- *
- * @param Zones
- *     A subset of the enabled zones for which the needed variables are loaded.
- *
- * @param VarsNeeded
- *     The set of variables that should be marked as always needed or an empty set if none of the
- *     variables should be considered high priority with regard to load status. This set of
- *     variables, combined with the set of variables employed for the plot, are loaded prior to
- *     various operations in Tecplot that need data values such as slicing, probing, data
- *     spreadsheet, etc.
- *
- * @return
- *     TRUE if the set of variables needed by the user was updated, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataSetMakeVarsAvailableByUniqueID(VarsNeededPtr)
- *    POINTER (VarsNeededPtr, VarsNeeded)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilDataSetGetUniqueID()
- * @since 17.1
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetMakeVarsAvailableByUniqueID(UniqueID_t DataSetID,
-                                                                        Set_pa     Zones,
-                                                                        Set_pa     VarsNeeded);
 
 /**
  * @deprecated
@@ -2433,9 +2209,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneDelete(Set_pa ZoneList);
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
- *
- * @pre <em>ZoneList</em>
- *   Enabled zones must not be a subset of the zones to operate on.
  *
  *
  * <FortranSyntax>
@@ -2485,9 +2258,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetDeleteZone(Set_pa ZoneList);
  *   Returns TRUE if variables were deleted, FALSE otherwise.
  *
  * @pre Must have one or more frames.
- *
- * @pre <em>VarList</em>
- *   Enabled variables must not be a subset of the variables to operate on.
  *
  *
  * <FortranSyntax>
@@ -3078,7 +2848,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilReadDataSet(ReadDataOption_e  ReadDataOptio
  *   TecUtilArgListAppendInt(ArgList,       SV_INCLUDEDATA,     TRUE);
  *   TecUtilArgListAppendInt(ArgList,       SV_COLLAPSEZONESANDVARS,    FALSE);
  *   TecUtilArgListAppendInt(ArgList,       SV_VARLOADMODE,     VarLoadMode_ByPosition);
- *   TecUtilArgListAppendSet(ArgList,       SV_VARPOSITIONLIST, NULL);
+ *   TecUtilArgListAppendArray(ArgList,     SV_VARPOSITIONLIST, NULL);
  *   TecUtilArgListAppendInt(ArgList,       SV_ISKIP, 1);
  *   TecUtilArgListAppendInt(ArgList,       SV_JSKIP, 1);
  *   TecUtilArgListAppendInt(ArgList,       SV_KSKIP, 1);
@@ -3151,19 +2921,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetReadX(ArgList_pa ArgList);
  * Notes:
  *   Set to TRUE to write the data to the data files. Set to FALSE to only write text and
  *   geometries, depending on SV_INCLUDETEXT and SV_INCLUDEGEOM
- *
- * Name:
- *   SV_INCLUDECUSTOMLABELS
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   TRUE
- * Required:
- *   No
- * Notes:
- *   Set to TRUE to include custom labels in the generated datafile. Set to FALSE to leave out of the datafile.
  *
  * Name:
  *   SV_INCLUDEDATASHARELINKAGE
@@ -3410,7 +3167,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilWriteDataSet(const char  *FName,
                                                   Set_pa       VarsToWrite,
                                                   Boolean_t    WriteBinary,
                                                   Boolean_t    UsePointFormat,
-                                                  int32_t      AsciiPrecision);
+                                                  SmInteger_t  AsciiPrecision);
 /**
  *   Create a rectangular zone. If no data set exists when this command is executed, a data set is
  *   created with variables X, Y (and Z, if KMAX>1). If a data set exists prior to this command, the
@@ -3908,20 +3665,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilNewLayout(void);
  *   any relative paths in your layout may not be correctly resolved.
  *
  * @param AltInstructions
- *   Alternate instructions for the layout file.  Each string within the stringlist
- *   will be delivered to successive datasets one at a time.
- *   If the load instructions themselves contain multiple independent strings then
- *   you must use a newline character to separate each string.   For example suppose
- *   the instructions for your loader was a stringlist containing the following
- *   strings:
- *
- *   "STANDARDSYNTAX" "1.0" "FILELIST_Files" "1" "t.grd"
- *
- *   You would need to generate a single string that looked like:
- *
- *   "STANDARDSYNTAX\n1.0\nFILELIST_Files\n1\nt.grd" and insert that as the
- *   one and only string in the stringlist.   If your layout had two datasets to
- *   satisfy then you would deposit two strings like the one above in the stringlist.
+ *   Alternate instructions for the layout file. In most cases, this will be a string list containing
+ *   file names which will override the data files listed in the layout file. Use NULL to load the
+ *   data referenced in the layout file
  *
  * @param Append
  *   TRUE to append the new layout file to the current layout or FALSE to replace the current layout
@@ -4001,20 +3747,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilOpenLayout(const char*   FName,
  * Default:
  *   NULL
  * Notes:
- *   Alternate instructions for the layout file.  Each string within the stringlist
- *   will be delivered to successive datasets one at a time.
- *   If the load instructions themselves contain multiple independent strings then
- *   you must use a newline character to separate each string.   For example suppose
- *   the instructions for your loader was a stringlist containing the following
- *   strings:
- *
- *   "STANDARDSYNTAX" "1.0" "FILELIST_Files" "1" "t.grd"
- *
- *   You would need to generate a single string that looked like:
- *
- *   "STANDARDSYNTAX\n1.0\nFILELIST_Files\n1\nt.grd" and insert that as the
- *   one and only string in the stringlist.   If your layout had two datasets to
- *   satisfy then you would deposit two strings like the one above in the stringlist.
+ *   Alternate instructions for the layout file. In most cases, this will be a
+ *   string list containing file names which will override the data files
+ *   listed in the layout file. Use NULL to load the data referenced in the
+ *   layout file.
  *
  * Name:
  *   SV_APPEND
@@ -4123,7 +3859,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilOpenLayoutX(ArgList_pa ArgList);
  *   you can write out the data (in its entirety) thus validating the journal for that dataset.
  *   You can verify the journal's integrity before calling this function as follows:
  * @code
- *   Boolean_t result = TRUE;
+ *   bool result = true;
  *   TecUtilFrameLightweightLoopStart();
  *   do
  *   {
@@ -4270,7 +4006,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilSaveLayout(const char *FName,
  *   you can write out the data (in its entirety) thus validating the journal for that dataset.
  *   You can verify the journal's integrity before calling this function as follows:
  * @code
- *   Boolean_t result = TRUE;
+ *   bool result = true;
  *   TecUtilFrameLightweightLoopStart();
  *   do
  *   {
@@ -4322,42 +4058,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilSaveLayout(const char *FName,
  * @ingroup LayoutSupport
  */
 LINKTOADDON Boolean_t STDCALL TecUtilSaveLayoutX(ArgList_pa ArgList);
-
-/* - NO DOXYGEN COMMENT GENERATION -
- * Adds the callback and its client data to the list of pre-write event
- * callbacks. Tecplot calls all pre-write event callbacks with their associated
- * client data immediately before writing a layout.
- *
- * @since
- *   15.3
- *
- * @param WriteLayoutPreWriteCallback
- *   Callback to call immediately before a Tecplot writes a layout.
- * @param ClientData
- *   Client data that Tecplot passes along to the callback as a parameter.
- *
- * @return
- *   TRUE if the callback and its client data were successfully added, FALSE
- *   otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilAddPreWriteLayoutCallback(
- *   &                   WriteLayoutPreWriteCallback,
- *   &                   ClientDataPtr)
- *    EXTERNAL           WriteLayoutPreWriteCallback
- *    POINTER            (ClientDataPtr, ClientData)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSaveLayout
- *
- * @ingroup LayoutSupport
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilAddPreWriteLayoutCallback(WriteLayoutPreWriteCallback_pf writeLayoutPreWriteCallback,
-                                                               ArbParam_t                     clientData);
 
 /**
  *   Read a stylesheet file into the current frame.
@@ -4769,9 +4469,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilReadColorMap(const char *FName);
  *
  * @code
  *
- *   uint8_t RValues[5];
- *   uint8_t GValues[5]
- *   uint8_t BValues[5];
+ *   ColorIndex_t RValues[5];
+ *   ColorIndex_t GValues[5]
+ *   ColorIndex_t BValues[5];
  *
  *   RValues[0] = 0; GValues[0] = 0; BValues[0] = 255;
  *   RValues[1] = 0; GValues[1] = 255; BValues[1] = 255;
@@ -4786,10 +4486,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilReadColorMap(const char *FName);
  * @ingroup ColorMap
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilRawColorMap(int            NumRawRGBValues,
-                                                 const uint8_t* RawRValues_Array,
-                                                 const uint8_t* RawGValues_Array,
-                                                 const uint8_t* RawBValues_Array);
+LINKTOADDON Boolean_t STDCALL TecUtilRawColorMap(int           NumRawRGBValues,
+                                                 ColorIndex_t *RawRValues_Array,
+                                                 ColorIndex_t *RawGValues_Array,
+                                                 ColorIndex_t *RawBValues_Array);
 /**
  *   Write the current color map to a file.
  *
@@ -5071,244 +4771,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilWorkViewTranslate(double X,
                                                        double Y);
 
 /**
- * Performs the specified view command option. See SV_VIEWOP below for command option details.
- *
- * @param ArgList
- *   Set of Arglist entries.  This is built using calls to
- *   TecUtilArgListAppendXXXX functions.
- *
- * <ArgListTable>
- * Name:
- *   SV_VIEWOP
- * Type:
- *   View_e
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Required:
- *   Yes
- * Notes:
- *   View command to execute: The possible values are:
- *   @par \ref View_AxisFit
- *       Resets the range on a specific axis so that it equals the minimum and maximum of the data
- *       being plotted. If the axis dependency is not independent then this action may also affect
- *       the range on another axis.
- *   @par \ref View_AxisMakeCurrentValuesNice
- *       Resets the axis-line label values such that all currently displayed values are set to have
- *       the smallest number of significant digits possible.
- *   @par \ref View_AxisNiceFit
- *       Resets the range on a specific axis so that it equals the minimum and maximum of the data
- *       being plotted, but makes the axis values "nice" by setting labels to have the smallest
- *       number of significant digits possible.  If the axis dependency is not independent then this
- *       action may also affect the range on another axis.
- *   @par \ref View_AxisResetToEntireCircle
- *       Resets the Theta-R Axis to initial settings. For Polar plots only.
- *   @par \ref View_Center
- *       Centers the data within the axis grid area.
- *   @par \ref View_Copy
- *       Copies the current view to the view paste buffer. See also $!VIEW PASTE.
- *   @par \ref View_DataFit
- *       Fits the current set of data zones or line mappings being plotted within the grid area. This
- *       does not take into consideration text or geometries.
- *   @par \ref View_Fit
- *       Fits the entire plot to the grid area. This also takes into consideration text and
- *       geometries that are plotted using the grid coordinate system. In 3D, this also includes the
- *       axes.
- *   @par \ref View_FitSurfaces
- *       Fits active plot surfaces to the grid area. 3D volume zones are excluded when surfaces to
- *       plot are set to none. See $!FIELDMAP for more information on setting surfaces to plot.
- *   @par \ref View_Last
- *       Retrieves the previous view from the view stack. Each frame mode within each frame maintains
- *       its own view stack. $!VIEW LAST will not reverse alterations to data.
- *   @par \ref View_MakeCurrentViewNice
- *       Shifts axis to make axis-line values nice without changing the extents of the window. Only
- *       works in Sketch/XY/2D.
- *   @par \ref View_NiceFit
- *       Changes view to make the extents of the frame neatly hold the plot with integer values for
- *       axis labels. Only works in Sketch/XY/2D.
- *   @par \ref View_Paste
- *       Retrieves the view from the view paste buffer and assign it to the active frame.
- *   @par \ref View_Push
- *       Instructs Tecplot 360 to push the current view onto the view stack. A view will not be
- *       pushed if the current view is the same as the top view on the stack. Note that commands
- *       VIEW AXISFIT, VIEW CENTER, VIEW DATAFIT, VIEW FIT, and VIEW ZOOM automatically push a view
- *       onto the stack. Tecplot 360 automatically pushes the current view onto the stack when a
- *       $!REDRAW command is issued and the current view is different from the top view on the view
- *       stack.
- *   @par \ref View_SetMagnification
- *       Sets the magnification for the data being plotted. A magnification of 1 will size the plot
- *       so it can fit within the grid area.
- *   @par \ref View_Translate
- *       Shift the data being plotted in the X- and/or Y-direction. The amount translated is in
- *       frame units.
- *   @par \ref View_Zoom
- *       Changes the view by "zooming" into the data. In Sketch, XY, and 2D frame mode plots,
- *       Tecplot 360 will adjust the ranges on the axis to view the region defined by the rectangle
- *       with corners at (X1, Y1) and (X2, Y2). For 3D orthographic plots, the view is translated
- *       and scaled to fit the region. For 3D perspective plots, the view is rotated about the
- *       viewer and scaled to fit the region. X1 and so forth are measured in grid coordinates.
- *
- * Name:
- *   SV_CONSIDERBLANKING
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   False
- * Required:
- *   No
- * Notes:
- *   If TRUE, Tecplot will only consider the non-blanked min/max values when performing the view
- *   operation. This argument only applies to the following view operations: \ref View_Fit,
- *   \ref View_DataFit, \ref View_AxisFit, \ref View_Center, \ref View_NiceFit, \ref View_AxisNiceFit,
- *   \ref View_FitSurfaces.
- *
- * Name:
- *   SV_AXIS
- * Type:
- *   char
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   'X' or 'T' depending on the plot type.
- * Required:
- *   No
- * Notes:
- *   'X', 'Y', or 'Z' for Cartesian 3D plots
- *   'X' or 'Y' for XY-Line or Cartesian 2D plots
- *   'T' or 'R' for Polar-Line plots
- *
- * Name:
- *   SV_AXISNUM
- * Type:
- *   EntIndex_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   1
- * Required:
- *   No
- * Notes:
- *   If the plot type is PlotType_XYLine there are up to 5 X- and Y- axes.
- *   This parameter specifies the axis index on which to probe.
- *
- * Name:
- *   SV_MAGNIFICATION
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Required:
- *   Yes
- * Notes:
- *   Although not required for all view operations, it is required for the SV_VIEWOP
- *   \ref View_SetMagnification operation.
- *
- * Name:
- *   SV_X
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Required:
- *   Yes
- * Notes:
- *   Although not required for all view operations, it is required for the SV_VIEWOP
- *   \ref View_Translate operation.
- *
- * Name:
- *   SV_Y
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Required:
- *   Yes
- * Notes:
- *   Although not required for all view operations, it is required for the SV_VIEWOP
- *   \ref View_Translate operation.
- *
- * Name:
- *   SV_X1
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Required:
- *   Yes
- * Notes:
- *   Although not required for all view operations, it is required for the SV_VIEWOP
- *   \ref View_Zoom operation.
- *
- * Name:
- *   SV_Y1
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Required:
- *   Yes
- * Notes:
- *   Although not required for all view operations, it is required for the SV_VIEWOP
- *   \ref View_Zoom operation.
- *
- * Name:
- *   SV_X2
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Required:
- *   Yes
- * Notes:
- *   Although not required for all view operations, it is required for the SV_VIEWOP
- *   \ref View_Zoom operation.
- *
- * Name:
- *   SV_Y2
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Required:
- *   Yes
- * Notes:
- *   Although not required for all view operations, it is required for the SV_VIEWOP
- *   \ref View_Zoom operation.
- *
- * </ArgListTable>
- *
- * @return
- *   TRUE if the view operation completed successfully, FALSE otherwise
- *
- * @pre Must have one or more pages.
- * @pre Must have one or more frames.
- *
- * @pre <em>ArgList</em>
- *   Argument list must be valid.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilViewX(ArgListPtr)
- *    POINTER (ArgListPtr, ArgList)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilViewAxisFit(), TecUtilViewAxisFitToEntireCircle(), TecUtilViewAxisMakeCurValsNice(),
- * TecUtilViewAxisNiceFit(), TecUtilViewCenter(), TecUtilViewCopy(), TecUtilViewDataFit(),
- * TecUtilViewFit(), TecUtilViewLast(), TecUtilViewMakeCurViewNice(), TecUtilViewNiceFit(),
- * TecUtilViewPaste(), TecUtilViewPush(), TecUtilViewScale(), TecUtilViewSetMagnification(),
- * TecUtilViewTranslate(), TecUtilViewZoom()
- *
- * @since 16.1
- *
- * @ingroup View
- */
-LINKTOADDON Boolean_t STDCALL TecUtilViewX(ArgList_pa ArgList);
-
-/**
  * Instruct Tecplot to push the current view onto the view stack associated
  * with the frame mode for the current frame. A view will not be pushed if the
  * current view is the same as the top view on the stack. Functions
@@ -5335,31 +4797,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewX(ArgList_pa ArgList);
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilViewPush(void);
-
 /**
- * Returns TRUE if the current paste buffer is able to be pasted in the current frame. For example if the copied
- * view was a 2d view, it will return TRUE if the current view is also 2d and FALSE otherwise.
- *
- * @return
- *   TRUE if able to paste in the current view , FALSE if not.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilViewOkToPaste()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup View
- *
- * @sa TecUtilViewPaste(), TecUtilViewCopy()
- *
- * @since 15.1
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilViewOkToPaste(void);
-
-/**
- * Retrieve the view from the view paste buffer and assign it to the current frame.
+ *   Retrieve the view from the view paste buffer and assign it to the current frame.
  *
  * @return
  *   TRUE if successful, FALSE if not.
@@ -5375,7 +4814,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilViewOkToPaste(void);
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilViewPaste(void);
-
 /**
  * Copy the view from the current frame to the view paste buffer. This view can
  * later be pasted into any frame that uses the same frame mode as the current
@@ -5397,10 +4835,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewPaste(void);
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilViewCopy(void);
-
 /**
- * Retrieve the previous view from the view stack. Each frame mode within each frame maintains its
- * own view stack.
+ *   Retrieve the previous view from the view stack. Each frame mode within each frame maintains its
+ *   own view stack.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -5416,11 +4853,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewCopy(void);
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilViewLast(void);
-
 /**
- * Change the view by "zooming" into the image. Tecplot will adjust the ranges on the axis to view
- * the region defined by the rectangle with corners at (X1, Y1) and (X2, Y2). X1, Y1, X2, and Y2 are
- * defined in the units of the X- and Y-axis (that is, grid coordinates).
+ *   Change the view by "zooming" into the image. Tecplot will adjust the ranges on the axis to view
+ *   the region defined by the rectangle with corners at (X1, Y1) and (X2, Y2). X1, Y1, X2, and Y2 are
+ *   defined in the units of the X- and Y-axis (that is, grid coordinates).
  *
  * @param X1
  *   X min Corner of the rectangle to be viewed.
@@ -5466,7 +4902,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewZoom(double X1,
                                               double X2,
                                               double Y2);
 /**
- * Shift the image in the X- and/or Y-direction. The amount translated is in frame units.
+ *   Shift the image in the X- and/or Y-direction. The amount translated is in frame units.
  *
  * @param X
  *   Amount to shift the data in the X-direction.
@@ -5501,7 +4937,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewTranslate(double X,
                                                    double Y);
 
 /**
- * Center the data within the axis grid area.
+ *   Center the data within the axis grid area.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -5528,8 +4964,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewCenter(void);
 LINKTOADDON Boolean_t STDCALL TecUtilViewScale(double Scale);
 
 /**
- * Scale (magnify) the view by a given value. Set the magnification factor for the current view
- * relative to a view where the data fit to full frame size.
+ *   Scale (magnify) the view by a given value. Set the magnification factor for the current view
+ *   relative to a view where the data fit to full frame size.
  *
  * @param Magnification
  *   Set the magnification to this value.
@@ -5557,7 +4993,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewScale(double Scale);
 LINKTOADDON Boolean_t STDCALL TecUtilViewSetMagnification(double Magnification);
 
 /**
- * Reset the range of a polar axis to fit the entire circle.
+ *   Reset the range of a polar axis to fit the entire circle.
  *
  * @param Axis
  *   Valid values are 'T' or 'R'.
@@ -5591,13 +5027,13 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewSetMagnification(double Magnification);
  * @ingroup View
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilViewAxisFitToEntireCircle(char    Axis,
-                                                               int32_t AxisNum);
+LINKTOADDON Boolean_t STDCALL TecUtilViewAxisFitToEntireCircle(char Axis,
+                                                               short AxisNum);
 
 /**
- * Reset the range on a specific axis so that it equals the minimum and maximum of the data being
- * plotted. If the axis dependency is not independent then this action may also affect the range on
- * another axis.
+ *   Reset the range on a specific axis so that it equals the minimum and maximum of the data being
+ *   plotted. If the axis dependency is not independent then this action may also affect the range on
+ *   another axis.
  *
  * @param Axis
  *   Valid values are 'X' or 'Y', 'Z', 'T' or 'R'.
@@ -5632,12 +5068,12 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewAxisFitToEntireCircle(char    Axis,
  * @ingroup View
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilViewAxisFit(char    Axis,
-                                                 int32_t AxisNum);
+LINKTOADDON Boolean_t STDCALL TecUtilViewAxisFit(char Axis,
+                                                 short AxisNum);
 
 /**
- * Fit the data being plotted within the axis grid area. This does not take into consideration text
- * or geometries.
+ *   Fit the data being plotted within the axis grid area. This does not take into consideration text
+ *   or geometries.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -5655,9 +5091,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewAxisFit(char    Axis,
 LINKTOADDON Boolean_t STDCALL TecUtilViewDataFit(void);
 
 /**
- * Resizes the plot so that all surfaces are included in the frame, excluding any volume zones.
- * The Fit Surfaces operation is performed when your dataset is first displayed.
- * @note:
+ *   Resizes the plot so that all surfaces are included in the frame, excluding any volume zones.
+ *   The Fit Surfaces operation is performed when your dataset is first displayed.
+ * Notes:
  *   TecUtilViewDataFit and TecUtilViewFitSurfaces are only different in 3D plot type, for all other
  *   plot types this function behaves exactly as TecUtilViewDataFit.
  *
@@ -5679,8 +5115,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewDataFit(void);
 LINKTOADDON Boolean_t STDCALL TecUtilViewFitSurfaces(void);
 
 /**
- * Fit the data being plotted within the axis grid area. This also takes into consideration text and
- * geometries that are plotted using the grid coordinate system.
+ *   Fit the data being plotted within the axis grid area. This also takes into consideration text and
+ *   geometries that are plotted using the grid coordinate system.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -5698,9 +5134,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewFitSurfaces(void);
 LINKTOADDON Boolean_t STDCALL TecUtilViewFit(void);
 
 /**
- * Fit the data being plotted within the axis grid area leaving a determined border around the edge
- * of the plot to make in more visually appealing. This also takes into consideration text and
- * geometries that are plotted using the grid coordinate system.
+ *   Fit the data being plotted within the axis grid area leaving a determined border around the edge
+ *   of the plot to make in more visually appealing. This also takes into consideration text and
+ *   geometries that are plotted using the grid coordinate system.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -5718,7 +5154,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewFit(void);
 LINKTOADDON Boolean_t STDCALL TecUtilViewNiceFit(void);
 
 /**
- * Give a border to the current view.
+ *   Give a border to the current view.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -5736,9 +5172,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewNiceFit(void);
 LINKTOADDON Boolean_t STDCALL TecUtilViewMakeCurViewNice(void);
 
 /**
- * Reset the range on a specific axis so that it equals a little more than the minimum and maximum of
- * the data being plotted allowing a small border to enhance visual appeal. If the axis dependency
- * is not independent then this action may also affect the range on another axis.
+ *   Reset the range on a specific axis so that it equals a little more than the minimum and maximum of
+ *   the data being plotted allowing a small border to enhance visual appeal. If the axis dependency
+ *   is not independent then this action may also affect the range on another axis.
  *
  * @param Axis
  *   Valid values are 'X' or 'Y', 'Z', 'T' or 'R'.
@@ -5767,11 +5203,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewMakeCurViewNice(void);
  * @ingroup View
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilViewAxisNiceFit(char    Axis,
-                                                     int32_t AxisNum);
-
+LINKTOADDON Boolean_t STDCALL TecUtilViewAxisNiceFit(char  Axis,
+                                                     short AxisNum);
 /**
- * Makes the curently viewed axis values visually appealing.
+ *   Makes the curently viewed axis values visually appealing.
  *
  * @param Axis
  *   Valid values are 'X' or 'Y', 'Z', 'T' or 'R'.
@@ -5800,9 +5235,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewAxisNiceFit(char    Axis,
  * @ingroup View
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilViewAxisMakeCurValsNice(char    Axis,
-                                                             int32_t AxisNum);
-
+LINKTOADDON Boolean_t STDCALL TecUtilViewAxisMakeCurValsNice(char  Axis,
+                                                             short AxisNum);
 /**
  *   Reset the ranges on the 3-D axes. The current frame mode must be 3D to use this function.
  *
@@ -5862,45 +5296,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilReset3DAxes(void);
 LINKTOADDON void STDCALL TecUtilRotateToSpecificAngles(double Psi,
                                                        double Theta,
                                                        double Alpha);
-/**
- *
- * Rotate the specified slice group arbitrary slice in an axis an amount of degrees.
- *
- * @since
- *   14.3
- *
- * @param Axis
- *   Axis, valid values are 'X', 'Y', 'Z'
- *
- * @param Degrees
- *   Rotation, in degrees, of the provided axis. Values can be either positive or negative.
- *
- * @param SliceGroup
- *   SliceGroup that will be rotated
- *
- * @pre Must have one or more frames.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE FUNCTION TecUtilRotateArbitrarySlice(
- *   &                   Axis,
- *   &                   Degrees
- *   &                   SliceGroup)
- *    INTEGER*4       Axis
- *    REAL*8          Degrees
- *    INTEGER*4       SliceGroup
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Axis
- *
- *
- */
-LINKTOADDON void STDCALL TecUtilRotateArbitrarySlice(char   Axis,
-                                                     double Degrees,
-                                                     int32_t   SliceGroup);
 
 /**
  *
@@ -5926,43 +5321,6 @@ LINKTOADDON void STDCALL TecUtilRotateArbitrarySlice(char   Axis,
  *
  */
 LINKTOADDON void STDCALL TecUtilReset3DAngles(void);
-
-/**
- * Queries the 3-D viewer angles that are used for when calling TecUtilReset3DAngles.
- * Querying these values allows for setting variants of default view, for example an inverse view
- * when a viewer is looking at the model from an opposite direction.
- *
- * @param PsiAngle
- *   Receives the Psi angle in degrees. May be NULL
- *
- * @param ThetaAngle
- *   Receives the Theta angle in degrees. May be NULL
- *
- * @param AlphaAngle
- *   Receives the Alpha angle in degrees. May be NULL
- *
- *
- * @pre <em>PsiAngle</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>ThetaAngle</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>AlphaAngle</em>
- *   Pointer must be a valid address or NULL.
- * @pre Must have one or more frames.
- *
- * @pre <em>VALID_REF(FB)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @since 16.2
- * @sa TecUtilReset3DAngles, TecUtilThreeDViewGetViewerAngle, TecUtilRotateToSpecificAngles
- *
- */
-LINKTOADDON void STDCALL TecUtilThreedViewGetDefaultAngles(TP_OUT double* PsiAngle,
-                                                           TP_OUT double* ThetaAngle,
-                                                           TP_OUT double* AlphaAngle);
 
 /**
  *   Recalculate the scale factors for the 3-D axes. Aspect ratio limits are taken into account. The
@@ -6157,11 +5515,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAtPosition(double    X,
  * Required:
  *   No
  * Notes:
- *   If PickCollectMode_ExclusiveSelect, the list of picked objects is cleared before the attempt
+ *   If PickCollectMode_ExclusiveSelect, the list of picked objects is cleared before the attempt 
  *   is made to add a new object. If PickCollectMode_InvertingAdd, the new object is added to the
- *   list of picked objects. (This is like holding Shift down while selecting objects in the
+ *   list of picked objects. (This is like holding Shift down while selecting objects in the 
  *   workspace.) PickCollectMode_AlwaysAdd never removes items from picklist, and will add new items
- *   to picklist if new item is under cursor and not currently picked. If CollectingObjects is
+ *   to picklist if new item is under cursor and not currently picked. If CollectingObjects is 
  *   PickCollectMode_InvertingAdd, DiggingForObjects must be FALSE.
  *
  * Name:
@@ -6215,20 +5573,20 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAtPosition(double    X,
  * Select a visible object at the location (1.5, 3.2):
  *
  * @code
- * Boolean_t result = FALSE;
+ * bool result = false;
  * ArgList_pa ArgList = TecUtilArgListAlloc();
  *
  * // X,Y Position
  * TecUtilArgListAppendDouble(ArgList, SV_X,  1.5);
  * TecUtilArgListAppendDouble(ArgList, SV_Y,  3.2);
- *
- * // Collect Mode
+ * 
+ * // Collect Mode    
  * PickCollectMode_e collectMode = PickCollectMode_AlwaysAdd;
  * TecUtilArgListAppendInt(ArgList, SV_COLLECTINGOBJECTSMODE, collectMode);
- *
- * // Digging for objects *
+ * 
+ * // Digging for objects * 
  * TecUtilArgListAppendInt(ArgList, SV_DIGGINGFOROBJECTS, TRUE);
- *
+ * 
  * result = TecUtilPickAddAtPositionX(ArgList) == TRUE;
  * TecUtilArgListDealloc(&ArgList);
  * @endcode
@@ -6276,7 +5634,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickDeselectAll(void);
 *
 * @ingroup Pick
 */
-LINKTOADDON Boolean_t STDCALL TecUtilPickDeselect(int32_t PickListItem);
+LINKTOADDON Boolean_t STDCALL TecUtilPickDeselect(int PickListItem);
 
 /**
  * Adds the frame identified by the unique identifier to the pick list. Each
@@ -6303,7 +5661,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickDeselect(int32_t PickListItem);
  *   &                   CollectingObjects,
  *   &                   UniqueID)
  *    INTEGER*4 CollectingObjects
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -6669,8 +6027,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRect(double         X1,
  *   TecUtilArgListAppendInt()
  * Required:
  *   No
- * Default:
- *   GeomType_Invalid
  * Notes:
  *   This parameter will be used to filter the type of geometry selected. This
  *   parameter requires SV_SELECTGEOMS to be set to TRUE.
@@ -6703,21 +6059,19 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRect(double         X1,
  * Notes:
  *   This parameter will be used to filter the text geometries selected and will
  *   only select text geometries with bold text. This parameter requires
- *   SV_FONTFILTER or SV_FONTFAMILYFILTER to be set to TRUE.
+ *   SV_FONTFILTER or SV_FONTFAMILYFILTER to be set to TRUE. 
  *
  * Name:
  *   SV_FONTFAMILYFILTER
  * Type:
- *   const char*
+ *   char*
  * Arg Function:
  *   TecUtilArgListAppendString()
  * Required:
  *   No
- * Default:
- *   NULL
  * Notes:
- *   This parameter will be used to filter the text selected and will
- *   only select text with the specified SV_FONTFAMILYFILTER. This parameter
+ *   This parameter will be used to filter the text geometries selected and will
+ *   only select text geometries with the specified SV_FONTFAMILYFILTER. This parameter
  *   requires SV_SELECTTEXT to be set to TRUE and is mutually exclusive with SV_FONTFILTER.
  *
  * Name:
@@ -6728,11 +6082,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRect(double         X1,
  *   TecUtilArgListAppendInt()
  * Required:
  *   No
- * Default:
- *   NULL
  * Notes:
- *   This parameter will be used to filter the text selected and will
- *   only select text with the specified SV_FONTFILTER. This parameter
+ *   This parameter will be used to filter the text geometries selected and will
+ *   only select text geometries with the specified SV_FONTFILTER. This parameter
  *   requires SV_SELECTTEXT to be set to TRUE and is mutually exclusive with
  *   SV_FONTFAMILYFILTER.
  *
@@ -6744,8 +6096,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRect(double         X1,
  *   TecUtilArgListAppendInt()
  * Required:
  *   No
- * Default:
- *   LInePattern_Invalid
  * Notes:
  *   This parameter will be used to filter the geometries selected and will only
  *   select geometries with the specified SV_LINEPATTERNFILTER. This parameter
@@ -6759,8 +6109,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRect(double         X1,
  *   TecUtilArgListAppendInt()
  * Required:
  *   No
- * Default:
- *   NoColor
  * Notes:
  *   This parameter will be used to filter the objects and will only select with
  *   the specified SV_COLORFILTER. This parameter requires that at least one of
@@ -6781,7 +6129,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRect(double         X1,
  *   only field or line maps that are visible will be selected, otherwise even invisible
  *   field or line maps will be selected. This parameter requires that either SV_SELECTMAPS
  *   or SV_SELECTZONES is set to TRUE.
- * </ArgListTable>
  *
  * @return
  *   Returns FALSE if there is any error during processing otherwise TRUE. Note that a TRUE return value
@@ -6830,16 +6177,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRectX(ArgList_pa argList);
  * only if the supplied parameter is relevant. See Section 17.4, "The Pick
  * List," in the ADK User's Manual for a discussion of pick lists.
  *
- * TecUtilPickEdit uses the same syntax as the tecplot macro command.
- * See TecUtilPickEditLowLevel for an alternative approach that uses the style
- * tree parameter values instead.
- *
- * If a macro file is being recorded, this routine will record a macro
- * for its actions.
- *
  * @param Action
  *   The action to perform on the currently picked objects. The action uses the
- *   same text which is used in the macro language for the $!Pick Edit macro
+ *   same text which is used in the macro language for the $!PickEdit macro
  *   command. See the Tecplot Reference Manual for more information about
  *   available keywords
  *
@@ -6856,84 +6196,23 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickAddAllInRectX(ArgList_pa argList);
  *    CHARACTER*(*) Action
  * </FortranSyntax>
  *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
  *   Set the color for all picked objects to yellow.
  *   Set the contour type for all picked zones to be "Flood".
  * @code
- *   Boolean_t result = TecUtilPickEdit("COLOR = YELLOW");
- *   result = result && TecUtilPickEdit("CONTOUR {COUNTOURTYPE = FLOOD}");
+ *   TecUtilPickEdit("COLOR = YELLOW");
+ *   TecUtilPickEdit("CONTOUR {COUNTOURTYPE = FLOOD}");
  * @endcode
  *
- * @sa TecUtilPickEditLowLevel
+ * @code
+ * @endcode
  *
  * @ingroup Pick
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilPickEdit(const char *Action);
-
-/**
- * Perform a global edit operation on the currently picked objects using an
- * API similar to that which is used by TecUtilStyleSetLowLevel. Only one
- * edit operation is allowed per call to TecUtilPickEditLowLevel(). Objects are
- * edited only if the supplied parameter is relevant. See Section 17.4,
- * "The Pick List," in the ADK User's Manual for a discussion of pick lists.
- *
- * If a macro file is being recorded, this routine will record a macro
- * for its actions.
- *
- * @since 18.2
- *
- * @param DValue
- *   If the attribute to be assigned requires a floating point value,
- *   then DValue is used as the value to assign.
- *
- * @param IValue
- *   If the attribute to be assigned requires an integer, an enumerated value,
- *   or is a handle to a string, then IValue is used as the value to assign.
- *
- * @param P1
- *   The first parameter used to define the attribute to assign to. Attributes
- *   in Tecplot are defined hierarchically. These parameters follow the same
- *   order as you would use when constructing a $!Pick Edit macro command. These
- *   are actually strings but you can use the supplied SV_XXXXX constants from
- *   parameters the SV.h include file. Using the SV_ constants will help prevent
- *   misspellings and other errors.
- *
- * @param P2
- *   The second parameter used to define the attribute to assign to. See P1.
- *
- * @return
- *   TRUE if successful, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilPickEditLowLevel(
- *   &                   DValue,
- *   &                   IValuePtr,
- *   &                   P1,
- *   &                   P2)
- *    REAL*8          DValue
- *    POINTER         (IValuePtr, IValue)
- *    CHARACTER*(*)   P1
- *    CHARACTER*(*)   P2
- * </FortranSyntax>
- *
- *   Set the color for all picked objects to yellow.
- *   Set the contour type for all picked zones to be "Flood".
- * @code
- *   Boolean_t result = TecUtilPickEditLowLevel(0.0, Yellow_C, SV_COLOR, NULL);
- *   result = result && TecUtilPickEditLowLevel(0.0, ContourType_Flood, SV_CONTOUR, SV_COUNTOURTYPE);
- * @endcode
- *
- * @sa TecUtilPickEdit
- *
- * @ingroup Pick
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilPickEditLowLevel(double      DValue,
-                                                      ArbParam_t  IValue,
-                                                      const char* P1,
-                                                      const char* P2);
-
-
 /**
  *   Copy all objects that are currently picked to the paste buffer and then delete them from the plot.
  *
@@ -7003,10 +6282,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickClear(void);
  */
 LINKTOADDON Boolean_t STDCALL TecUtilPickPaste(void);
 /**
- *   Shift the currently picked objects that are allowed to shift.  Picked objects
- *   such as zones or linemaps cannot be moved when using the
- *   selector mouse mode (these can however be moved when using the adjuster
- *   mouse mode).  Objects are shifted relative to their
+ *   Shift the currently picked objects. Objects are shifted relative to their
  *   starting position. X and Y shift amounts are in paper units (inches). If
  *   snapping is in effect then it is applied after shifting in X and Y.
  *
@@ -7029,9 +6305,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilPickPaste(void);
  *   only available for Axis and Frame objects.  See PointerStyle_e.
  *
  * @return
- *   TRUE if successful, FALSE if no items are selected or if all of the objects
- *   that are selected cannot be moved (See main description above)
- *   Objects can only be selected if the current mouse mode is the
+ *   TRUE if successful, FALSE if no items are selected or if a zone or
+ *   Line-mapping is selected and the current mouse mode is not the Adjustor
+ *   tool. Objects can only be selected if the current mouse mode is the
  *   selector or the Adjustor tool.
  *
  * <FortranSyntax>
@@ -7513,7 +6789,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilReset3DOrigin(void);
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilSet3DEyeDistance(double EyeDistance);
-
 /**
  *   Reposition the rotation origin in 3-D to the specified location. The current frame must be in 3D
  *   frame mode to use this function.
@@ -7580,7 +6855,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilReset3DOriginX(ArgList_pa ArgList);
  * largest magnitude and set the scaling factor so it will appear on the screen
  * using the default length as specified in the configuration file with the
  * $!FRAMESETUP VECTDEFLEN macro command. The current frame must have a plot
- * type of Cartesian 2D or 3D to use this function.
+ * type of cartesian 2D or 3D to use this function.
  *
  * @return
  *   TRUE if successful, FALSE otherwise.
@@ -7601,37 +6876,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilReset3DOriginX(ArgList_pa ArgList);
 LINKTOADDON Boolean_t STDCALL TecUtilResetVectorLength(void);
 
 /**
- * Reset the magnitude of the reference vector using "nice" values based on the minimum and maximum
- * values of the variables assigned to U, V, and if in a 3D Cartesian plots, W. This command is only
- * valid in 2D or 3D Cartesian plots.
- *
- * @return
- *   TRUE if successful, FALSE otherwise.
- *
- * @since
- *   16.2
- *
- * @pre Must have one or more frames.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilResetRefVectorMagnitude()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Vector
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilResetRefVectorMagnitude(void);
-
-/**
  * Reset the relative scatter sizing. Tecplot will find the scatter with the
  * largest size and set the scaling factor so it will appear on the screen
  * using the default length as specified in the configuration file with the
  * $!BASICSIZE SYMBOLSIZE { MEDIUM = &lt;double&gt; } macro command. The current
- * frame must have a plot type of Cartesian 2D or 3D to use this function.
+ * frame must have a plot type of cartesian 2D or 3D to use this function.
  *
  * @since
  *   10.0-4-23
@@ -7678,7 +6927,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilScatterResetRelSize(void);
  * Name:
  *   SV_CONTOURGROUP
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -7725,9 +6974,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilScatterResetRelSize(void);
  * Required:
  *   Yes
  * Notes:
- *   A pointer to an array containing the values of the contour variable at each
+ *   A pointer to an aray containing the values of the contour variable at each
  *   of the added levels or at each of the new levels.
- *   Required for ContourLevelAction_Add and ContourLevelAction_New.
+ *   Required for ContourLevelAction_Add and ContourLevelAction_New. 
  *
  * Name:
  *   SV_RANGEMIN
@@ -7867,7 +7116,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourLevelX(ArgList_pa ArgList);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecUtilContourLevelAdd(int32_t       NumEntries,
+LINKTOADDON Boolean_t STDCALL TecUtilContourLevelAdd(int           NumEntries,
                                                      const double *RawData_Array,
                                                      Boolean_t     ShowTrace);
 
@@ -7879,7 +7128,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourLevelAdd(int32_t       NumEntries,
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecUtilContourLevelNew(int32_t       NumEntries,
+LINKTOADDON Boolean_t STDCALL TecUtilContourLevelNew(int           NumEntries,
                                                      const double *RawData_Array,
                                                      Boolean_t     ShowTrace);
 
@@ -7903,7 +7152,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourLevelDeleteRange(double    RangeMin,
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecUtilContourLevelReset(int32_t NumEntries);
+LINKTOADDON Boolean_t STDCALL TecUtilContourLevelReset(int NumEntries);
 
 /**
  * @deprecated
@@ -7939,7 +7188,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourLevelDelNearest(double    Level,
  * Name:
  *   SV_CONTOURGROUP
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -8136,21 +7385,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourLabelDeleteAll(void);
  *   No
  * Notes:
  *   Number of seed points for distributing along a rake or on defined surfaces.
- *
- * Name:
- *   SV_ZONESET
- * Type:
- *   Set_pa
- * Arg Function:
- *   TecUtilArgListAppendSet()
- * Required:
- *   No
- * Default:
- *   NULL
- * Notes:
- *   This argument is required if the the distribution region is \ref DistributionRegion_SurfacesOfSuppliedZones.
- *   The supplied set of zone indices must contain at least one element.
- *   This parameter is ignored if the distribution region is not \ref DistributionRegion_SurfacesOfSuppliedZones.
  *
  * Name:
  *   SV_X1
@@ -8375,7 +7609,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceAddX(ArgList_pa ArgList);
  * @ingroup Streamtraces
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceAdd(int32_t       NumRakePoints,
+LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceAdd(EntIndex_t    NumRakePoints,
                                                     Streamtrace_e StreamType,
                                                     StreamDir_e   Direction,
                                                     double        StartXPos,
@@ -8505,7 +7739,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceDeleteRange(EntIndex_t Start,
  * @ingroup Streamtraces
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceSetTermLine(int32_t       NumPoints,
+LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceSetTermLine(EntIndex_t    NumPoints,
                                                             const double *XTermLinePts_Array,
                                                             const double *YTermLinePts_Array);
 /**
@@ -8533,7 +7767,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceSetTermLine(int32_t       NumPoi
  * @ingroup Streamtraces
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStreamtraceHasTermLine(void);
+LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceHasTermLine(void);
 
 /**
  *   Resets the time interval between stream markers.
@@ -8558,7 +7792,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilStreamtraceResetDelta(void);
  *   This function is \ref threadsafe.
  *
  * @return
- *   Returns the number of streamtraces currently defined for the current plot type.
+ *   Returns the number of streamtraces currently defined.
  *
  * @pre Must have one or more frames.
  *
@@ -8578,8 +7812,8 @@ LINKTOADDON EntIndex_t STDCALL TecUtilStreamtraceGetCount(void);
 
 /**
  * @deprecated
- *   Please use TecUtilQueryStreamtracesAreActive instead.
- *
+ *   Please use TecUtilQueryStreamtracesAreActive instead. 
+ * 
  *   Determines if streamtraces are active.
  *   This function is \ref threadsafe.
  *
@@ -8598,7 +7832,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilStreamtraceGetCount(void);
  * @since 11.3-17-015
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStreamtracesAreActive(void);
+LINKTOADDON Boolean_t STDCALL TecUtilStreamtracesAreActive(void);
 
 /**
  *   Get the starting position for a given streamtrace.
@@ -8760,7 +7994,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataValueSetByZoneVar(EntIndex_t Zone,
  *   Set of Arglist entries.  This is built using calls to
  *   TecUtilArgListAppendXXXX functions.
  *
- * @return
+ * @return 
  *   Returns TRUE if successful, FALSE otherwise.
  *
  * <ArgListTable>
@@ -9042,8 +8276,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataAlter(const char     *Equation,
  * Required:
  *   Yes
  * Notes:
- *   String containing the equation. Multiple equations can be process by separating
- *   each equation with a newline '\n'.
+ *   String containing the equation.
  *
  * Name:
  *   SV_ZONESET
@@ -9225,63 +8458,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataAlter(const char     *Equation,
  *   Boolean value which instructs Tecplot to ignore divide by zero errors. The result is clamped
  *   such that 0/0 is clamped to zero and (+/-N)/0 where N != 0 clamps to +/-maximum value for the
  *   given type.
- *
- * Name:
- *   SV_DATAALTERMODE
- * Type:
- *   DataAlterMode_e
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   DataAlterMode_Alter
- * Required:
- *   No
- * Notes:
- *   Data alter mode may be DataAlterMode_Alter (default), or DataAlterMode_CheckSyntax.
- *
- *   If the data alter mode is DataAlterMode_CheckSyntax:
- *     1. No data is changed.
- *     2. No error dialogs are displayed.
- *     3. The return value of TecUtilDataAlterX() is TRUE if there were no syntax errors, FALSE otherwise.
- *     4. Extended error information about a syntax error can be queried by passing a pointer to
- *        a DataAlterReturnCode_e in the SV_RETURNCODE option.
- *     5. The position of any syntax error can be queried by passing a pointer to a LgIndex_t
- *        in the SV_ERRORPOSITION option.
- *     6. Multiple equations are not allowed in the equation parameter.
- *        When checking syntax, call TecUtilDataAlterX() separaetely for each equation.
- *
- * Name:
- *   SV_RETURNCODE
- * Type:
- *   DataAlterReturnCode_e *
- * Arg Function:
- *   TecUtilArgListAppendArbParamPtr
- * Default:
- *   NULL
- * Required:
- *   No
- * Notes:
- *   Pass a pointer to a DataAlterReturnCode_e to receive extended syntax error information if the return
- *   value of TecUtilDataAlterX is FALSE and the data alter mode is DataAlterMode_CheckSyntax.
- *   This option is only allowed if the data alter mode is DataAlterMode_CheckSyntax.
- *   If TecUtilDataAlterX returns TRUE, then the return value of this option is DataAlterReturnCode_Ok.
- *
- * Name:
- *   SV_ERRORPOSITION
- * Type:
- *   int32_t *
- * Arg Function:
- *   TecUtilArgListAppendArbParamPtr()
- * Default:
- *   NULL
- * Required:
- *   No
- * Notes:
- *   Pass a pointer to a LgIndex_t to receive the position of a syntax error in the equation string which
- *   has the syntax error if the return value of TecUtilDataAlterX is FALSE and the data alter mode is DataAlterMode_CheckSyntax.
- *   If TecUtilDataAlterX returns TRUE, then the error position will be 0.
- *   This option is only allowed if the data alter mode is DataAlterMode_CheckSyntax.
- *   This option return value is undefined if TecUtilDataAlterX returns TRUE.
  * </ArgListTable>
  *
  * @return
@@ -9357,7 +8533,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataAlterX(ArgList_pa ArgList);
  */
 LINKTOADDON Boolean_t STDCALL TecUtilSmooth(EntIndex_t          Zone,
                                             EntIndex_t          SmoothVar,
-                                            int32_t             NumSmoothPasses,
+                                            LgIndex_t           NumSmoothPasses,
                                             double              SmoothWeight,
                                             BoundaryCondition_e SmoothBndryCond);
 
@@ -9609,8 +8785,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneCopyX(ArgList_pa ArgList);
 /**
  *   Make a copy of an existing zone. You can use index ranges to create a new zone which is a
  *   subset of the source zone.
- *
- *  @note The variables in the duplicate zone initially share data with the source zone;
+ *   
+ *  @note The variables in the duplicate zone initially share data with the source zone; 
  *  use TecUtilDataValueBranchShared() to branch any variables you do not want to be shared.
  *
  * @param ZoneUsed
@@ -9749,371 +8925,77 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneCopy(EntIndex_t ZoneUsed,
 LINKTOADDON Boolean_t STDCALL TecUtilCreateMirrorZones(Set_pa SourceZones,
                                                        char   MirrorVar);
 /**
- * @deprecated
- *   Please use TecUtilExtractStreamtracesX() instead.
+ *   Create one or more zones out of the currently defined streamtraces. The new zones have the same
+ *   number of variables per data point as the other zones in the data set with all non-coordinate
+ *   variables interpolated at the positions along the streamtrace.
+ *
+ * @param ConcatenateStreams
+ *   Set to TRUE to create a single zone out of all common streamtraces. The cell that connects the end
+ *   of one streamtrace with the beginning of the next can later be turned off using value-blanking
+ *
+ * @return
+ *   TRUE if the zone could be created, FALSE if not.
+ *
+ * @pre Must have one or more frames.
+ * @pre Current frame must have a data set with at least one zone.
+ *
+ *
+ * <FortranSyntax>
+ *    INTEGER*4 FUNCTION TecUtilCreateStreamZones(ConcatenateStreams)
+ *    INTEGER*4 ConcatenateStreams
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
  *
  * @ingroup DataCreate
  *
  */
 LINKTOADDON Boolean_t STDCALL TecUtilCreateStreamZones(Boolean_t ConcatenateStreams);
-
 /**
- * Extract the currently defined streamtraces to zones. By default the resulting zones will be
- * automatically assigned strands and are given the solution time the current time step from which
- * they are extracted. If directed Tecplot will concatenate all streamtraces of the same type
- * together.
- *
- * @param ArgList
- *   Set of Arglist entries.  This is built using calls to
- *   TecUtilArgListAppendXXXX functions.
- *
- * <ArgListTable>
- *
- * Name:
- *   SV_CONCATENATE
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   FALSE
- * Required:
- *   No
- * Notes:
- *   Boolean value which instructs Tecplot to concatenate all streamtraces of the same type together.
- *
- * Name:
- *   SV_AUTOSTRANDTRANSIENTDATA
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   TRUE
- * Required:
- *   No
- * Notes:
- *   Boolean value which instructs Tecplot to automatically assign strand IDs to data extracted
- *   from transient sources.
- *
- * </ArgListTable>
+ *   Create finite element surface zones out of iso-surfaces in volume zones. One zone will be made for
+ *   each contour level.
  *
  * @return
- *   TRUE if extraction was successful, FALSE otherwise.
+ *   TRUE if successfull, FALSE otherwise.
  *
- *
- * @pre <em>ArgList</em>
- *   Argument list must be valid.
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilExtractStreamtracesX(ArgListPtr)
- *    POINTER (ArgListPtr, ArgList)
+ *    INTEGER*4 FUNCTION TecUtilCreateIsoZones()
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @code
- *   ArgList_pa ArgList;
- *   TecUtilLockStart(AddOnID);
- *   ArgList = TecUtilArgListAlloc();
- *
- *   TecUtilArgListAppendInt(ArgList, SV_CONCATENATE, (LgIndex_t)TRUE);
- *
- *   Boolean_t isOk = TecUtilExtractStreamtracesX(ArgList);
- *   if (isOk)
- *   {
- *       ...success
- *   }
- *   else if (!TecUtilInterruptIsSet()) // ...if the cause of the error was not interruption
- *   {
- *       ...handle error
- *   }
- *
- *   TecUtilArgListDealloc(&ArgList);
- *   TecUtilLockFinish(AddOnID);
- * @endcode
- *
  * @ingroup DataCreate
- */
-LINKTOADDON Boolean_t STDCALL TecUtilExtractStreamtracesX(ArgList_pa ArgList);
-
-/**
- * @deprecated
- *   Please use TecUtilExtractIsoSurfacesX() instead.
  *
- * @ingroup DataCreate
  */
 LINKTOADDON Boolean_t STDCALL TecUtilCreateIsoZones(void);
-
 /**
- * Extract the specified or currently active iso-surfaces to zones. By default the resulting zones
- * will be automatically assigned strands and are given the solution time the current time step from
- * which they are extracted.
- * The plottype must be PlotType_Cartesian3D in order to call this function.
- *
- * @param ArgList
- *   Set of Arglist entries.  This is built using calls to
- *   TecUtilArgListAppendXXXX functions.
- *
- * <ArgListTable>
- *
- * Name:
- *   SV_GROUPS
- * Type:
- *   Set_pa
- * Arg Function:
- *   TecUtilArgListAppendSet()
- * Default:
- *   All groups
- * Required:
- *   No
- * Notes:
- *   Extracts iso-surfaces of one or more specified groups. This option is mutually exclusive with
- *   SV_GROUP. If neither SV_GROUP or SV_GROUPS is specified the iso-surfaces of all active groups
- *   are extracted.
- *
- * Name:
- *   SV_GROUP
- * Type:
- *   int32_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   All groups
- * Required:
- *   No
- * Notes:
- *   Extracts the iso-surfaces of the specified group. This option is mutually exclusive with
- *   SV_GROUP. If neither SV_GROUP or SV_GROUPS is specified the iso-surfaces of all active groups
- *   are extracted.
- *
- * Name:
- *   SV_EXTRACTMODE
- * Type:
- *   ExtractMode_e
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   ExtractMode_SingleZone
- * Required:
- *   No
- * Notes:
- *   Enumeration identifying what to create from the iso-surface extraction: a single zone or one
- *   zone per connected region. The one zone per source zone option is not currently supported
- *   for this function.
- *
- * Name:
- *   SV_AUTOSTRANDTRANSIENTDATA
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   TRUE
- * Required:
- *   No
- * Notes:
- *   Boolean value which instructs Tecplot to automatically assign strand IDs to data extracted
- *   from transient sources.
- *
- * </ArgListTable>
+ *   Create surface zones out of all slices currently defined in volume zones. One zone is made for
+ *   each defined slice.
  *
  * @return
- *   TRUE if extraction was successful, FALSE otherwise.
+ *   TRUE if the zone is created successfully, otherwise FALSE.
  *
- *
- * @pre <em>ArgList</em>
- *   Argument list must be valid.
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilExtractIsoSurfacesX(ArgListPtr)
- *    POINTER (ArgListPtr, ArgList)
+ *    INTEGER*4 FUNCTION TecUtilCreateSliceZones()
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @code
- *   ArgList_pa ArgList;
- *   TecUtilLockStart(AddOnID);
- *   ArgList = TecUtilArgListAlloc();
- *
- *   TecUtilArgListAppendInt(ArgList, SV_AUTOSTRANDTRANSIENTDATA, (LgIndex_t)FALSE);
- *
- *   Boolean_t isOk = TecUtilExtractIsoSurfacesX(ArgList);
- *   if (isOk)
- *   {
- *       ...success
- *   }
- *   else if (!TecUtilInterruptIsSet()) // ...if the cause of the error was not interruption
- *   {
- *       ...handle error
- *   }
- *
- *   TecUtilArgListDealloc(&ArgList);
- *   TecUtilLockFinish(AddOnID);
- * @endcode
- *
  * @ingroup DataCreate
- */
-LINKTOADDON Boolean_t STDCALL TecUtilExtractIsoSurfacesX(ArgList_pa ArgList);
-
-/**
- * @deprecated
- *   Please use TecUtilExtractSlicesX() instead.
  *
- * @ingroup DataCreate
  */
 LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZones(void);
-
-/**
- * Extract the specified or currently active slices to zones. By default the resulting zones will be
- * automatically assigned strands and are given the solution time the current time step from which
- * they are extracted. If the start and end position for the slice style is active then the zones
- * are extracted in position order from the start position to the end position with the primary
- * value slice, if active, in its position order.
- * The plottype must be PlotType_Cartesian3D in order to call this function.
- *
- * @param ArgList
- *   Set of Arglist entries.  This is built using calls to
- *   TecUtilArgListAppendXXXX functions.
- *
- * <ArgListTable>
- *
- * Name:
- *   SV_GROUPS
- * Type:
- *   Set_pa
- * Arg Function:
- *   TecUtilArgListAppendSet()
- * Default:
- *   All groups
- * Required:
- *   No
- * Notes:
- *   Extracts slices of one or more specified groups. This option is mutually exclusive with
- *   SV_GROUP. If neither SV_GROUP or SV_GROUPS is specified the slices of all active groups
- *   are extracted.
- *
- * Name:
- *   SV_GROUP
- * Type:
- *   int32_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   All groups
- * Required:
- *   No
- * Notes:
- *   Extracts the slices of the specified group. This option is mutually exclusive with
- *   SV_GROUP. If neither SV_GROUP or SV_GROUPS is specified the slices of all active groups
- *   are extracted.
- *
- * Name:
- *   SV_EXTRACTMODE
- * Type:
- *   ExtractMode_e
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   ExtractMode_SingleZone
- * Required:
- *   No
- * Notes:
- *   Enumeration identifying what to create from the slice extraction: a single zone or one
- *   zone per connected region. The one zone per source zone option is not currently supported
- *   for this function.
- *
- * Name:
- *   SV_RESULTING1DZONETYPE
- * Type:
- *   Resulting1DZoneType_e
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   Resulting1DZoneType_IOrderedIfPossible
- * Required:
- *   No
- * Notes:
- *   Enumeration identifying what to create from any linear zones resulting from the slice
- *   extraction: I-ordered zones (if possible) or FE Line Segment zones. Linear zones
- *   result from extracting slices through surface zones or surfaces of volume zones.
- *   I-ordered zones can be created from these if either SV_EXTRACTMODE is set to
- *   ExtractMode_OneZonePerConnectedRegion, or if a particular slice consists of only
- *   a single connected region. If Resulting1DZoneType_IOrderedIfPossible is selected
- *   but a particular slice cannot be converted to an I-ordered zone, the result
- *   will be an FE Line Segment zone.
- *
- * Name:
- *   SV_AUTOSTRANDTRANSIENTDATA
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   TRUE
- * Required:
- *   No
- * Notes:
- *   Boolean value which instructs Tecplot to automatically assign strand IDs to data extracted
- *   from transient sources.
- *
- * </ArgListTable>
- *
- * @return
- *   TRUE if extraction was successful, FALSE otherwise.
- *
- *
- * @pre <em>ArgList</em>
- *   Argument list must be valid.
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilExtractSlicesX(ArgListPtr)
- *    POINTER (ArgListPtr, ArgList)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @code
- *   ArgList_pa ArgList;
- *   TecUtilLockStart(AddOnID);
- *   ArgList = TecUtilArgListAlloc();
- *
- *   TecUtilArgListAppendInt(ArgList, SV_AUTOSTRANDTRANSIENTDATA, (LgIndex_t)FALSE);
- *
- *   Boolean_t isOk = TecUtilExtractSlicesX(ArgList);
- *   if (isOk)
- *   {
- *       ...success
- *   }
- *   else if (!TecUtilInterruptIsSet()) // ...if the cause of the error was not interruption
- *   {
- *       ...handle error
- *   }
- *
- *   TecUtilArgListDealloc(&ArgList);
- *   TecUtilLockFinish(AddOnID);
- * @endcode
- *
- * @since
- *   17.3
- *
- * @ingroup DataCreate
- */
-LINKTOADDON Boolean_t STDCALL TecUtilExtractSlicesX(ArgList_pa ArgList);
-
 /**
  *   Create zones from contour lines. Contour lines will only come from those zones with a contour
  *   style set to contour lines or lines and flood. One zone will be made from each contour level. The
@@ -10257,7 +9139,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateFEBoundary(EntIndex_t SourceZone,
 
 /**
  * @since 11.2-0-200
- * Allow activation of arbitrary slice identifier (e.g. The translucent slicing plane) when preparing to extract.
+ * Allow activation of arbitrary slice identifier (i.e. The translucent slicing plane) when preparing to extract.
  * Typical use is to call with TRUE on launch of dialog used to extract arb slices and call with FALSE on dialog drop.
  *
  * @param DoShow TRUE to allow arbitrary slice identifier. FALSE, otherwise.
@@ -10300,7 +9182,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZone(double OriginX,
  *   Slicing data while in 2D may yield different results than slicing in 3D.  In 2D all
  *   Z-values are treated as zero, in which case there may be collapsed cells which are not
  *   sliced.  This is especially true for volume data.
- *
+ *   
  * @param SliceSource
  *   Source for slicing. The possible choices
  *   are:SliceSource_SurfaceZones, SliceSource_VolumeZones, and SliceSource_SurfacesOfVolumeZones
@@ -10359,8 +9241,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZone(double OriginX,
  *                                   1.0, 0.0, 0.0);
  * @endcode
  *
- * @sa TecUtilSliceSetArbitraryUsingThreePoints
- *
  * @ingroup DataCreate
  *
  */
@@ -10372,12 +9252,12 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZoneFromPlane(SliceSource_e Slic
                                                               double        NormalY,
                                                               double        NormalZ);
 /**
- * Create a zone from a slice taken from a 2D or 3D plot.
+ *   Create a zone from a slice taken from a 2D or 3D plot.
  *
- * Slicing data while in 2D may yield different results than slicing in 3D.  In 2D all
- * Z-values are treated as zero, in which case there may be collapsed cells which are not
- * sliced.  This is especially true for volume data.
- *
+ *   Slicing data while in 2D may yield different results than slicing in 3D.  In 2D all
+ *   Z-values are treated as zero, in which case there may be collapsed cells which are not
+ *   sliced.  This is especially true for volume data.
+ *   
  * @param ArgList
  *   Set of Arglist entries.  This is built using calls to
  *   TecUtilArgListAppendXXXX functions.
@@ -10395,38 +9275,18 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZoneFromPlane(SliceSource_e Slic
  *   No
  *
  * Name:
- *   SV_EXTRACTMODE
+ *   SV_FORCEEXTRACTIONTOSINGLEZONE
  * Type:
- *   ExtractMode_e
+ *   Boolean_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
- *   ExtractMode_SingleZone
+ *   TRUE
  * Required:
  *   No
  * Notes:
- *   Enumeration identifying what to create from the slice extraction: a single zone, one zone per
- *   source zone, or one zone per connected region.
- *
- * Name:
- *   SV_RESULTING1DZONETYPE
- * Type:
- *   Resulting1DZoneType_e
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   Resulting1DZoneType_FELineSegment
- * Required:
- *   No
- * Notes:
- *   Enumeration identifying what to create from any linear zones resulting from the slice
- *   extraction: I-ordered zones (if possible) or FE Line Segment zones. Linear zones
- *   result from extracting slices through surface zones or surfaces of volume zones.
- *   I-ordered zones can be created from these if either SV_EXTRACTMODE is set to
- *   ExtractMode_OneZonePerConnectedRegion, or if a particular slice consists of only
- *   a single connected region. If Resulting1DZoneType_IOrderedIfPossible is selected
- *   but a particular slice cannot be converted to an I-ordered zone, the result
- *   will be an FE Line Segment zone.
+ *   Boolean value which forces Tecplot to make the taken slice into a single
+ *   zone if made to be TRUE.  If FALSE, one zone per contiguous region is created.
  *
  * Name:
  *   SV_COPYCELLCENTEREDVALUES
@@ -10457,9 +9317,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZoneFromPlane(SliceSource_e Slic
  * Notes:
  *   Boolean value which instructs Tecplot to automatically assign strand IDs to data extracted
  *   from transient sources.
- *
- *
- *   //TODO (byron) H 2019/04/01: Add notes for XVar,YVar,ZVar,ValueBlanking,SourceFieldmaps,SourceFieldmapsignoringBlanking
  *
  * Name:
  *   SV_ORIGINX
@@ -10545,7 +9402,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZoneFromPlane(SliceSource_e Slic
  *   ArgList = TecUtilArgListAlloc();
  *
  *   TecUtilArgListAppendInt(ArgList,    SV_SLICESOURCE,                 (LgIndex_t)SliceSource_SurfaceZones);
- *   TecUtilArgListAppendInt(ArgList,    SV_EXTRACTMODE,                 (LgIndex_t)ExtractMode_SingleZone);
+ *   TecUtilArgListAppendInt(ArgList,    SV_FORCEEXTRACTIONTOSINGLEZONE, (LgIndex_t)TRUE);
  *   TecUtilArgListAppendInt(ArgList,    SV_COPYCELLCENTEREDVALUES,      (LgIndex_t)TRUE);
  *   TecUtilArgListAppendDouble(ArgList, SV_ORIGINX,                     0.0);
  *   TecUtilArgListAppendDouble(ArgList, SV_ORIGINY,                     0.0);
@@ -10554,15 +9411,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilCreateSliceZoneFromPlane(SliceSource_e Slic
  *   TecUtilArgListAppendDouble(ArgList, SV_NORMALY,                     0.9);
  *   TecUtilArgListAppendDouble(ArgList, SV_NORMALZ,                     0.9);
  *
- *   Boolean_t isOk = TecUtilCreateSliceZoneFromPlneX(ArgList);
- *   if (isOk)
- *   {
- *       ...success
- *   }
- *   else if (!TecUtilInterruptIsSet()) // ...if the cause of the error was not interruption
- *   {
- *       ...handle error
- *   }
+ *   TecUtilCreateSliceZoneFromPlneX(ArgList);
  *
  *   TecUtilArgListDealloc(&ArgList);
  *   TecUtilLockFinish(AddOnID);
@@ -10683,7 +9532,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilExtractFromPolyline(const double *PolylineX
 /**
  *   Extract data from a 2D or 3D field plot. The locations at which to extract the data come from a
  *   polyline geometry that must be picked prior to issuing this command.  When the frame mode is 3D
- *   and the ExtractThroughVolume parameter is FALSE, the coordinates must be provided in the eye
+ *   and the ExtractThroughVolume parameter is false, the coordinates must be provided in the eye
  *   coordinate system, rather than in 3D grid coordinates.
  *
  * @param ExtractOnlyPointsOnPolyline
@@ -10742,6 +9591,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilExtractFromGeom(Boolean_t   ExtractOnlyPoin
                                                      LgIndex_t   NumPtsToExtractAlongPolyline,
                                                      Boolean_t   ExtractToFile,
                                                      const char *ExtractFName);
+
 
 
 /**
@@ -10839,8 +9689,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilFourierTransform(EntIndex_t       independe
  * Performs a Fourier transform for each dependent variable for each source zone. A new zone
  * containing the resulting frequency, amplitude, and phase variables (three for each dependent
  * variable) is created for each source zone. If the user instructs to replace zones and/or variables,
- * the ones created by the latest Fourier trasform will be used. If the independent variable is
- * non-uniform the resulting frequency is a modification of the original data (see discussion below
+ * the ones created by the latest Fourier trasform will be used. If the independent variable is 
+ * non-uniform the resulting frequency is a modification of the original data (see discussion below 
  * for the independentVar and obeySourceZoneBlanking parameters). Resulting zones are assigned new
  * time strands using the same groupings as the source zones if they belong to time stands, otherwise
  * the resulting zones are made static.
@@ -10867,7 +9717,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFourierTransform(EntIndex_t       independe
  * Required:
  *   Yes
  * Notes:
- *   Associated value is the independent variable used as the frequency domain. If the spacing is
+ *   Associated value is the independent variable used as the frequency domain. If the spacing is 
  *   non-uniform this variable is used in conjunction with each dependent variable for interpolation
  *   to create a uniform frequency for the Fourier transform.
  *
@@ -10947,13 +9797,13 @@ LINKTOADDON Boolean_t STDCALL TecUtilFourierTransform(EntIndex_t       independe
  *   over which the Fourier transformation is performed.
  *
  * Name:
- *   SV_REPLACEMATCHINGRESULTZONES
+ *   SV_REPLACEMATHINGRESULTZONES
  * Type:
  *   Boolean_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
- *   TRUE
+ *   TRUE 
  * Required:
  *   No
  * Notes:
@@ -10962,7 +9812,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFourierTransform(EntIndex_t       independe
  *   created.
  *
  * Name:
- *   SV_REPLACEMATCHINGRESULTVARIABLES
+ *   SV_REPLACEMATHINGRESULTVARIABLES
  * Type:
  *   Boolean_t
  * Arg Function:
@@ -10984,8 +9834,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilFourierTransform(EntIndex_t       independe
  *   TecUtilArgListAppendArbParam
  * Required:
  *   No
- * Default:
- *   NULL
  * Notes:
  *   Receives the 1-based zone numbers of any new zones added.
  *
@@ -10997,8 +9845,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilFourierTransform(EntIndex_t       independe
  *   TecUtilArgListAppendArbParam
  * Required:
  *   No
- * Default:
- *   NULL
  * Notes:
  *   Receives the 1-based variable numbers of any new variables added.
  * </ArgListTable>
@@ -11205,7 +10051,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFourierTransformX(ArgList_pa ArgList);
  * <PythonSyntax>
  * </PythonSyntax>
  *
- *   Transform spherical coordinate variables (varibles 1, 2 and 3) to rectangular (Cartesian)
+ *   Transform spherical coordinate variables (varibles 1, 2 and 3) to rectangular (cartesian)
  *   coordinate variables.
  *
  * @code
@@ -11243,10 +10089,9 @@ LINKTOADDON Boolean_t  STDCALL TecUtilTransformCoordinatesX(ArgList_pa ArgList);
 
 /**
  * @deprecated
- *   Please use TecUtilDataRotate() for general data rotation in any plot type or
- *   use TecUtilDataRotate2D() for simple 2D data rotation instead.
+ *   Please use TecUtilDataRotate2D() instead.
  *
- * @ingroup DataManipulation
+ * @ingroup View
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
@@ -11255,11 +10100,7 @@ LINKTOADDON Boolean_t  STDCALL TecUtilRotate2D(Set_pa ZoneSet,
                                                double XOrigin,
                                                double YOrigin);
 /**
- * From within a Cartesian 2D plot, rotate the field data associated with the variables assigned to
- * the X and Y axis and, if assigned, the field data associated with the U and V vector variables
- * about the specified point. For more flexible rotation that can be performed in any plot type on a
- * specific sets of vectors and not require use of the current style state in a frame, please see
- * TecUtilDataRotate().
+ *   Rotate field data in 2-D about any point.
  *
  * @param ZoneSet
  *   Zones to rotate
@@ -11297,288 +10138,13 @@ LINKTOADDON Boolean_t  STDCALL TecUtilRotate2D(Set_pa ZoneSet,
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilDataRotate()
- *
  * @ingroup DataManipulation
+ *
  */
 LINKTOADDON Boolean_t  STDCALL TecUtilDataRotate2D(Set_pa ZoneSet,
                                                    double RotateAmountInDegrees,
                                                    double XOrigin,
                                                    double YOrigin);
-
-/**
- * Using the right hand rule, rotate the spatial and/or vector variables about the normal for the
- * given set of zones. The origin is only applied to the spatial variables by first translating the
- * spatial variable values to the origin, rotating, and translating back.
- *
- * @param DataSetID
- *     Unique ID of the data set.
- *
- * @param Zones
- *     Set of zones to rotate. If NULL apply rotation to all zones.
- *
- * @param SpatialVars
- *     For 2D rotation, SpatialVars is an array of 2 variable values defining the X and Y variables.
- *     For 3D rotation it is an array of 3 variable values defining the X, Y, and Z variables.
- *     SpatialVars may be NULL if only rotating vector variables in which case NumVectors must be
- *     greater than zero and UVars, VVars, and if 3D rotation, WVars arrays must be non NULL.
- *
- * @param NumVectors
- *     Dimension of the UVars, VVars, and, if performing 3D rotation, the WVars vector variable
- *     arrays. These arrays hold the vector variable components to rotate. NumVectors may be zero if
- *     only rotating spatial variables in which case SpatialVars must be non NULL.
- *
- * @param UVars
- *     Array containing "NumVectors" vector variable U components to rotate or NULL if NumVectors is
- *     zero.
- *
- * @param VVars
- *     Array containing "NumVectors" vector variable V components to rotate NULL if NumVectors is
- *     zero.
- *
- * @param WVars
- *     For 3D rotation, WVars is an array containing "NumVectors" vector variable W components to
- *     rotate or NULL if NumVectors is zero or performing 2D rotation.
- *
- * @param Is3DRotation
- *     Indicates if this is 2D or 3D rotation.
- *
- * @param RotationInDegrees
- *     Number of degrees to rotate the vectors about the origin and normal for each new set of
- *     duplicates. Positive rotation is performed using the right hand rule.
- *
- * @param Origin
- *     For 2D rotation, Origin is an array of 2 values defining the X and Y origin. For 3D rotation
- *     it is an array of 3 values defining the X, Y, and Z origin. Origin is ignored if NULL or if
- *     all the components are zero.
- *
- * @param Normal
- *     For 3D rotation, Normal is an array of 3 values identifying X, Y, and Z components of the
- *     normal vector about which to rotate the spatial and or vector variables supplied. For 2D
- *     rotation Normal is ignored and may be NULL.
- *
- * @return
- *     TRUE if the rotation completed, FALSE otherwise. The rotation can fail if the process is
- *     interrupted via the user interface or programmatically, if there are insufficient memory
- *     resources.
- *
- * @pre Must have one or more frames.
- *
- * @pre <em>Zones</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>Zones</em>
- *   Zones to operate on must be a subset of the enabled zones.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataRotate(
- *   &                      DataSetID,
- *   &                      ZonesPtr,
- *   &                      SpatialVars,
- *   &                      NumVectors,
- *   &                      UVars,
- *   &                      VVars,
- *   &                      WVars,
- *   &                      Is3DRotation,
- *   &                      RotationInDegrees,
- *   &                      Origin,
- *   &                      Normal)
- *    INTEGER*8 DataSetID
- *    POINTER   (ZonesPtr, Zones)
- *    INTEGER*4 SpatialVars
- *    INTEGER*4 NumVectors
- *    INTEGER*4 UVars
- *    INTEGER*4 VVars
- *    INTEGER*4 WVars
- *    INTEGER*4 Is3DRotation
- *    REAL*8    RotationInDegrees
- *    REAL*8    Origin
- *    REAL*8    Normal
- * </FortranSyntax>
- *
- *
- * Rotate axis variables 1, 2, and 3, and two sets of vector variables 5,6, and 7, and 8,9, and 10
- * about a specific vector in space for a subset of zones. Example is shown without any error
- * handling that should be part of all robust add-on code.
- *
- * @code
- *     // specify that we want to rotate the axis variables 1,2,3
- *     // along with two sets of vector variables 5,6,7 and 8,9,10.
- *     Boolean_t const   Is3DRotation = TRUE;
- *     EntIndex_t const* SpatialVars = { 1,2,3 }; // ...XYZ variable components to rotate
- *     EntIndex_t const* UVars = { 5,  8 };       // ...U vector components to rotate
- *     EntIndex_t const* VVars = { 6,  9 };       // ...V vector components to rotate
- *     EntIndex_t const* WVars = { 7, 10 };       // ...W vector components to rotate
- *
- *     // origin and normal about which to rotate
- *     double const RotationInDegrees = 45.0;
- *     double const* Origin = { 27.3, 10.7. 18.5 };
- *     double const* Normal = { 0.267261, 0.534522, 0.801784 };
- *
- *     UniqueID_t const DataSet = TecUtilDataSetGetUniqueID();
- *     Set_pa Zones = GetMyZonesToRotate(); // ...returns some subset of zones
- *     if (TecUtilDataRotate(DataSet, Zones, SpatialVars, 2, UVWVarsArray,
- *                           Is3DRotation, RotationInDegrees, Origin, Normal))
- *     {
- *         ...do next step
- *     }
- *     else
- *     {
- *         ...report error or interruption
- *     }
- * @endcode
- *
- * @since 2017.2
- *
- * @sa TecUtilDataAxialDuplicate(), TecUtilDataRotate2D()
- *
- * @ingroup DataManipulation
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataRotate(UniqueID_t        DataSetID,
-                                                Set_pa            Zones,
-                                                const EntIndex_t* SpatialVars,
-                                                EntIndex_t        NumVectors,
-                                                const EntIndex_t* UVars,
-                                                const EntIndex_t* VVars,
-                                                const EntIndex_t* WVars,
-                                                Boolean_t         Is3DRotation,
-                                                double            RotationInDegrees,
-                                                const double*     Origin,
-                                                const double*     Normal);
-
-/**
- * Repeatedly duplicates the spatial and/or vector variables about the normal for the given set of
- * zones using the right hand rule. The origin is only applied to the spatial variables by first
- * translating the spatial variable values to the origin, rotating, and translating back.
- *
- * @param DataSetID
- *     Unique ID of the data set.
- *
- * @param Zones
- *     Set of zones to rotate. If NULL apply rotation to all zones.
- *
- * @param SpatialVars
- *     For 2D rotation, SpatialVars is an array of 2 variable values defining the X and Y variables.
- *     For 3D rotation it is an array of 3 variable values defining the X, Y, and Z variables.
- *     SpatialVars may be NULL if only rotating vector variables in which case NumVectors must be
- *     greater than zero and UVars, VVars, and if 3D rotation, WVars arrays must be non NULL.
- *
- * @param NumVectors
- *     Dimension of the UVars, VVars, and, if performing 3D rotation, the WVars vector variable
- *     arrays. These arrays hold the vector variable components to rotate. NumVectors may be zero if
- *     only rotating spatial variables in which case SpatialVars must be non NULL.
- *
- * @param UVars
- *     Array containing "NumVectors" vector variable U components to rotate or NULL if NumVectors is
- *     zero.
- *
- * @param VVars
- *     Array containing "NumVectors" vector variable V components to rotate NULL if NumVectors is
- *     zero.
- *
- * @param WVars
- *     For 3D rotation, WVars is an array containing "NumVectors" vector variable W components to
- *     rotate or NULL if NumVectors is zero or performing 2D rotation.
- *
- * @param Is3DRotation
- *     Indicates if this is 2D or 3D rotation.
- *
- * @param RotationInDegrees
- *     Number of degrees to rotate the vectors about the origin and normal for each new set of
- *     duplicates. Positive rotation is performed using the right hand rule.
- *
- * @param OffsetAngleInDegrees
- *     If non-zero, an additional offset angle of rotation added to each new set of duplicates.
- *
- * @param NumDuplicates
- *     The number of duplicates to create.
- *
- * @param Origin
- *     For 2D rotation, Origin is an array of 2 values defining the X and Y origin. For 3D rotation
- *     it is an array of 3 values defining the X, Y, and Z origin. Origin is ignored if NULL or if
- *     all the components are zero.
- *
- * @param Normal
- *     For 3D rotation, Normal is an array of 3 values identifying X, Y, and Z components of the
- *     normal vector about which to rotate the spatial and or vector variables supplied. For 2D
- *     rotation Normal is ignored and may be NULL.
- *
- * @param AddZonesToExistingStrands
- *     If TRUE, the strand ID's of the source zones are given to the new zones, otherwise they
- *     remain static if the source zones are static. If FALSE new zones are assigned new strand ID's
- *     if the source zones belonged to strands otherwise they remain static if the source zones were
- *     static.
- *
- * @return
- *     TRUE if the axial duplication completed, FALSE otherwise. The axial duplication can fail if
- *     the process is interrupted via the user interface or programmatically, if there are
- *     insufficient memory resources.
- *
- * @pre Must have one or more frames.
- *
- * @pre <em>Zones</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>Zones</em>
- *   Zones to operate on must be a subset of the enabled zones.
- *
- * @pre <em>AddZonesToExistingStrands</em>
- *   Value must be TRUE or FALSE.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataAxialDuplicate(
- *   &                      DataSetID,
- *   &                      ZonesPtr,
- *   &                      SpatialVars,
- *   &                      NumVectors,
- *   &                      UVars,
- *   &                      VVars,
- *   &                      WVars,
- *   &                      Is3DRotation,
- *   &                      RotationInDegrees,
- *   &                      OffsetAngleInDegrees,
- *   &                      NumDuplicates,
- *   &                      Origin,
- *   &                      Normal,
- *   &                      AddZonesToExistingStrands)
- *    INTEGER*8 DataSetID
- *    POINTER   (ZonesPtr, Zones)
- *    INTEGER*4 SpatialVars
- *    INTEGER*4 NumVectors
- *    INTEGER*4 UVars
- *    INTEGER*4 VVars
- *    INTEGER*4 WVars
- *    INTEGER*4 Is3DRotation
- *    REAL*8    RotationInDegrees
- *    REAL*8    OffsetAngleInDegrees
- *    INTEGER*4 NumDuplicates
- *    REAL*8    Origin
- *    REAL*8    Normal
- *    INTEGER*4 AddZonesToExistingStrands
- * </FortranSyntax>
- *
- * @since 2017.2
- *
- * @sa TecUtilDataRotate(), TecUtilZoneCopyX(), TecUtilZoneCopyX()
- *
- * @ingroup DataManipulation
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataAxialDuplicate(UniqueID_t        DataSetID,
-                                                        Set_pa            Zones,
-                                                        const EntIndex_t* SpatialVars,
-                                                        EntIndex_t        NumVectors,
-                                                        const EntIndex_t* UVars,
-                                                        const EntIndex_t* VVars,
-                                                        const EntIndex_t* WVars,
-                                                        Boolean_t         Is3DRotation,
-                                                        double            RotationInDegrees,
-                                                        double            OffsetAngleInDegrees,
-                                                        EntIndex_t        NumDuplicates,
-                                                        const double*     Origin,
-                                                        const double*     Normal,
-                                                        Boolean_t         AddZonesToExistingStrands);
 
 /**
  *   Most plotting in Tecplot is based on using values at the corners (nodes)
@@ -11853,7 +10419,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilInverseDistInterpolation(Set_pa          So
                                                               double          InvDistExponent,
                                                               double          InvDistMinRadius,
                                                               PtSelection_e   InterpPtSelection,
-                                                              int32_t         InterpNPoints);
+                                                              LgIndex_t       InterpNPoints);
 
 
 
@@ -12156,33 +10722,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilTriangulate(Set_pa            SourceZones,
  * @return
  *   TRUE if animation was successful, FALSE otherwise.
  *
- * Name:
- *   SV_LIMITSCREENSPEED
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   FALSE
- * Required:
- *   No
- * Notes:
- *   Associated value indicates if the MAXSCREENSPEED value should be used.
- *
- * Name:
- *   SV_MAXSCREENSPEED
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Default:
- *   12
- * Required:
- *   No
- * Notes:
- *   Associated value indicates the maximum frames per second displayed during
- *   the animation. This is ignored if CREATEMOVIEFILE is TRUE
- *
  *
  * @pre <em>ArgList</em>
  *   Argument list must be valid.
@@ -12319,33 +10858,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateXYMapsX(ArgList_pa ArgList);
  *   Specifies the animation speed used for the export.
  * </ArgListTable>
  *
- * Name:
- *   SV_LIMITSCREENSPEED
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   FALSE
- * Required:
- *   No
- * Notes:
- *   Associated value indicates if the MAXSCREENSPEED value should be used.
- *
- * Name:
- *   SV_MAXSCREENSPEED
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Default:
- *   12
- * Required:
- *   No
- * Notes:
- *   Associated value indicates the maximum frames per second displayed during
- *   the animation. This is ignored if CREATEMOVIEFILE is TRUE
- *
  * @return
  *   TRUE if animation was successful, FALSE otherwise.
  *
@@ -12399,7 +10911,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateLineMapsX(ArgList_pa ArgList);
  * Name:
  *   SV_START
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Required:
@@ -12410,7 +10922,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateLineMapsX(ArgList_pa ArgList);
  * Name:
  *   SV_END
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Required:
@@ -12419,7 +10931,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateLineMapsX(ArgList_pa ArgList);
  * Name:
  *   SV_SKIP
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -12568,7 +11080,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateContourLevelsX(ArgList_pa ArgList);
  * Name:
  *   SV_GROUP
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -12590,18 +11102,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateContourLevelsX(ArgList_pa ArgList);
  *   No
  * Notes:
  *   Associated value indicates if the animation should be saved to a file.
- *
- *
- * Name:
- *   SV_SKIP
- * Type:
- *   EntIndex_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   1
- * Required:
- *   No
  *
  * Name:
  *   SV_LIMITSCREENSPEED
@@ -12984,33 +11484,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateTimeX(ArgList_pa ArgList);
  *   No
  * Notes:
  *   Specifies the animation speed used for the export.
- *
- * Name:
- *   SV_LIMITSCREENSPEED
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   FALSE
- * Required:
- *   No
- * Notes:
- *   Associated value indicates if the MAXSCREENSPEED value should be used.
- *
- * Name:
- *   SV_MAXSCREENSPEED
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Default:
- *   12
- * Required:
- *   No
- * Notes:
- *   Associated value indicates the maximum frames per second displayed during
- *   the animation. This is ignored if CREATEMOVIEFILE is TRUE
  * </ArgListTable>
  *
  * @return
@@ -13274,44 +11747,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateIJKPlanesX(ArgList_pa ArgList);
  * @return
  *   TRUE if animation was successful, FALSE otherwise.
  *
- * Name:
- *   SV_SKIP
- * Type:
- *   EntIndex_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   1
- * Required:
- *   No
- *
- * Name:
- *   SV_LIMITSCREENSPEED
- * Type:
- *   Boolean_t
- * Arg Function:
- *   TecUtilArgListAppendInt()
- * Default:
- *   FALSE
- * Required:
- *   No
- * Notes:
- *   Associated value indicates if the MAXSCREENSPEED value should be used.
- *
- * Name:
- *   SV_MAXSCREENSPEED
- * Type:
- *   double
- * Arg Function:
- *   TecUtilArgListAppendDouble()
- * Default:
- *   12
- * Required:
- *   No
- * Notes:
- *   Associated value indicates the maximum frames per second displayed during
- *   the animation. This is ignored if CREATEMOVIEFILE is TRUE
- *
  *
  * @pre <em>ArgList</em>
  *   Argument list must be valid.
@@ -13499,7 +11934,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateStreamX(ArgList_pa ArgList);
  * Name:
  *   SV_START
  * Type:
- *   EntIndex_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -13513,7 +11948,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateStreamX(ArgList_pa ArgList);
  * Name:
  *   SV_END
  * Type:
- *   EntIndex_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -13524,7 +11959,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateStreamX(ArgList_pa ArgList);
  * Name:
  *   SV_NUMSLICES
  * Type:
- *   EntIndex_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -13537,7 +11972,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateStreamX(ArgList_pa ArgList);
  * Name:
  *   SV_GROUP
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -13788,9 +12223,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateXYMaps(EntIndex_t  StartMap,
  * @ingroup Animation
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilAnimateContourLevels(int32_t     StartLevel,
-                                                          int32_t     EndLevel,
-                                                          int32_t     LevelSkip,
+LINKTOADDON Boolean_t STDCALL TecUtilAnimateContourLevels(SmInteger_t StartLevel,
+                                                          SmInteger_t EndLevel,
+                                                          SmInteger_t LevelSkip,
                                                           Boolean_t   CreateMovieFile,
                                                           const char *MovieFName);
 /**
@@ -13969,7 +12404,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateIJKBlanking(double      StartIMinFra
                                                         double      EndIMaxFract,
                                                         double      EndJMaxFract,
                                                         double      EndKMaxFract,
-                                                        int32_t     NumSteps,
+                                                        int         NumSteps,
                                                         Boolean_t   CreateMovieFile,
                                                         const char *MovieFName);
 /**
@@ -14014,8 +12449,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateIJKBlanking(double      StartIMinFra
  * @ingroup Animation
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilAnimateStream(int32_t     NumStepsPerCycle,
-                                                   int32_t     NumCycles,
+LINKTOADDON Boolean_t STDCALL TecUtilAnimateStream(int         NumStepsPerCycle,
+                                                   int         NumCycles,
                                                    Boolean_t   CreateMovieFile,
                                                    const char *MovieFName);
 /**
@@ -14061,7 +12496,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateStream(int32_t     NumStepsPerCycle,
  *   end of the animation. Send the animation to a movie file.
  *
  * @code
- *   EntIndex_t  NumSlices = 50;
+ *   SmInteger_t NumSlices = 50;
  *             TecUtilAnimateSlices(1,
  *                                  NumSlices,
  *                                  NumSlices,
@@ -14072,42 +12507,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimateStream(int32_t     NumStepsPerCycle,
  * @ingroup Animation
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilAnimateSlices(EntIndex_t  StartSlice,
-                                                   EntIndex_t  EndSlice,
-                                                   EntIndex_t  NumSlices,
-                                                   Boolean_t   CreateMovieFile,
+LINKTOADDON Boolean_t STDCALL TecUtilAnimateSlices(SmInteger_t  StartSlice,
+                                                   SmInteger_t  EndSlice,
+                                                   SmInteger_t  NumSlices,
+                                                   Boolean_t    CreateMovieFile,
                                                    const char  *MovieFName);
-
-
-
-
-/**
- *   Return whether or not a supplied export format is of the "sequenced" variety.
- *
- * @param exportFormat
- *   The export format.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilAnimationIsSequencedExportFormat(exportFormat)
- *    INTEGER*4 exportFormat
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Utilities
- *
- * @since 2018.3
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilAnimationIsSequencedExportFormat(ExportFormat_e exportFormat);
-
-
-
-
-
-
-
 /**
  *   Delay Tecplot execution for a specified time.
  *
@@ -14125,7 +12529,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAnimationIsSequencedExportFormat(ExportForm
  * @ingroup Utilities
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilDelay(int32_t Seconds);
+LINKTOADDON Boolean_t STDCALL TecUtilDelay(LgIndex_t Seconds);
 /**
  *   Run a macro function. See the Tecplot Reference Manual for details about Tecplot macro functions.
  *
@@ -14207,48 +12611,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilMacroRunFunction(const char *QuickMacroName
  */
 LINKTOADDON Boolean_t STDCALL TecUtilDataSetSetTitle(const char *DataSetTitle);
 
-
-/**
- * Set the title for the specified data set.
- *
- * @param UniqueID ID of the dataset
- *
- * @param DataSetTitle
- *   New title for the specified data set. The name will be trimmed of any
- *   leading or trailing whitespace and truncated to be no more than 128
- *   characters in length.
- *
- * @return
- *   TRUE if successful, FALSE if not.
- *
- *
- * @pre <em>DataSetTitle</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataSetSetTitleByUniqueID(UniqueID,DataSetTitle)
- *    POINTER         (ValuePtr, UniqueID)
- *    CHARACTER*(*) DataSetTitle
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Set the specified data set title to be "Tecplot Data Set #1":
- *
- * @code
- *   TecUtilDataSetSetTitleByUniqueID(myDataSetID,"Tecplot Data Set #1");
- * @endcode
- *
- * @ingroup DataSetInfo
- *
- * @since 17.1
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetSetTitleByUniqueID(UniqueID_t  UniqueID,
-                                                               const char *DataSetTitle);
-
 /**
  * Rename a data set variable in Tecplot.
  *
@@ -14291,57 +12653,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarRename(EntIndex_t  VarNum,
                                                const char *VarName);
 
 /**
- * Rename a data set variable.
- *
- * @param DataSetID
- *   Unique ID of the DataSet.
- *
- * @param VarNum
- *   The number of the variable to be renamed. The variable must be greater than zero and the variable
- *   must be enabled
- *
- * @param VarName
- *   A string containing the new variable name. The name will be trimmed of any
- *   leading or trailing whitespace and truncated to be no more than 128
- *   characters in length.
- *
- * @return
- *   TRUE if successful, FALSE if not.
- *
- *
- * @pre <em>VarName</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarRenameByDataSetID(
- *   &                   DataSetID,
- *   &                   VarNum,
- *   &                   VarName)
- *    INTEGER*8       DataSetID
- *    INTEGER*4       VarNum
- *    CHARACTER*(*)   VarName
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Rename the first variable (assumed to be enabled for this example):
- *
- * @code
- *   Boolean_t isOk = TecUtilVarRenameByDataSetID(1,1,"NewNameForVariable1");
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Variables
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilVarRenameByDataSetID(UniqueID_t DataSetID,
-                                                       EntIndex_t  VarNum,
-                                                       const char *VarName);
-/**
  * Rename a data set variable of the dataset attached to the specified frame in Tecplot.
  *
  * @param FrameID
@@ -14363,7 +12674,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarRenameByDataSetID(UniqueID_t DataSetID,
  *   &                   FrameID,
  *   &                   VarNum,
  *   &                   VarName)
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID 
  *    INTEGER*4       VarNum
  *    CHARACTER*(*)   VarName
  * </FortranSyntax>
@@ -14374,12 +12685,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarRenameByDataSetID(UniqueID_t DataSetID,
  *   Rename the first variable (assumed to be enabled for this example):
  *
  * @code
- *   Boolean_t isOk = TecUtilVarRenameForFrame(1,1,"NewNameForVariable1");
+ *   TecUtilVarRenameForFrame(1,1,"NewNameForVariable1");
  * @endcode
  *
  * @since 14.1
- *
- * @sa TecUtilVarRenameByDataSetID
  *
  * @ingroup Variables
  *
@@ -14416,7 +12725,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarRenameForFrame(UniqueID_t FrameID,
  *   Rename the first zone:
  *
  * @code
- *   Boolean_t isOk = TecUtilZoneRename(1,"New Zone Name");
+ *   TecUtilZoneRename(1,"New Zone Name");
  * @endcode
  *
  * @sa TecUtilZoneRenameForFrame
@@ -14426,54 +12735,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarRenameForFrame(UniqueID_t FrameID,
  */
 LINKTOADDON Boolean_t STDCALL TecUtilZoneRename(EntIndex_t  Zone,
                                                 const char *ZoneName);
-/**
- * Rename a data set zone.
- *
- * @param DataSetID
- *   Unique ID of the DataSet.
- *
- * @param Zone
- *   The number of the zone to be renamed. The first zone in Tecplot is at position 1
- *
- * @param ZoneName
- *   A string containing the new zone name. The name will be trimmed of any
- *   leading or trailing whitespace and truncated to be no more than 128
- *   characters in length.
- *
- *
- * @pre <em>ZoneName</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneRenameByDataSetID(
- *   &                   DataSetID,
- *   &                   Zone,
- *   &                   ZoneName)
- *    INTEGER*8       DataSetID
- *    INTEGER*4       Zone
- *    CHARACTER*(*)   ZoneName
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Rename the first zone:
- *
- * @code
- *   Boolean_t isOk = TecUtilZoneRenameByDataSetID(myDataSetID,1,"New Zone Name");
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneRenameByDataSetID(UniqueID_t DataSetID,
-                                                          EntIndex_t Zone,
-                                                          const char *ZoneName);
-
 /**
  * Rename a data set zone of the dataset attached to the specified frame in Tecplot.
  *
@@ -14492,7 +12753,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneRenameByDataSetID(UniqueID_t DataSetID,
  *   &                   FrameID,
  *   &                   Zone,
  *   &                   ZoneName)
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID
  *    INTEGER*4       Zone
  *    CHARACTER*(*)   ZoneName
  * </FortranSyntax>
@@ -14503,12 +12764,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneRenameByDataSetID(UniqueID_t DataSetID,
  *   Rename the first zone:
  *
  * @code
- *   Boolean_t isOk = TecUtilZoneRenameForFrame(1,1,"New Zone Name");
+ *   TecUtilZoneRenameForFrame(1,1,"New Zone Name");
  * @endcode
  *
  * @since 14.1
- *
- * @sa TecUtilZoneRenameByDataSetID
  *
  * @ingroup Zone
  *
@@ -14795,7 +13054,7 @@ LINKTOADDON void      STDCALL TecUtilAddOnAllowUnload(AddOn_pa   AddOnID,
  */
 LINKTOADDON Boolean_t STDCALL TecUtilAddOnLoad(const char   *LibName,
                                                const char   *NotUsed,
-                                               int32_t       NotUsed2);
+                                               int           NotUsed2);
 
 
 /**
@@ -14811,7 +13070,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAddOnLoad(const char   *LibName,
  * @ingroup Export
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilExportIsRecording(void);
+LINKTOADDON Boolean_t STDCALL TecUtilExportIsRecording(void);
 /**
  *   This function assembles all of the exported animation frames into the final animation file. Note
  *   that the final *.avi or *.rm file is not created until you call this function. This function will
@@ -14830,7 +13089,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilExportIsRecording(void);
  * @ingroup Export
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilExportFinish(void);
+LINKTOADDON Boolean_t STDCALL TecUtilExportFinish(void);
 
 /**
  * This functions starts a new animation and exports the first frame. Use
@@ -14966,7 +13225,7 @@ LINKTOADDON void STDCALL TecUtilExportCancel(void);
  *   Receives the Psi angle. May be NULL
  *
  * @param ThetaAngle
- *   Receives the Theta angle. May be NULL
+ *   Recevies the Theta angle. May be NULL
  *
  * @param AlphaAngle
  *   Receives the Alpha angle. May be NULL
@@ -15020,7 +13279,7 @@ LINKTOADDON void STDCALL TecUtilThreeDViewGetViewerAngle(TP_OUT double* PsiAngle
  *   Receives the viewer X-location
  *
  * @param YPos
- *   Receives the viewer Y-location
+ *   Recevies the viewer Y-location
  *
  * @param ZPos
  *   Receives the viewer Z-location
@@ -15100,18 +13359,6 @@ LINKTOADDON void STDCALL TecUtilThreeDViewGetViewerPos(TP_OUT double* XPos,
 LINKTOADDON double STDCALL TecUtilThreeDViewGetDistanceToRotateOriginPlane(void);
 
 /**
- * Queries the scaled range of an axis which is neither the shortest nor the longest.
- *
- * @pre Must have one or more frames.
- *
- *
- * @since 16.2
- *
- * @ingroup View
- */
-LINKTOADDON double STDCALL TecUtilThreeDViewGetMedianAxisRange(void);
-
-/**
  * Queries the location of the middle plane of view.
  *
  * @pre Must have one or more frames.
@@ -15141,7 +13388,7 @@ LINKTOADDON double STDCALL TecUtilThreeDViewGetMidZPlane(void);
  * @param ZMin
  *   Receives the minimum view plane location.
  * @param ZMax
- *   Receives the maximum view plane location.
+ *   Recevies the maximum view plane location.
  *
  * @pre Must have one or more frames.
  *
@@ -15185,18 +13432,6 @@ LINKTOADDON void STDCALL TecUtilThreeDViewGetMinMaxPanes(TP_OUT double* ZMin,
  * @param IsInPerspective
  *   Receives TRUE if Tecplot is drawing the plot with perspective projection, FALSE otherwise. You may
  *   pass NULL for this parameter
- *
- * @pre Must have one or more frames.
- *
- * @pre <em>FieldOfView</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>ViewWidth</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>IsInPerspective</em>
- *   Pointer must be a valid address or NULL.
- *
  *
  * <FortranSyntax>
  *    SUBROUTINE TecUtilThreeDViewGetProjection(
@@ -15385,7 +13620,7 @@ LINKTOADDON void STDCALL TecUtilConvert3DPositionToGrid(double         XPosition
  *   {
  *     TecUtilLockStart(AddOnID);
  *
- *     GeomID_t   GeomId  = 0;
+ *     Geom_ID   GeomId  = 0;
  *     double    xView   = 0.0;
  *     double    yView   = 0.0;
  *     double    zView   = 0.0;
@@ -15868,9 +14103,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageRGBBitmapCreate(BitDumpRegion_e Region
  *
  * @code
  *   {
- *     uint8_t RedColorTable[256];
- *     uint8_t BlueColorTable[256];
- *     uint8_t GreenColorTable[256];
+ *     short RedColorTable[256];
+ *     short BlueColorTable[256];
+ *     short GreenColorTable[256];
  *
  *     TecUtilLockStart(AddOnID);
  *     if (TecUtilImageIndexedBitmapCreate(BitDumpRegion_CurrentFrame,
@@ -15890,10 +14125,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageRGBBitmapCreate(BitDumpRegion_e Region
  *
  * #internalattributes exclude_python, exclude_sdkdoc, exclude_tcl
  */
-LINKTOADDON Boolean_t STDCALL TecUtilImageIndexedBitmapCreate(BitDumpRegion_e       Region,
-                                                              TP_ARRAY_OUT uint8_t* RedColorTable_Array,
-                                                              TP_ARRAY_OUT uint8_t* GreenColorTable_Array,
-                                                              TP_ARRAY_OUT uint8_t* BlueColorTable_Array);
+LINKTOADDON Boolean_t STDCALL TecUtilImageIndexedBitmapCreate(BitDumpRegion_e     Region,
+                                                              TP_ARRAY_OUT short* RedColorTable_Array,
+                                                              TP_ARRAY_OUT short* GreenColorTable_Array,
+                                                              TP_ARRAY_OUT short* BlueColorTable_Array);
 /**
  *   Destroy the bitmap buffer.
  *
@@ -15944,17 +14179,13 @@ LINKTOADDON void      STDCALL TecUtilImageBitmapDestroy(void);
  *
  * @code
  *   {
- *     int32_t Width,Height;
- *     uint8_t RedColorTable[256]; // Must be at least 256
- *     uint8_t GreenColorTable[256]; // Must be at least 256
- *     uint8_t BlueColorTable[256]; // Must be at least 256
+ *     short Width,Height;
+ *     short ColorTable[256]; // Must be at least 256
  *
  *     TecUtilLockStart(AddOnID);
  *
  *     if (TecUtilImageIndexedBitmapCreate(BitDumpRegion_CurrentFrame,
- *                                         RedColorTable,
- *                                         GreenColorTable,
- *                                         BlueColorTable))
+ *                                         ColorTable))
  *       {
  *         TecUtilImageGetDimensions(&Width,&Height);
  *         // Dimensions are now in the Width and Height variables
@@ -15966,8 +14197,8 @@ LINKTOADDON void      STDCALL TecUtilImageBitmapDestroy(void);
  *
  * @ingroup Image
  */
-LINKTOADDON Boolean_t STDCALL TecUtilImageGetDimensions(TP_OUT int32_t* Width,
-                                                        TP_OUT int32_t* Height);
+LINKTOADDON Boolean_t STDCALL TecUtilImageGetDimensions(TP_OUT short* Width,
+                                                        TP_OUT short* Height);
 /**
  * Gets the RGB values of a scan line. The calling application must
  * allocate/free the arrays and ensure that they have enough space.
@@ -16022,10 +14253,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageGetDimensions(TP_OUT int32_t* Width,
  * @code
  *   {
  *     // 24-bit color
- *     uint8_t *Red;
- *     uint8_t *Green;
- *     uint8_t *Blue;
- *     int32_t Width,Height;
+ *     short *Red;
+ *     short *Green;
+ *     short *Blue;
+ *     short Width,Height;
  *
  *     TecUtilLockStart(AddOnID);
  *
@@ -16049,10 +14280,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageGetDimensions(TP_OUT int32_t* Width,
  *
  * #internalattributes exclude_python, exclude_sdkdoc, exclude_tcl
  */
-LINKTOADDON Boolean_t STDCALL TecUtilImageRGBGetScanLine(int32_t               ScanLine,
-                                                         TP_ARRAY_OUT uint8_t* Red_Array,
-                                                         TP_ARRAY_OUT uint8_t* Green_Array,
-                                                         TP_ARRAY_OUT uint8_t* Blue_Array);
+LINKTOADDON Boolean_t STDCALL TecUtilImageRGBGetScanLine(short               ScanLine,
+                                                         TP_ARRAY_OUT short* Red_Array,
+                                                         TP_ARRAY_OUT short* Green_Array,
+                                                         TP_ARRAY_OUT short* Blue_Array);
 /**
  *   Gets the color table indices for a scan line. The calling application must
  *   allocate/free the RGBIndex array and ensure that it has enough space.
@@ -16088,11 +14319,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageRGBGetScanLine(int32_t               S
  *
  * @code
  *   {
- *     int32_t Width,Height;
- *     uint8_t *RGBIndex = NULL;
- *     uint8_t ColorTableR[256]; // Must be at least 256
- *     uint8_t ColorTableG[256];
- *     uint8_t ColorTableB[256];
+ *     short Width,Height;
+ *     short *RGBIndex = NULL;
+ *     short ColorTableR[256]; // Must be at least 256
+ *     short ColorTableG[256];
+ *     short ColorTableB[256];
  *
  *     TecUtilLockStart(AddOnID);
  *
@@ -16102,7 +14333,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageRGBGetScanLine(int32_t               S
  *                                          ColorTableB)
  *       {
  *         TecUtilImageGetDimensions(&Width,&Height);
- *         RGBIndex = (uint8_t*) malloc(Width * sizeof(uint8_t));
+ *         RGBIndex = (short*) malloc(Width * sizeof(short));
  *         TecUtilImageIndexedGetScanLine(1, // scan lines are 1-based
  *                                        RGBIndex);
  *         TecUtilImageBitmapDestroy();
@@ -16116,8 +14347,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageRGBGetScanLine(int32_t               S
  *
  * #internalattributes exclude_python, exclude_sdkdoc, exclude_tcl
  */
-LINKTOADDON Boolean_t STDCALL TecUtilImageIndexedGetScanLine(int32_t               ScanLine,
-                                                             TP_ARRAY_OUT uint8_t* RGBIndex_Array);
+LINKTOADDON Boolean_t STDCALL TecUtilImageIndexedGetScanLine(short               ScanLine,
+                                                             TP_ARRAY_OUT short* RGBIndex_Array);
 
 /**
  *   Get the color table, that is, the palette, of a color-reduced image. You must call either
@@ -16149,9 +14380,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageIndexedGetScanLine(int32_t            
  *
  * @code
  *   {
- *     uint8_t Red[256];
- *     uint8_t Green[256];
- *     uint8_t Blue[256];
+ *     Byte_t Red[256];
+ *     Byte_t Green[256];
+ *     Byte_t Blue[256];
  *
  *     TecUtilLockStart(AddOnID);
  *     TecUtilImageBitmapCreateX(NULL);
@@ -16167,9 +14398,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageIndexedGetScanLine(int32_t            
  *
  * #internalattributes exclude_python, exclude_sdkdoc, exclude_tcl
  */
-LINKTOADDON void STDCALL TecUtilImageGetColorTable(TP_ARRAY_OUT uint8_t* Red_Array,
-                                                   TP_ARRAY_OUT uint8_t* Green_Array,
-                                                   TP_ARRAY_OUT uint8_t* Blue_Array);
+LINKTOADDON void STDCALL TecUtilImageGetColorTable(TP_ARRAY_OUT Byte_t* Red_Array,
+                                                   TP_ARRAY_OUT Byte_t* Green_Array,
+                                                   TP_ARRAY_OUT Byte_t* Blue_Array);
 
 /**
  * Create a true color or color-reduced bitmap of a specified width.
@@ -16200,7 +14431,7 @@ LINKTOADDON void STDCALL TecUtilImageGetColorTable(TP_ARRAY_OUT uint8_t* Red_Arr
  * Name:
  *   SV_IMAGEWIDTH
  * Type:
- *   int32_t
+ *   ScreenDim_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -16274,7 +14505,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilImageBitmapCreateX(ArgList_pa ArgList);
  * @ingroup Utilities
  *
  */
-LINKTOADDON void STDCALL TecUtilMemoryChangeNotify(int64_t ChangeInKBytes);
+LINKTOADDON void STDCALL TecUtilMemoryChangeNotify(Int64_t ChangeInKBytes);
 
 
 /**
@@ -16304,37 +14535,8 @@ LINKTOADDON void STDCALL TecUtilMemoryChangeNotify(int64_t ChangeInKBytes);
  *
  * @ingroup Zone
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsLinear(EntIndex_t Zone);
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsLinear(EntIndex_t Zone);
 
-/**
- * Test to see if a zone is linear.
- *
- * @param DataSetID
- *   Unique ID of the DataSet.
- *
- * @param Zone
- *     Zone of interest. This zone must be an enabled zone.
- *
- * @return
- *     TRUE if the zone data is linear,
- *     FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneIsLinearByDataSetID(
- *    INTEGER*8       DataSetID
- *    INTEGER*4       Zone
- * </FortranSyntax>
- *
- * @since
- *   16.2
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Zone
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsLinearByDataSetID(UniqueID_t DataSetID,
-                                                            EntIndex_t Zone);
 
 /**
  * Test to see if a zone of the dataset attached to the specified frame is linear.
@@ -16350,7 +14552,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsLinearByDataSetID(UniqueID_t
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilZoneIsLinearForFrame(
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID
  *    INTEGER*4       Zone
  * </FortranSyntax>
  *
@@ -16359,11 +14561,9 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsLinearByDataSetID(UniqueID_t
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilZoneIsLinearByDataSetID
- *
  * @ingroup Zone
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsLinearForFrame(UniqueID_t FrameID,
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsLinearForFrame(UniqueID_t FrameID, 
                                                           EntIndex_t Zone);
 
 /**
@@ -16396,7 +14596,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsLinearForFrame(UniqueID_t Fr
  *
  * @ingroup Variables
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsSpatial(EntIndex_t Var);
+LINKTOADDON Boolean_t STDCALL TecUtilVarIsSpatial(EntIndex_t Var);
 
 /**
  * Test to see if a variable of the the dataset attached to specified frame is spatial.
@@ -16415,7 +14615,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsSpatial(EntIndex_t Var);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilVarIsSpatialForFrame(
- *    INTEGER*8      FrameID
+ *    INTEGER*4      FrameID 
  *    INTEGER*4      Var
  * </FortranSyntax>
  *
@@ -16426,7 +14626,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsSpatial(EntIndex_t Var);
  *
  * @ingroup Variables
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsSpatialForFrame(UniqueID_t FrameID,
+LINKTOADDON Boolean_t STDCALL TecUtilVarIsSpatialForFrame(UniqueID_t FrameID, 
                                                           EntIndex_t Var);
 /**
  * Formats the data value according to the specified format and precision.
@@ -16469,7 +14669,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsSpatialForFrame(UniqueID_t Fr
  */
 LINKTOADDON TP_GIVES char* STDCALL TecUtilStringFormatValue(double         Value,
                                                             NumberFormat_e Format,
-                                                            int32_t        Precision);
+                                                            SmInteger_t    Precision);
 
 /**
  * Formats the data value according to the specified time/date format.
@@ -16524,8 +14724,8 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilStringFormatTimeDate(double      TimeD
  * @since 14.1
  * @ingroup Utilities
  */
-LINKTOADDON void STDCALL TecUtilSortUInt32ItemArray(TP_ARRAY_IN_OUT uint32_t* ItemArray,
-                                                    uint64_t                  ItemCount,
+LINKTOADDON void STDCALL TecUtilSortUInt32ItemArray(TP_ARRAY_IN_OUT UInt32_t* ItemArray,
+                                                    UInt64_t                  ItemCount,
                                                     UInt32ItemComparator_pf   ItemComparator,
                                                     ArbParam_t                ClientData);
 /**
@@ -16547,8 +14747,8 @@ LINKTOADDON void STDCALL TecUtilSortUInt32ItemArray(TP_ARRAY_IN_OUT uint32_t* It
  * @since 14.1
  * @ingroup Utilities
  */
-LINKTOADDON void STDCALL TecUtilSortUInt64ItemArray(TP_ARRAY_IN_OUT uint64_t* ItemArray,
-                                                    uint64_t                  ItemCount,
+LINKTOADDON void STDCALL TecUtilSortUInt64ItemArray(TP_ARRAY_IN_OUT UInt64_t* ItemArray,
+                                                    UInt64_t                  ItemCount,
                                                     UInt64ItemComparator_pf   ItemComparator,
                                                     ArbParam_t                ClientData);
 
@@ -16560,11 +14760,11 @@ LINKTOADDON void STDCALL TecUtilSortUInt64ItemArray(TP_ARRAY_IN_OUT uint64_t* It
  * @since 14.1
  * @ingroup Utilities
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilIsBusy(void);
+LINKTOADDON Boolean_t STDCALL TecUtilIsBusy(void);
 
 /**
  * Signal that a V3 loader has finished loading a dataset.
- * A V3 loader must call this function even if it was not able to
+ * A V3 loader must call this function even if it was not able to 
  * successfully load the data. In other words, calls to
  * TecUtilDataLoadStart() and TecUtilDataLoadFinishX() must always be balanced.
  *
@@ -16583,7 +14783,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilIsBusy(void);
  * @return
  *  TRUE if successfully, FALSE otherwise.
  *  If there was an error in loading (that is, the loader did not call TecUtilImportSetLoaderInstr), this function will return FALSE).
- *
+ *  
  * @param ArgList
  *   Set of ArgList entries. This is built using calls to
  *   TecUtilArListAppendXXXX functions.
@@ -16619,8 +14819,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilIsBusy(void);
  *  SV_ADDZONESTOEXISTINGSTRANDS
  * Type:
  *  Boolean_t
- * Arg Function:
- *  TecUtilArgListAppendInt()
  * Default:
  *  FALSE
  * Required:
@@ -16632,8 +14830,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilIsBusy(void);
  *  SV_INITIALPLOTFIRSTZONEONLY
  * Type:
  *  Boolean_t
- * Arg Function:
- *  TecUtilArgListAppendInt()
  * Default:
  *  FALSE
  * Required:
@@ -16675,8 +14871,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilIsBusy(void);
  * @since 14.2
  */
  LINKTOADDON Boolean_t STDCALL TecUtilDataLoadFinishX(
-    ArgList_pa         argList,
-    TP_OUT UniqueID_t* varUniqueIdArray);
+    ArgList_pa  argList,
+    UniqueID_t* varUniqueIdArray);
 
 
 /**
@@ -16699,243 +14895,4 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilIsBusy(void);
  * @since 14.2
  */
 LINKTOADDON void STDCALL TecUtilDataLoadStart(void);
-
-#if defined __cplusplus
-namespace tecplot {
-    class MacroDebuggerInterface;
-}
-LINKTOADDON tecplot::MacroDebuggerInterface* STDCALL TecUtilMacroGetDebugger(void);
-#endif
-
-/**
- * Create a custom colormap and initialize it to a built-in colormap.
- *
- * @return
- *  TRUE if successful, FALSE if resources could not be allocated when creating the colormap.
- *  If the colormap name already exists, it will be overwritten
- *  with this colormap.
- *
- * @param ArgList
- *   Set of ArgList entries. this is built using calls to the TecUtilArgListAppendXXXX()
- *   family of functions.
- * <ArgListTable>
- *
- * Name:
- *  SV_NAME
- * Type:
- *  const char*
- * Arg Function:
- *  TecUtilArgListAppendString()
- * Required:
- *  Yes
- * Notes:
- *   Colormap names are case-insensitive, and cannot be the same name as a reserved colormap
- *   (example: "Small Rainbow").
- *
- * Name:
- *  SV_SOURCECOLORMAP
- * Type:
- *  const char*
- * Arg Function:
- *  TecUtilArgListAppendString()
- * Default:
- *  "Small Rainbow"
- * Required:
- *  No
- * Notes:
- *  The new colormap will be initialized to this colormap.
- *  This colormap may be either a built-in colormap or a custom colormap.
- *  This colormap must exist.
- *
- * </ArgListTable>
- *
- * @sa TecUtilColorMapExists
- *
- * @ingroup ColorMap
- *
- * @since 15.2
- */
- LINKTOADDON Boolean_t STDCALL TecUtilColorMapCreateX(ArgList_pa argList);
-
- /**
-  * Redistribute the control points for a custom colormap.
-  *
-  * @param colorMapName
-  *  Name of the colormap. The control points will be redistributed for this colormap.
-  *  Name of the colormap. Must exist, and cannot be a built-in colormap (e.g., "Small Rainbow").
-  *
-  * @return
-  *  TRUE if successful, FALSE if resources could not be allocated.
-  *
-  * <FortranSyntax>
-  *    INTEGER*4 FUNCTION TecUtilColorMapRedistributeControlPts()
-  * </FortranSyntax>
-  *
-  * <PythonSyntax>
-  * </PythonSyntax>
-  *
-  * @ingroup ColorMap
-  *
-  * @sa TecUtilColorMapIsBuiltIn, TecUtilColorMapExists, TecUtilColorMapDelete
-  *
-  * @since
-  *  15.2
-  */
-LINKTOADDON Boolean_t STDCALL TecUtilColorMapRedistributeControlPts(const char* colorMapName);
-
-/**
- * Delete a colormap.
- *
- * @param colorMapName
- *  Name of the colormap to delete. Cannot be a built-in colormap (Example: "Small Rainbow")
- *  The source colormap must exist.
- *
- * @sa TecUtilColorMapExists, TecUtilColorMapIsBuiltIn, TecUtilColorMapCreateX
- *
- * @ingroup ColorMap
- *
- * @since
- *  15.2
- */
-LINKTOADDON void STDCALL TecUtilColorMapDelete(const char* sourceColorMapName);
-
-/**
- * Renames a colormap.
- *
- * @param sourceColorMapName
- *  Name of the colormap to be renamed. Cannot be a built-in colormap (e.g., "Small Rainbow"
- *  and the colormap name must exist.
- *
- * @param newColorMapName
- *  Name of the new colormap. Cannot be a built-in colormap (e.g., "Small Rainbow"
- *  The new colormap name must not exist.
- *
- * @sa TecUtilColorMapExists, TecUtilColorMapIsBuiltIn, TecUtilColorMapCreateX, TecUtilColorMapDelete
- *
- * @since
- *  15.2
- */
-LINKTOADDON void STDCALL TecUtilColorMapRename(
-    const char* sourceColorMapName,
-    const char* newColorMapName);
-
-/**
- * Copy a colormap definition into the raw user defined colormap.
- *
- * @param sourceColorMapName
- *  Source colormap which will be copied into the raw user defined colormap.
- *  sourceColorMap must exist, and may be any valid colormap name, including built-in colormaps.
- *
- * @return
- *  TRUE if successful, FALSE if resources could not be allocated.
- *
- * @sa TecUtilColorMapExists
- *
- * @ingroup ColorMap
- *
- * @since
- *  15.2
- */
-LINKTOADDON Boolean_t STDCALL TecUtilColorMapResetRawUserDefined(const char* sourceColorMapName);
-
-/**
- * Check if a color with the supplied name exists.
- *
- * @param colorMapName
- *  Colormap name to check
- *
- * @result
- *  TRUE if a colormap exists with this name, FALSE otherwise.
- *
- * @ingroup ColorMap
- *
- * @sa TecUtilColorMapIsBuiltIn
- *
- * @since
- *  15.2
- */
- LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilColorMapExists(const char* colorMapName);
-
- /**
-  * Check to see if a colormap name is a built-in colormap name (Example: "Small Rainbow").
-  *
-  * @param colorMapName
-  *  Colormap name to check. Must be a non-zero length string.
-  *
-  * @result
-  *  TRUE if the colormap name is a built-in colormap name, FALSE otherwise.
-  *  Colormap names are case-insensitive.
-  *
-  * @ingroup ColorMap
-  *
-  * @sa TecUtilColorMapExists
-  *
-  * @since
-  *  15.2
-  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilColorMapIsBuiltIn(const char* colorMapName);
-
-/**
- * Calculate and set the normal and origin of an arbitrary slice using three points.
- * The origin will be set to the 3rd point.
- *
- * @param FrameID
- *   Unique ID of the frame for which the slice belongs.
- *
- * @param sliceGroup
- *   SliceGroup that is modified.
- *
- * @param X1
- *   X-Coordinate for the first point.
- *
- * @param Y1
- *   Y-Coordinate for the first point.
- *
- * @param Z1
- *   Z-Coordinate for the first point.
- *
- * @param X2
- *   X-Coordinate for the second point.
- *
- * @param Y2
- *   Y-Coordinate for the second point.
- *
- * @param Z2
- *   Z-Coordinate for the second point.
- *
- * @param X3
- *   X-Coordinate for the third point.
- *
- * @param Y3
- *   Y-Coordinate for the third point.
- *
- * @param Z3
- *   Z-Coordinate for the third point.
-
- * @result
- *  TRUE if the new arbitrary slice is defined, FALSE otherwise.
- *
- * @pre Must have one or more pages.
- *
- *
- * @ingroup Axis
- *
- * @sa TecUtilCreateSliceZoneFromPlane
- *
- * @since
- *  16.2
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSliceSetArbitraryUsingThreePoints(
-    UniqueID_t frameID,
-    int32_t sliceGroup,
-    double X1,
-    double Y1,
-    double Z1,
-    double X2,
-    double Y2,
-    double Z2,
-    double X3,
-    double Y3,
-    double Z3);
-
 #endif /* _TECUTILM_H */

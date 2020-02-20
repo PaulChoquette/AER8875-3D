@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TecGUIMenuActionAbstract.h"
-#include "TecGUIGlobal.h"
+#include "StandardIntegralTypes.h"
 #include "tecgui_Exports.h"
 #include "ClassMacros.h"
 
@@ -15,7 +15,7 @@ class TecGUIMenuAction
 
 public:
     TecGUIMenuAction(
-        GUIInt_t              parent,
+        LgIndex_t              parent,
         std::string const&              label,
         TecGUIVoidCallback_pf 	callback);
 

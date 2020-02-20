@@ -60,8 +60,13 @@
  */
 
 #ifndef VALID_REF
+#ifdef MSWIN
     #define VALID_REF(p)      ((p)  != 0)
     #define VALID_FN_REF(pf)  ((pf) != 0)
+#else
+    #define VALID_REF(p)      ((p)  != 0)
+    #define VALID_FN_REF(pf)  ((pf) != 0)
+#endif
 #endif
 
 #if defined NO_ASSERTS
@@ -89,42 +94,19 @@
     #ifndef ASSERT_ONLY
         #define ASSERT_ONLY(EXPR)
     #endif
-#else   // Asserted build
+#else
+    #include <assert.h>
+    #ifndef ASSERT
+        #define ASSERT(EXPR) assert(EXPR)
+    #endif
+
     /*
      * See note above for this macro.
      */
+
     #ifndef ASSERT_ONLY
         #define ASSERT_ONLY(EXPR) EXPR
     #endif
-
-    #if defined NDEBUG    // Checked build
-        #ifndef ASSERT
-            template<class T>
-            inline bool checkedAssert(T const& expr)
-            {
-                return (expr ? true : false);
-            }
-            inline bool checkedAssert(char const* expr)
-            {
-                return expr != 0;
-            }
-            #define ASSERT(EXPR) \
-                do \
-                { \
-                    if (!checkedAssert(EXPR)) \
-                    { \
-                        std::cerr << __FILE__ << ':' << __LINE__ << ':' << "Assertion '" << #EXPR << "' failed."; \
-                        abort(); \
-                    } \
-                } while (0);
-        #endif  // ndef ASSERT
-    #else   // Debug build
-        #ifndef ASSERT
-            #include <assert.h>
-            #define ASSERT(EXPR) assert(EXPR)
-        #endif
-    #endif  // defined NDEBUG
-    
 #endif
 
 /**
@@ -157,7 +139,8 @@
         #define VERIFY(EXPR) \
             do \
             { \
-                if ((EXPR) == 0) \
+                bool _result = (EXPR); \
+                if (!_result) \
                 { \
                     std::cerr << __FILE__ << ':' << __LINE__ << ':' << "Assertion '" << #EXPR << "' failed."; \
                     abort(); \
@@ -189,5 +172,6 @@
     #define VALID_ENUM(value, type)    (0 <= (value) && (value) < END_##type)
 #endif
 #if !defined VALID_CLASS_ENUM
-    #define VALID_CLASS_ENUM(e) (static_cast<std::decay<decltype((e))>::type>(0) <= (e) && (e) < std::decay<decltype((e))>::type::END_ENUM)
+    #define VALID_CLASS_ENUM(value, class, type)    (0 <= (value) && (value) < class::END_##type)
 #endif
+

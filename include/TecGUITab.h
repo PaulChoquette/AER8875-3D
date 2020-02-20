@@ -16,11 +16,11 @@ class TecGUITab :
     Q_OBJECT
 public:
     TecGUITab(
-        GUIInt_t parentDialog,
-        GUIInt_t x,
-        GUIInt_t y,
-        GUIInt_t width,
-        GUIInt_t height,
+        LgIndex_t parentDialog,
+        LgIndex_t x,
+        LgIndex_t y,
+        LgIndex_t width,
+        LgIndex_t height,
         TecGUIIntCallback_pf activateCallback,
         TecGUIIntCallback_pf deactivateCallback);
 
@@ -32,7 +32,7 @@ private slots:
 private:
     TecGUIIntCallback_pf m_activateCallback;
     TecGUIIntCallback_pf m_deactivateCallback;
-    GUIInt_t            m_currentTabPageId;
+    int                  m_currentTabPageId;
 
     UNCOPYABLE_CLASS(TecGUITab);
 };

@@ -11,39 +11,6 @@
 #define _MASTER_H_
 
 /*
- * Uncomment the following to force generated slices to be saved as generated data instead of instructions.
- */
-//#define SAVE_GENERATED_DATA
-
-/*
- * Uncomment to activate orphaned datasets.  
- */
-//#define ENABLE_ORPHANED_DATASETS
-//
-
-/*
- * Uncomment to make deferred zone extraction operations "available".   To really enable in the beta you must also put the following
- * in your tecplot.cfg file:
- *
- *   $!Internal "TechnologyPreview = 'OPERATE-TIME-DEFERRED'"
- *
- * NOTE: If NOT enabled then edit tecutilo.cpp and change LINKTOADDONS to XINKTOADDONS for TecUtilDataSetAddTransientJournalCommand
- */
-#define DEFER_TRANSIENT_OPERATIONS
-
-/*
- *  Uncomment to activate COBS in the dataset
- */
-
-//#define COBS_IN_DATASET
-
-/*
- * Optionally uncomment ....
- */
-//#define DEBUG_ORPHANED_DATASETS
-
-
-/*
  * Annotations that specify the life cycle of objects returned from functions
  * and input and output parameters sent as function parameters. The following
  * table specifies the meaning in their context. The annotations provide code
@@ -155,20 +122,7 @@
  * |                  |                         | transfered to the client. The service is responsible for        |
  * |                  |                         | properly disposing the input value and the client is            |
  * |                  |                         | responsible for properly disposing the output value.            |
- * |==================+=========================+=================================================================|
- * | The following annotations are not related to life-cycle but denote properties of the associated parameter.   |
- * | They are only meaningful if present and there is no "default," or the default can be considered the same as  |
- * | "unknown". These all #define out to nothing and are only to be found in the TecUtil public API header files. |
- * |------------------+-------------------------+-----------------------------------------------------------------|
- * | Queried Result   | TP_QUERY                | This applies to output parameters and return values and         |
- * | or Parameter     |                         | indicates the value is the one requested and not a status of    |
- * |                  |                         | success or failure of the request itself. For example, the      |
- * |                  |                         | return value of TecUtilIsBusy() is the requested value:         |
- * |                  |                         |   TP_QUERY Boolean_t TecUtilIsBusy()                            |
- * |                  |                         | whereas the return value of TecUtilNewLayout() is the status of |
- * |                  |                         | the function call itself:                                       |
- * |                  |                         |   Boolean_t TecUtilNewLayout()                                  |
- * |==================+=========================+=================================================================|
+ * |==================+===================+=======================================================================|
  */
 
 /*
@@ -212,18 +166,10 @@
     #define TP_GIVES
     #define TP_RECEIVES
     #define TP_RECEIVES_GIVES
-    #define TP_ARRAY_GIVES
-    #define TP_ARRAY_RECEIVES
+    #define TP_ARRAY_GIVES         
+    #define TP_ARRAY_RECEIVES      
     #define TP_ARRAY_RECEIVES_GIVES
 #endif
-
-
-#if defined TP_QUERY
-    #error "Tecplot's parameter annotation keywords are in direct conflict with other meanings."
-#endif
-
-#define TP_QUERY
-
 
 /* CORE SOURCE CODE REMOVED */
 
@@ -297,8 +243,6 @@
 # endif
 #endif
 
-/* CORE SOURCE CODE REMOVED */
-
 /* Now a requirement */
 #define USE_3D_HARDWARE
 
@@ -369,6 +313,8 @@
 
 /* CORE SOURCE CODE REMOVED */
 
+/* CORE SOURCE CODE REMOVED */
+
 #ifdef MSWIN
 #if defined VS_2005
 #define Widget LONG_PTR /* correct for 32 & 64 bit builds */
@@ -428,23 +374,17 @@
 /* TRACE is not used by non-debug builds */
 #if defined NDEBUG
 #if defined MSWIN
-#define TRACE                       __noop
-#define TRACE0(s)                   __noop
-#define TRACE1(S,a1)                __noop
-#define TRACE2(s,a1,a2)             __noop
-#define TRACE3(s,a1,a2,a3)          __noop
-#define TRACE4(s,a1,a2,a3,a4)       __noop
-#define TRACE5(s,a1,a2,a3,a4,a5)    __noop
-#define TRACE6(s,a1,a2,a3,a4,a5,a6) __noop
+#define TRACE              __noop
+#define TRACE0(s)          __noop
+#define TRACE1(S,a1)       __noop
+#define TRACE2(s,a1,a2)    __noop
+#define TRACE3(s,a1,a2,a3) __noop
 #else
-#define TRACE(str)                      ((void)0)
-#define TRACE0(str)                     ((void)0)
-#define TRACE1(str,a1)                  ((void)0)
-#define TRACE2(str,a1,a2)               ((void)0)
-#define TRACE3(str,a1,a2,a3)            ((void)0)
-#define TRACE4(str,a1,a2,a3,a4)         ((void)0)
-#define TRACE5(str,a1,a2,a3,a4,a5)      ((void)0)
-#define TRACE6(str,a1,a2,a3,a4,a5,a6)   ((void)0)
+#define TRACE(str)           ((void)0)
+#define TRACE0(str)          ((void)0)
+#define TRACE1(str,a1)       ((void)0)
+#define TRACE2(str,a1,a2)    ((void)0)
+#define TRACE3(str,a1,a2,a3) ((void)0)
 #endif /* MSWIN */
 #else /* DEBUG */
 #if defined MSWIN
@@ -452,13 +392,10 @@
  * use MFC, then no TRACE macro is available. Thus, to make tracing available,
  * map TRACE to the win32 OutpuDebugString() function.
  */
-# define TRACE(str)                    do {                                                 OutputDebugStringA(str); }    while (0)
-# define TRACE1(str,a1)                do { char s[5000]; sprintf(s,str,a1);                OutputDebugStringA(s);   }    while (0)
-# define TRACE2(str,a1,a2)             do { char s[5000]; sprintf(s,str,a1,a2);             OutputDebugStringA(s);   }    while (0)
-# define TRACE3(str,a1,a2,a3)          do { char s[5000]; sprintf(s,str,a1,a2,a3);          OutputDebugStringA(s);   }    while (0)
-# define TRACE4(str,a1,a2,a3,a4)       do { char s[5000]; sprintf(s,str,a1,a2,a3,a4);       OutputDebugStringA(s);   }    while (0)
-# define TRACE5(str,a1,a2,a3,a4,a5)    do { char s[5000]; sprintf(s,str,a1,a2,a3,a4,a5);    OutputDebugStringA(s);   }    while (0)
-# define TRACE6(str,a1,a2,a3,a4,a5,a6) do { char s[5000]; sprintf(s,str,a1,a2,a3,a4,a5,a6); OutputDebugStringA(s);   }    while (0)
+# define TRACE(str)           do { OutputDebugStringA(str); } while (0)
+# define TRACE1(str,a1)       do { char s[5000]; sprintf(s,str,a1);       OutputDebugStringA(s); } while (0)
+# define TRACE2(str,a1,a2)    do { char s[5000]; sprintf(s,str,a1,a2);    OutputDebugStringA(s); } while (0)
+# define TRACE3(str,a1,a2,a3) do { char s[5000]; sprintf(s,str,a1,a2,a3); OutputDebugStringA(s); } while (0)
 # define TRACE0(str) TRACE(str)
 #else
 #define TRACE  printf
@@ -466,9 +403,6 @@
 #define TRACE1 printf
 #define TRACE2 printf
 #define TRACE3 printf
-#define TRACE4 printf
-#define TRACE5 printf
-#define TRACE6 printf
 #endif /* MSWIN */
 #endif /* NDEBUG */
 #endif /* !defined (TRACE) */

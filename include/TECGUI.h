@@ -16,13 +16,13 @@
   </exclude_fglue> }}*/
 
 
-/*{{<exclude_engine>
+/*{{<exclude_engine> 
   TecGUIMFCSidebarRegister
   TecGUIMFCSidebarUpdateData
   TecGUIMFCAllocDialogBar_pf
 </exclude_engine> }}*/
 
-/*{{<windows_only>
+/*{{<windows_only> 
   TecGUIMFCSidebarRegister
   TecGUIMFCSidebarUpdateData
   TecGUIMFCAllocDialogBar_pf
@@ -30,8 +30,8 @@
 
 /*
  * Unfortunately "ENGINE" is defined in places where tecmock is used.
- * Defining engine must remove the TecGUI definitions from TECADDON.h
- * to make building of libtecguiqt happy in RS.  Someday we need to
+ * Defining engine must remove the TecGUI definitions from TECADDON.h 
+ * to make building of libtecguiqt happy in RS.  Someday we need to 
  * unravel all of this so we can mock TecGUI as well.   Probably not
  * as important as mocking the rest of the TecUtil functions.  (bdp)
  */
@@ -115,7 +115,6 @@ TecGUITextFieldSetSet
 TecGUIDialogLaunch
 TecGUIDialogDrop
 TecGUIDialogIsUp
-TecGUIDialogAddButtonToButtonBox
 TecGUIDialogSetTitle
 TecGUITextAppendString
 TecGUIMenuBarAdd
@@ -155,19 +154,6 @@ TecGUISetInputFocus
 </exclude_tecmock> }}*/
 
 
-
-/*
- * To minimize the header files needed for addon development we have this "hand built"
- * TECGUI.h file.   We could some day create a separate header file with just the
- * entries within this !defined TECGUIGLOBALS section and include both here and
- * internally over in the actual tecgui code.  Until then need to make sure these
- * definitions stay in sync with those in ../tecgui/TecGUIGlobal.h
- */
-#if !defined TECGUIGLOBALS
-#include "StandardIntegralTypes.h"
-#define TECGUIGLOBALS
-typedef int32_t GUIInt_t;
-
 /**
  * General GUI callback function with a const char * parameter. TecGUI
  * functions related to text fields and multi-line text fields require you to
@@ -183,9 +169,9 @@ typedef int32_t GUIInt_t;
  *   she enters a letter, you should return zero. It is the responsibility of
  *   the add-on to replace the text field value if the text is invalid.
  */
-typedef GUIInt_t (*TecGUITextCallback_pf)(const char* TextString);
+typedef LgIndex_t (*TecGUITextCallback_pf)(const char* TextString);
 /**
- * General GUI callback function with a \ref GUIInt_t * parameter. Many of the
+ * General GUI callback function with a \ref LgIndex_t * parameter. Many of the
  * TecGUI functions require you to provide a function that has this function
  * prototype.
  * @param Data
@@ -194,24 +180,19 @@ typedef GUIInt_t (*TecGUITextCallback_pf)(const char* TextString);
  *   is identified by a zero. The context of the control issuing the call
  *   governs the content. Guaranteed to be non-NULL.
  */
-typedef void (*TecGUIIntCallback_pf)(const GUIInt_t* Data);
+typedef void (*TecGUIIntCallback_pf)(const LgIndex_t* Data);
 /**
  * General GUI callback function with no parameters. Many of the TecGUI functions
  * require you to provide a function that has this function prototype.
  */
 typedef void (*TecGUIVoidCallback_pf)(void);
-#endif
 
-
-
-
-
-#define MAINDIALOGID          (GUIInt_t)-1
-#define BADDIALOGID           (GUIInt_t)-2
+#define MAINDIALOGID          -1
+#define BADDIALOGID           -2
 #define BADGUIID              BADDIALOGID
-#define TECGUITECPLOTSIDEBAR  (GUIInt_t)-3
+#define TECGUITECPLOTSIDEBAR  -3
 /* BEGINREMOVEFROMADDON */
-#define TECGUINOSIDEBAR       (GUIInt_t)-4
+#define TECGUINOSIDEBAR       -4
 /* ENDREMOVEFROMADDON */
 
 
@@ -219,7 +200,7 @@ typedef void (*TecGUIVoidCallback_pf)(void);
 #if defined MOTIF
 # define VALID_TECGUI_ID(ID) ((ID) == MAINDIALOGID         || \
                               (ID) == TECGUITECPLOTSIDEBAR || \
-                              (((GUIInt_t)0 <= (ID) && (ID) < GUINumWidgets) && \
+                              ((0 <= (ID) && (ID) < GUINumWidgets) && \
                                VALID_WIDGET(GUIInstalledWidgetList[ID].Control)))
 #if !defined USE_OLD_TABS
 /*
@@ -252,13 +233,13 @@ typedef struct
     ControlClientData_s ClientData[MAXGUICOMPANIONWIDGETS];
 } WidgetInfo_s;
 
-EXTERN GUIInt_t    GUINumWidgets;
+EXTERN LgIndex_t    GUINumWidgets;
 EXTERN WidgetInfo_s GUIInstalledWidgetList[MAXGUIWIDGETS];
 #else
 
 # define VALID_TECGUI_ID(ID) ((ID) == MAINDIALOGID          ||\
                               (ID) == TECGUITECPLOTSIDEBAR  ||\
-                              (ID) >= (GUIInt_t)0)
+                              (ID) >= 0)
 #endif
 /* ENDREMOVEFROMADDON */
 
@@ -304,7 +285,7 @@ EXTERN WidgetInfo_s GUIInstalledWidgetList[MAXGUIWIDGETS];
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogEnableActionArea(GUIInt_t DialogID,
+LINKTOADDON void STDCALL TecGUIDialogEnableActionArea(LgIndex_t DialogID,
                                                       Boolean_t EnableActionArea);
 /**
  * Sets the sensitivity of the Apply button in a dialog.
@@ -338,7 +319,7 @@ LINKTOADDON void STDCALL TecGUIDialogEnableActionArea(GUIInt_t DialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogApplySetSensitivity(GUIInt_t DialogID,
+LINKTOADDON void STDCALL TecGUIDialogApplySetSensitivity(LgIndex_t DialogID,
                                                          Boolean_t IsSensitive);
 /**
  * Sets a modal or modeless dialog to be the topmost window. In Windows,
@@ -369,7 +350,7 @@ LINKTOADDON void STDCALL TecGUIDialogApplySetSensitivity(GUIInt_t DialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogSetTopmost(GUIInt_t DialogID,
+LINKTOADDON void STDCALL TecGUIDialogSetTopmost(LgIndex_t DialogID,
                                                 Boolean_t MakeTopmost);
 
 /**
@@ -429,10 +410,10 @@ LINKTOADDON void STDCALL TecGUIDialogSetTopmost(GUIInt_t DialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogSetPosition(GUIInt_t         DialogID,
+LINKTOADDON void STDCALL TecGUIDialogSetPosition(LgIndex_t         DialogID,
                                                  AnchorAlignment_e Placement,
-                                                 GUIInt_t         OffsetX,
-                                                 GUIInt_t         OffsetY);
+                                                 LgIndex_t         OffsetX,
+                                                 LgIndex_t         OffsetY);
 
 /**
  * @deprecated
@@ -442,10 +423,10 @@ LINKTOADDON void STDCALL TecGUIDialogSetPosition(GUIInt_t         DialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogSetLaunchPosition(GUIInt_t         DialogID,
+LINKTOADDON void STDCALL TecGUIDialogSetLaunchPosition(LgIndex_t         DialogID,
                                                        AnchorAlignment_e Placement,
-                                                       GUIInt_t         OffsetX,
-                                                       GUIInt_t         OffsetY);
+                                                       LgIndex_t         OffsetX,
+                                                       LgIndex_t         OffsetY);
 
 
 
@@ -460,7 +441,7 @@ LINKTOADDON void STDCALL TecGUIDialogSetLaunchPosition(GUIInt_t         DialogID
  * Name:
  *   SV_DIALOGID
  * Type:
- *   GUIInt_t
+ *   LgIndex_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Required:
@@ -514,7 +495,7 @@ LINKTOADDON void STDCALL TecGUIDialogSetLaunchPosition(GUIInt_t         DialogID
  * Name:
  *   SV_MINVISIBILITYPERCENTAGE
  * Type:
- *   int32_t
+ *   SmInteger_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -529,7 +510,7 @@ LINKTOADDON void STDCALL TecGUIDialogSetLaunchPosition(GUIInt_t         DialogID
  * Name:
  *   SV_IOFFSET
  * Type:
- *   GUIInt_t
+ *   LgIndex_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -542,7 +523,7 @@ LINKTOADDON void STDCALL TecGUIDialogSetLaunchPosition(GUIInt_t         DialogID
  * Name:
  *   SV_JOFFSET
  * Type:
- *   GUIInt_t
+ *   LgIndex_t
  * Arg Function:
  *   TecUtilArgListAppendInt()
  * Default:
@@ -663,9 +644,9 @@ LINKTOADDON void STDCALL TecGUIDialogSetLaunchPositionX(ArgList_pa ArgList);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIDialogCreateModeless(GUIInt_t              ParentDialogID,
-                                                         GUIInt_t              Width,
-                                                         GUIInt_t              Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIDialogCreateModeless(LgIndex_t              ParentDialogID,
+                                                         LgIndex_t              Width,
+                                                         LgIndex_t              Height,
                                                          const char            *Title,
                                                          TecGUIVoidCallback_pf  InitCallback,
                                                          TecGUIVoidCallback_pf  CloseButtonCallback,
@@ -748,9 +729,9 @@ LINKTOADDON GUIInt_t STDCALL TecGUIDialogCreateModeless(GUIInt_t              Pa
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIDialogCreateModal(GUIInt_t              ParentDialogID,
-                                                      GUIInt_t              Width,
-                                                      GUIInt_t              Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIDialogCreateModal(LgIndex_t              ParentDialogID,
+                                                      LgIndex_t              Width,
+                                                      LgIndex_t              Height,
                                                       const char            *Title,
                                                       TecGUIVoidCallback_pf  InitCallback,
                                                       TecGUIVoidCallback_pf  OkButtonCallback,
@@ -872,11 +853,11 @@ LINKTOADDON void STDCALL TecGUIBlockForModalDialog(Boolean_t *DoneWithModalDialo
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIColoredButtonAdd(GUIInt_t              ParentDialogID,
-                                                     GUIInt_t              X,
-                                                     GUIInt_t              Y,
-                                                     GUIInt_t              Width,
-                                                     GUIInt_t              Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIColoredButtonAdd(LgIndex_t              ParentDialogID,
+                                                     LgIndex_t              X,
+                                                     LgIndex_t              Y,
+                                                     LgIndex_t              Width,
+                                                     LgIndex_t              Height,
                                                      const char            *LabelString,
                                                      ColorIndex_t           ColorIndex,
                                                      TecGUIVoidCallback_pf  ButtonCallback);
@@ -940,11 +921,11 @@ LINKTOADDON GUIInt_t STDCALL TecGUIColoredButtonAdd(GUIInt_t              Parent
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIButtonAdd(GUIInt_t              ParentDialogID,
-                                              GUIInt_t              X,
-                                              GUIInt_t              Y,
-                                              GUIInt_t              Width,
-                                              GUIInt_t              Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIButtonAdd(LgIndex_t              ParentDialogID,
+                                              LgIndex_t              X,
+                                              LgIndex_t              Y,
+                                              LgIndex_t              Width,
+                                              LgIndex_t              Height,
                                               const char            *LabelString,
                                               TecGUIVoidCallback_pf  ButtonCallback);
 /**
@@ -973,7 +954,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIButtonAdd(GUIInt_t              ParentDialogI
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIColoredButtonSetColor(GUIInt_t    ButtonID,
+LINKTOADDON void STDCALL TecGUIColoredButtonSetColor(LgIndex_t    ButtonID,
                                                      ColorIndex_t Color);
 
 /**
@@ -1068,18 +1049,18 @@ LINKTOADDON void STDCALL TecGUIColoredButtonSetColor(GUIInt_t    ButtonID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIBitmapButtonAdd(GUIInt_t              ParentDialogID,
-                                                    GUIInt_t              X,
-                                                    GUIInt_t              Y,
-                                                    GUIInt_t              ButtonWidth,
-                                                    GUIInt_t              ButtonHeight,
-                                                    GUIInt_t              BitmapWidth,
-                                                    GUIInt_t              BitmapHeight,
+LINKTOADDON LgIndex_t STDCALL TecGUIBitmapButtonAdd(LgIndex_t              ParentDialogID,
+                                                    LgIndex_t              X,
+                                                    LgIndex_t              Y,
+                                                    LgIndex_t              ButtonWidth,
+                                                    LgIndex_t              ButtonHeight,
+                                                    LgIndex_t              BitmapWidth,
+                                                    LgIndex_t              BitmapHeight,
                                                     const char            *BitmapData_Array,
                                                     Boolean_t              UseTransparentColor,
-                                                    GUIInt_t              TransparentR,
-                                                    GUIInt_t              TransparentG,
-                                                    GUIInt_t              TransparentB,
+                                                    LgIndex_t              TransparentR,
+                                                    LgIndex_t              TransparentG,
+                                                    LgIndex_t              TransparentB,
                                                     TecGUIVoidCallback_pf  ButtonCallback);
 
 /**
@@ -1176,18 +1157,18 @@ LINKTOADDON GUIInt_t STDCALL TecGUIBitmapButtonAdd(GUIInt_t              ParentD
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIBitmapToggleAdd(GUIInt_t             ParentDialogID,
-                                                    GUIInt_t             X,
-                                                    GUIInt_t             Y,
-                                                    GUIInt_t             ButtonWidth,
-                                                    GUIInt_t             ButtonHeight,
-                                                    GUIInt_t             BitmapWidth,
-                                                    GUIInt_t             BitmapHeight,
+LINKTOADDON LgIndex_t STDCALL TecGUIBitmapToggleAdd(LgIndex_t             ParentDialogID,
+                                                    LgIndex_t             X,
+                                                    LgIndex_t             Y,
+                                                    LgIndex_t             ButtonWidth,
+                                                    LgIndex_t             ButtonHeight,
+                                                    LgIndex_t             BitmapWidth,
+                                                    LgIndex_t             BitmapHeight,
                                                     const char           *BitmapData_Array,
                                                     Boolean_t             UseTransparentColor,
-                                                    GUIInt_t             TransparentR,
-                                                    GUIInt_t             TransparentG,
-                                                    GUIInt_t             TransparentB,
+                                                    LgIndex_t             TransparentR,
+                                                    LgIndex_t             TransparentG,
+                                                    LgIndex_t             TransparentB,
                                                     TecGUIIntCallback_pf  ValueChangedCallback);
 
 /**
@@ -1214,7 +1195,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIBitmapToggleAdd(GUIInt_t             ParentDi
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUISetToolTip(GUIInt_t   ControlID,
+LINKTOADDON void STDCALL TecGUISetToolTip(LgIndex_t   ControlID,
                                           const char *ToolTipText);
 /**
  *   Sets a status line help string for the specified control.
@@ -1240,7 +1221,7 @@ LINKTOADDON void STDCALL TecGUISetToolTip(GUIInt_t   ControlID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUISetStatusLine(GUIInt_t   ControlID,
+LINKTOADDON void STDCALL TecGUISetStatusLine(LgIndex_t   ControlID,
                                              const char *StatusLineText);
 
 
@@ -1272,8 +1253,8 @@ LINKTOADDON void STDCALL TecGUISetStatusLine(GUIInt_t   ControlID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIButtonSetDefault(GUIInt_t DialogID,
-                                                GUIInt_t ButtonID);
+LINKTOADDON void STDCALL TecGUIButtonSetDefault(LgIndex_t DialogID,
+                                                LgIndex_t ButtonID);
 /**
  *   Sets the text of a button control.
  *
@@ -1298,7 +1279,7 @@ LINKTOADDON void STDCALL TecGUIButtonSetDefault(GUIInt_t DialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIButtonSetText(GUIInt_t   ButtonID,
+LINKTOADDON void STDCALL TecGUIButtonSetText(LgIndex_t   ButtonID,
                                              const char *NewText);
 
 
@@ -1328,7 +1309,7 @@ LINKTOADDON void STDCALL TecGUIButtonSetText(GUIInt_t   ButtonID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUISetSensitivity(GUIInt_t ControlID,
+LINKTOADDON void STDCALL TecGUISetSensitivity(LgIndex_t ControlID,
                                               Boolean_t IsSensitive);
 
 /**
@@ -1355,7 +1336,7 @@ LINKTOADDON void STDCALL TecGUISetSensitivity(GUIInt_t ControlID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUISetVisibility(GUIInt_t ControlID,
+LINKTOADDON void STDCALL TecGUISetVisibility(LgIndex_t ControlID,
                                              Boolean_t MakeVisible);
 
 /**
@@ -1421,11 +1402,11 @@ LINKTOADDON void STDCALL TecGUISetVisibility(GUIInt_t ControlID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuAdd(GUIInt_t             ParentDialogID,
-                                                  GUIInt_t             X,
-                                                  GUIInt_t             Y,
-                                                  GUIInt_t             Width,
-                                                  GUIInt_t             Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIOptionMenuAdd(LgIndex_t             ParentDialogID,
+                                                  LgIndex_t             X,
+                                                  LgIndex_t             Y,
+                                                  LgIndex_t             Width,
+                                                  LgIndex_t             Height,
                                                   const char           *OptionList,
                                                   TecGUIIntCallback_pf  ValueChangedCallback);
 
@@ -1453,8 +1434,8 @@ LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuAdd(GUIInt_t             ParentDial
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIOptionMenuSet(GUIInt_t OptionMenuID,
-                                             GUIInt_t Selection);
+LINKTOADDON void STDCALL TecGUIOptionMenuSet(LgIndex_t OptionMenuID,
+                                             LgIndex_t Selection);
 
 /**
  *   Set the current item of an option menu to the item that matches the string.
@@ -1481,7 +1462,7 @@ String String with which to look for a match.
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuSetByString(GUIInt_t   OptionMenuID,
+LINKTOADDON LgIndex_t STDCALL TecGUIOptionMenuSetByString(LgIndex_t   OptionMenuID,
                                                           const char *Name);
 
 /**
@@ -1505,7 +1486,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuSetByString(GUIInt_t   OptionMenuID
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuGet(GUIInt_t OptionMenuID);
+LINKTOADDON LgIndex_t STDCALL TecGUIOptionMenuGet(LgIndex_t OptionMenuID);
 
 
 /**
@@ -1572,11 +1553,11 @@ LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuGet(GUIInt_t OptionMenuID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIListAdd(GUIInt_t            ParentDialogID,
-                                            GUIInt_t            X,
-                                            GUIInt_t            Y,
-                                            GUIInt_t            Width,
-                                            GUIInt_t            Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIListAdd(LgIndex_t            ParentDialogID,
+                                            LgIndex_t            X,
+                                            LgIndex_t            Y,
+                                            LgIndex_t            Width,
+                                            LgIndex_t            Height,
                                             Boolean_t            IsMultiSelection,
                                             TecGUIIntCallback_pf ValueChangedCallback);
 
@@ -1603,7 +1584,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIListAdd(GUIInt_t            ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIListGetItemCount(GUIInt_t ListID);
+LINKTOADDON LgIndex_t STDCALL TecGUIListGetItemCount(LgIndex_t ListID);
 
 /**
  *   Appends an item to a list control.
@@ -1629,7 +1610,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIListGetItemCount(GUIInt_t ListID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListAppendItem(GUIInt_t   ListID,
+LINKTOADDON void STDCALL TecGUIListAppendItem(LgIndex_t   ListID,
                                               const char *Item);
 
 /**
@@ -1664,8 +1645,8 @@ LINKTOADDON void STDCALL TecGUIListAppendItem(GUIInt_t   ListID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON char * STDCALL TecGUIListGetString(GUIInt_t ListID,
-                                               GUIInt_t Position);
+LINKTOADDON char * STDCALL TecGUIListGetString(LgIndex_t ListID,
+                                               LgIndex_t Position);
 
 /**
  *   Replaces the text of an item in a list control.
@@ -1696,9 +1677,9 @@ LINKTOADDON char * STDCALL TecGUIListGetString(GUIInt_t ListID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListReplaceItem(GUIInt_t   ListID,
+LINKTOADDON void STDCALL TecGUIListReplaceItem(LgIndex_t   ListID,
                                                const char *Item,
-                                               GUIInt_t   Position);
+                                               LgIndex_t   Position);
 
 /**
  *   Removes all the items from a list control.
@@ -1718,7 +1699,7 @@ LINKTOADDON void STDCALL TecGUIListReplaceItem(GUIInt_t   ListID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListDeleteAllItems(GUIInt_t ListID);
+LINKTOADDON void STDCALL TecGUIListDeleteAllItems(LgIndex_t ListID);
 
 /**
  *   Deletes an item in a list control.
@@ -1744,8 +1725,8 @@ LINKTOADDON void STDCALL TecGUIListDeleteAllItems(GUIInt_t ListID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListDeleteItemAtPos(GUIInt_t ListID,
-                                                   GUIInt_t Position);
+LINKTOADDON void STDCALL TecGUIListDeleteItemAtPos(LgIndex_t ListID,
+                                                   LgIndex_t Position);
 
 /**
  * Deselects all items in a list control.
@@ -1765,7 +1746,7 @@ LINKTOADDON void STDCALL TecGUIListDeleteItemAtPos(GUIInt_t ListID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListDeselectAllItems(GUIInt_t ListID);
+LINKTOADDON void STDCALL TecGUIListDeselectAllItems(LgIndex_t ListID);
 
 /**
  * Selects an item in a list control. If the list is a single selection list
@@ -1799,8 +1780,8 @@ LINKTOADDON void STDCALL TecGUIListDeselectAllItems(GUIInt_t ListID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListSetSelectedItem(GUIInt_t ListID,
-                                                   GUIInt_t Position);
+LINKTOADDON void STDCALL TecGUIListSetSelectedItem(LgIndex_t ListID,
+                                                   LgIndex_t Position);
 
 
 
@@ -1816,7 +1797,7 @@ LINKTOADDON void STDCALL TecGUIListSetSelectedItem(GUIInt_t ListID,
  *   ID of the list control
  *
  * @param SelectedItemList
- *   Address of a pointer to an GUIInt_t (see the example below). Upon return,
+ *   Address of a pointer to an LgIndex_t (see the example below). Upon return,
  *   the pointer will contain an array of integers dimensioned by
  *   SelectedItemCount (see below). Each element of the array is the 1-based
  *   index of the selected item. You must call TecUtilArrayDealloc() to free
@@ -1849,9 +1830,9 @@ LINKTOADDON void STDCALL TecGUIListSetSelectedItem(GUIInt_t ListID,
  *   call TecUtilArrayDealloc().
  *
  * @code
- *   GUIInt_t count;
- *   GUIInt_t *sel;
- *   GUIInt_t i;
+ *   LgIndex_t count;
+ *   LgIndex_t *sel;
+ *   LgIndex_t i;
  *   TecGUIListGetSelectedItems(ListID,&sel,&count);
  *   for (i=0;i<count;i++)
  *     {
@@ -1864,9 +1845,9 @@ LINKTOADDON void STDCALL TecGUIListSetSelectedItem(GUIInt_t ListID,
  *
  * #internalattributes exclude_fglue, exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListGetSelectedItems(GUIInt_t   ListID,
-                                                    GUIInt_t **SelectedItemList,   /* OUT */
-                                                    GUIInt_t  *SelectedItemCount); /* OUT */
+LINKTOADDON void STDCALL TecGUIListGetSelectedItems(LgIndex_t   ListID,
+                                                    LgIndex_t **SelectedItemList,   /* OUT */
+                                                    LgIndex_t  *SelectedItemCount); /* OUT */
 
 
 
@@ -1915,9 +1896,9 @@ LINKTOADDON void STDCALL TecGUIListGetSelectedItems(GUIInt_t   ListID,
  *
  * #internalattributes exclude_fglue, exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListSetSelectedItems(GUIInt_t  ListID,
-                                                    GUIInt_t *SelectedItemList,
-                                                    GUIInt_t  SelectedItemCount);
+LINKTOADDON void STDCALL TecGUIListSetSelectedItems(LgIndex_t  ListID,
+                                                    LgIndex_t *SelectedItemList,
+                                                    LgIndex_t  SelectedItemCount);
 
 /**
  *   Gets the position index of the single selected item in a list control.
@@ -1941,7 +1922,7 @@ LINKTOADDON void STDCALL TecGUIListSetSelectedItems(GUIInt_t  ListID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIListGetSelectedItem(GUIInt_t ListID);
+LINKTOADDON LgIndex_t STDCALL TecGUIListGetSelectedItem(LgIndex_t ListID);
 
 /**
  *   Selects all items in a list control (if multi-selection).
@@ -1962,7 +1943,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIListGetSelectedItem(GUIInt_t ListID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListSelectAllItems(GUIInt_t ListID);
+LINKTOADDON void STDCALL TecGUIListSelectAllItems(LgIndex_t ListID);
 
 
 /**
@@ -2025,11 +2006,11 @@ LINKTOADDON void STDCALL TecGUIListSelectAllItems(GUIInt_t ListID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIToggleAdd(GUIInt_t             ParentDialogID,
-                                              GUIInt_t             X,
-                                              GUIInt_t             Y,
-                                              GUIInt_t             Width,
-                                              GUIInt_t             Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIToggleAdd(LgIndex_t             ParentDialogID,
+                                              LgIndex_t             X,
+                                              LgIndex_t             Y,
+                                              LgIndex_t             Width,
+                                              LgIndex_t             Height,
                                               const char           *Label,
                                               TecGUIIntCallback_pf  ValueChangedCallback);
 
@@ -2057,7 +2038,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIToggleAdd(GUIInt_t             ParentDialogID
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIToggleSet(GUIInt_t ToggleID,
+LINKTOADDON void STDCALL TecGUIToggleSet(LgIndex_t ToggleID,
                                          Boolean_t SetOn);
 
 
@@ -2083,7 +2064,7 @@ LINKTOADDON void STDCALL TecGUIToggleSet(GUIInt_t ToggleID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUIToggleGet(GUIInt_t ToggleID);
+LINKTOADDON Boolean_t STDCALL TecGUIToggleGet(LgIndex_t ToggleID);
 
 /**
  * Adds a set of radio box controls to a dialog. You must call this function
@@ -2167,11 +2148,11 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUIToggleGet(GUIInt_t ToggleID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIRadioBoxAdd(GUIInt_t             ParentDialogID,
-                                                GUIInt_t             X,
-                                                GUIInt_t             Y,
-                                                GUIInt_t             Width,
-                                                GUIInt_t             Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIRadioBoxAdd(LgIndex_t             ParentDialogID,
+                                                LgIndex_t             X,
+                                                LgIndex_t             Y,
+                                                LgIndex_t             Width,
+                                                LgIndex_t             Height,
                                                 const char           *Label1,
                                                 const char           *Label2,
                                                 const char           *Label3,
@@ -2203,8 +2184,8 @@ LINKTOADDON GUIInt_t STDCALL TecGUIRadioBoxAdd(GUIInt_t             ParentDialog
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIRadioBoxSetToggle(GUIInt_t RadioBox,
-                                                 GUIInt_t ToggleNumber);
+LINKTOADDON void STDCALL TecGUIRadioBoxSetToggle(LgIndex_t RadioBox,
+                                                 LgIndex_t ToggleNumber);
 
 
 /**
@@ -2228,7 +2209,7 @@ LINKTOADDON void STDCALL TecGUIRadioBoxSetToggle(GUIInt_t RadioBox,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIRadioBoxGetToggle(GUIInt_t RadioBox);
+LINKTOADDON LgIndex_t STDCALL TecGUIRadioBoxGetToggle(LgIndex_t RadioBox);
 
 /**
  * Adds a static text label to a dialog.
@@ -2273,9 +2254,9 @@ LINKTOADDON GUIInt_t STDCALL TecGUIRadioBoxGetToggle(GUIInt_t RadioBox);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUILabelAdd(GUIInt_t   ParentDialogID,
-                                             GUIInt_t   X,
-                                             GUIInt_t   Y,
+LINKTOADDON LgIndex_t STDCALL TecGUILabelAdd(LgIndex_t   ParentDialogID,
+                                             LgIndex_t   X,
+                                             LgIndex_t   Y,
                                              const char *Label);
 
 /**
@@ -2302,7 +2283,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUILabelAdd(GUIInt_t   ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUILabelSetText(GUIInt_t   LabelID,
+LINKTOADDON void STDCALL TecGUILabelSetText(LgIndex_t   LabelID,
                                             const char *LabelString);
 
 /**
@@ -2329,7 +2310,7 @@ LINKTOADDON void STDCALL TecGUILabelSetText(GUIInt_t   LabelID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUILabelSetLgIndex(GUIInt_t LabelID,
+LINKTOADDON void STDCALL TecGUILabelSetLgIndex(LgIndex_t LabelID,
                                                LgIndex_t Value);
 
 /**
@@ -2362,7 +2343,7 @@ LINKTOADDON void STDCALL TecGUILabelSetLgIndex(GUIInt_t LabelID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUILabelSetDouble(GUIInt_t   LabelID,
+LINKTOADDON void STDCALL TecGUILabelSetDouble(LgIndex_t   LabelID,
                                               double      Value,
                                               const char *Format);
 
@@ -2395,7 +2376,7 @@ LINKTOADDON void STDCALL TecGUILabelSetDouble(GUIInt_t   LabelID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUILabelSetSet(GUIInt_t LabelID,
+LINKTOADDON void STDCALL TecGUILabelSetSet(LgIndex_t LabelID,
                                            Set_pa    Set,
                                            Boolean_t IncludeSquareBrackets);
 
@@ -2453,11 +2434,11 @@ LINKTOADDON void STDCALL TecGUILabelSetSet(GUIInt_t LabelID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUITextFieldAdd(GUIInt_t             ParentDialogID,
-                                                 GUIInt_t             X,
-                                                 GUIInt_t             Y,
-                                                 GUIInt_t             Width,
-                                                 GUIInt_t             Height,
+LINKTOADDON LgIndex_t STDCALL TecGUITextFieldAdd(LgIndex_t             ParentDialogID,
+                                                 LgIndex_t             X,
+                                                 LgIndex_t             Y,
+                                                 LgIndex_t             Width,
+                                                 LgIndex_t             Height,
                                                  TecGUITextCallback_pf ValueChangedCallback);
 
 /**
@@ -2519,11 +2500,11 @@ LINKTOADDON GUIInt_t STDCALL TecGUITextFieldAdd(GUIInt_t             ParentDialo
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUITextAdd(GUIInt_t             ParentDialogID,
-                                            GUIInt_t             X,
-                                            GUIInt_t             Y,
-                                            GUIInt_t             Width,
-                                            GUIInt_t             Height,
+LINKTOADDON LgIndex_t STDCALL TecGUITextAdd(LgIndex_t             ParentDialogID,
+                                            LgIndex_t             X,
+                                            LgIndex_t             Y,
+                                            LgIndex_t             Width,
+                                            LgIndex_t             Height,
                                             Boolean_t             IsReadOnly,
                                             TecGUITextCallback_pf ValueChangedCallback);
 
@@ -2558,7 +2539,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUITextAdd(GUIInt_t             ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextAddKeyEventCallback(GUIInt_t            TextOrTextFieldID,
+LINKTOADDON void STDCALL TecGUITextAddKeyEventCallback(LgIndex_t            TextOrTextFieldID,
                                                        TecGUIIntCallback_pf KeyEventCallback);
 
 
@@ -2595,8 +2576,8 @@ In Windows, the insert position is the position of the caret.
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextSetInsertPos(GUIInt_t Text,
-                                                GUIInt_t Position);
+LINKTOADDON void STDCALL TecGUITextSetInsertPos(LgIndex_t Text,
+                                                LgIndex_t Position);
 /**
  *   Set the insert position to before the first character in text string maintained by the multi-line
  *   text control. This is equivalent to calling TecGUITextSetInsertPos(id,0).
@@ -2616,7 +2597,7 @@ LINKTOADDON void STDCALL TecGUITextSetInsertPos(GUIInt_t Text,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextSetMinInsertPos(GUIInt_t Text);
+LINKTOADDON void STDCALL TecGUITextSetMinInsertPos(LgIndex_t Text);
 /**
  *   Set the text insert position at the maximum position in the text string. Text inserted at the
  *   maximum position places the text at the end of the text string maintained by the multi-line text
@@ -2637,7 +2618,7 @@ LINKTOADDON void STDCALL TecGUITextSetMinInsertPos(GUIInt_t Text);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextSetMaxInsertPos(GUIInt_t Text);
+LINKTOADDON void STDCALL TecGUITextSetMaxInsertPos(LgIndex_t Text);
 /**
  *   Sets the text in a multi-line text control. The previous contents of the multi-line text control
  *   are erased.
@@ -2663,7 +2644,7 @@ LINKTOADDON void STDCALL TecGUITextSetMaxInsertPos(GUIInt_t Text);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextSetString(GUIInt_t   Text,
+LINKTOADDON void STDCALL TecGUITextSetString(LgIndex_t   Text,
                                              const char *TextString);
 /**
  *   Gets the text in a multi-line text control. Lines are separated by new line characters ('\n')
@@ -2697,7 +2678,7 @@ LINKTOADDON void STDCALL TecGUITextSetString(GUIInt_t   Text,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON char * STDCALL TecGUITextGetString(GUIInt_t Text);
+LINKTOADDON char * STDCALL TecGUITextGetString(LgIndex_t Text);
 /**
  * Inserts text into a multi-line text control. The next text is inserted to
  * the right of the current text insert position. Use TecGUITextSetInsertPos() to
@@ -2725,70 +2706,8 @@ LINKTOADDON char * STDCALL TecGUITextGetString(GUIInt_t Text);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextInsertString(GUIInt_t   Text,
+LINKTOADDON void STDCALL TecGUITextInsertString(LgIndex_t   Text,
                                                 const char *TextString);
-/**
- * Allows or inhibits word wrapping in a multi-line text control. If word
- * wrapping is inhibited and a line of text in the control extends beyond the
- * edge of the control, a horizontal scroll bar will appear. The default
- * setting allows word wrapping.
- *
- * @since
- *   16.1
- *
- * @param Text
- *   ID of the text control.
- *
- * @param Allow
- *   Whether to allow word wrapping.
- *
- * <FortranSyntax>
- *    SUBROUTINE TecGUITextAllowWordWrap(
- *         Text,
- *         Allow)
- *    INTEGER*4 Text
- *    INTEGER*4 Allow
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup TGB
- *
- * #internalattributes exclude_sdkdoc
- */
-LINKTOADDON void STDCALL TecGUITextAllowWordWrap(GUIInt_t  Text,
-                                                 Boolean_t Allow);
-/**
-* Sets the use of a fixed-pitch font in a multi-line text control. The default
-* setting uses a variable-pitch font.
-*
-* @since
-*   16.1
-*
-* @param Text
-*   ID of the text control.
-*
-* @param UseFixedPitch
-*   Whether to use a fixed-pitch font.
-*
-* <FortranSyntax>
-*    SUBROUTINE TecGUITextUseFixedPitchFont(
-*         Text,
-*         UseFixedPitch)
-*    INTEGER*4 Text
-*    INTEGER*4 UseFixedPitch
-* </FortranSyntax>
-*
-* <PythonSyntax>
-* </PythonSyntax>
-*
-* @ingroup TGB
-*
-* #internalattributes exclude_sdkdoc
-*/
-LINKTOADDON void STDCALL TecGUITextUseFixedPitchFont(GUIInt_t  Text,
-                                                     Boolean_t UseFixedPitch);
 /**
  * Adds a scale control to a dialog.
  *
@@ -2865,14 +2784,14 @@ LINKTOADDON void STDCALL TecGUITextUseFixedPitchFont(GUIInt_t  Text,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIScaleAdd(GUIInt_t            ParentDialogID,
-                                             GUIInt_t            X,
-                                             GUIInt_t            Y,
-                                             GUIInt_t            Width,
-                                             GUIInt_t            Height,
-                                             GUIInt_t            ScaleMin,
-                                             GUIInt_t            ScaleMax,
-                                             GUIInt_t            DecimalPrecision,
+LINKTOADDON LgIndex_t STDCALL TecGUIScaleAdd(LgIndex_t            ParentDialogID,
+                                             LgIndex_t            X,
+                                             LgIndex_t            Y,
+                                             LgIndex_t            Width,
+                                             LgIndex_t            Height,
+                                             LgIndex_t            ScaleMin,
+                                             LgIndex_t            ScaleMax,
+                                             LgIndex_t            DecimalPrecision,
                                              TecGUIIntCallback_pf ValueChangedCallback,
                                              TecGUIIntCallback_pf DragValueChangedCallback);
 
@@ -2900,8 +2819,8 @@ LINKTOADDON GUIInt_t STDCALL TecGUIScaleAdd(GUIInt_t            ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIScaleSetValue(GUIInt_t ScaleID,
-                                             GUIInt_t NewValue);
+LINKTOADDON void STDCALL TecGUIScaleSetValue(LgIndex_t ScaleID,
+                                             LgIndex_t NewValue);
 
 /**
  *   Set the limits (that is, minimum and maximum values) and decimal precision of a scale control.
@@ -2937,10 +2856,10 @@ LINKTOADDON void STDCALL TecGUIScaleSetValue(GUIInt_t ScaleID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIScaleSetLimits(GUIInt_t ScaleID,
-                                              GUIInt_t ScaleMin,
-                                              GUIInt_t ScaleMax,
-                                              GUIInt_t DecimalPrecision);
+LINKTOADDON void STDCALL TecGUIScaleSetLimits(LgIndex_t ScaleID,
+                                              LgIndex_t ScaleMin,
+                                              LgIndex_t ScaleMax,
+                                              LgIndex_t DecimalPrecision);
 
 /**
  *   Sets the current position of a scale control.
@@ -2963,7 +2882,7 @@ LINKTOADDON void STDCALL TecGUIScaleSetLimits(GUIInt_t ScaleID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIScaleGetValue(GUIInt_t ScaleID);
+LINKTOADDON LgIndex_t STDCALL TecGUIScaleGetValue(LgIndex_t ScaleID);
 
 /**
  * Adds a vertical separator to a dialog.
@@ -3008,10 +2927,10 @@ LINKTOADDON GUIInt_t STDCALL TecGUIScaleGetValue(GUIInt_t ScaleID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIVertSeparatorAdd(GUIInt_t ParentDialogID,
-                                                     GUIInt_t X,
-                                                     GUIInt_t Y,
-                                                     GUIInt_t Height);
+LINKTOADDON LgIndex_t STDCALL TecGUIVertSeparatorAdd(LgIndex_t ParentDialogID,
+                                                     LgIndex_t X,
+                                                     LgIndex_t Y,
+                                                     LgIndex_t Height);
 
 /**
  * Adds a horizontal separator to a dialog.
@@ -3056,10 +2975,10 @@ LINKTOADDON GUIInt_t STDCALL TecGUIVertSeparatorAdd(GUIInt_t ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIHorzSeparatorAdd(GUIInt_t ParentDialogID,
-                                                     GUIInt_t X,
-                                                     GUIInt_t Y,
-                                                     GUIInt_t Width);
+LINKTOADDON LgIndex_t STDCALL TecGUIHorzSeparatorAdd(LgIndex_t ParentDialogID,
+                                                     LgIndex_t X,
+                                                     LgIndex_t Y,
+                                                     LgIndex_t Width);
 
 /**
  * Add a frame to the specified parent dialog. A frame is a box used to
@@ -3115,11 +3034,11 @@ LINKTOADDON GUIInt_t STDCALL TecGUIHorzSeparatorAdd(GUIInt_t ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIFrameAdd(GUIInt_t   ParentDialogID,
-                                             GUIInt_t   X,
-                                             GUIInt_t   Y,
-                                             GUIInt_t   Width,
-                                             GUIInt_t   Height,
+LINKTOADDON LgIndex_t STDCALL TecGUIFrameAdd(LgIndex_t   ParentDialogID,
+                                             LgIndex_t   X,
+                                             LgIndex_t   Y,
+                                             LgIndex_t   Width,
+                                             LgIndex_t   Height,
                                              const char *Label);
 
 /**
@@ -3146,7 +3065,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIFrameAdd(GUIInt_t   ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextFieldSetString(GUIInt_t   TextFieldID,
+LINKTOADDON void STDCALL TecGUITextFieldSetString(LgIndex_t   TextFieldID,
                                                   const char *TextString);
 /**
  *   Gets the text in a text field control.
@@ -3179,7 +3098,7 @@ LINKTOADDON void STDCALL TecGUITextFieldSetString(GUIInt_t   TextFieldID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON char * STDCALL TecGUITextFieldGetString(GUIInt_t TextFieldID);
+LINKTOADDON char * STDCALL TecGUITextFieldGetString(LgIndex_t TextFieldID);
 /**
  *   Gets the integer value from the text field.
  *
@@ -3197,7 +3116,7 @@ LINKTOADDON char * STDCALL TecGUITextFieldGetString(GUIInt_t TextFieldID);
  *         TextFieldID,
  *         Value)
  *    INTEGER*4 TextFieldID
- *    INTEGER*8 Value
+ *    INTEGER*4 Value
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -3207,7 +3126,7 @@ LINKTOADDON char * STDCALL TecGUITextFieldGetString(GUIInt_t TextFieldID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetLgIndex(GUIInt_t  TextFieldID,
+LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetLgIndex(LgIndex_t  TextFieldID,
                                                         LgIndex_t *Value);
 /**
  *   Gets the double precision value from the text field.
@@ -3236,7 +3155,7 @@ LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetLgIndex(GUIInt_t  TextFieldID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetDouble(GUIInt_t  TextFieldID,
+LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetDouble(LgIndex_t  TextFieldID,
                                                        double    *Value);
 /**
  *   Validates that the contents of the specified text field are within the specified domain. If not,
@@ -3285,11 +3204,11 @@ LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetDouble(GUIInt_t  TextFieldID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUITextFieldValidateLgIndex(GUIInt_t   TextFieldID,
-                                                                      const char *TextFieldName,
-                                                                      LgIndex_t   MinDomain,
-                                                                      LgIndex_t   MaxDomain,
-                                                                      Boolean_t   AllowMxSyntax);
+LINKTOADDON Boolean_t STDCALL TecGUITextFieldValidateLgIndex(LgIndex_t   TextFieldID,
+                                                             const char *TextFieldName,
+                                                             LgIndex_t   MinDomain,
+                                                             LgIndex_t   MaxDomain,
+                                                             Boolean_t   AllowMxSyntax);
 /**
  *   Validates that the contents of the specified text field are within the
  *   specified domain. If not, an error message is displayed and the caller
@@ -3332,10 +3251,10 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUITextFieldValidateLgIndex(GUIInt_t  
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUITextFieldValidateDouble(GUIInt_t   TextFieldID,
-                                                                     const char *TextFieldName,
-                                                                     double      MinDomain,
-                                                                     double      MaxDomain);
+LINKTOADDON Boolean_t STDCALL TecGUITextFieldValidateDouble(LgIndex_t   TextFieldID,
+                                                            const char *TextFieldName,
+                                                            double      MinDomain,
+                                                            double      MaxDomain);
 /**
  *   Gets the set represented by the contents of the text field. A set is made
  *   of comma separated members that may optionally have outer square brackets.
@@ -3369,7 +3288,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUITextFieldValidateDouble(GUIInt_t   
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetSet(GUIInt_t  TextFieldID,
+LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetSet(LgIndex_t  TextFieldID,
                                                     Set_pa    *Set);
 /**
  *   Formats an integer value and assigns it as the text field string.
@@ -3403,7 +3322,7 @@ LINKTOADDON Boolean_t STDCALL TecGUITextFieldGetSet(GUIInt_t  TextFieldID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextFieldSetLgIndex(GUIInt_t TextFieldID,
+LINKTOADDON void STDCALL TecGUITextFieldSetLgIndex(LgIndex_t TextFieldID,
                                                    LgIndex_t Value,
                                                    Boolean_t UseMx);
 /**
@@ -3436,7 +3355,7 @@ LINKTOADDON void STDCALL TecGUITextFieldSetLgIndex(GUIInt_t TextFieldID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextFieldSetDouble(GUIInt_t   TextFieldID,
+LINKTOADDON void STDCALL TecGUITextFieldSetDouble(LgIndex_t   TextFieldID,
                                                   double      Value,
                                                   const char *Format);
 /**
@@ -3468,7 +3387,7 @@ LINKTOADDON void STDCALL TecGUITextFieldSetDouble(GUIInt_t   TextFieldID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextFieldSetSet(GUIInt_t TextFieldID,
+LINKTOADDON void STDCALL TecGUITextFieldSetSet(LgIndex_t TextFieldID,
                                                Set_pa    Set,
                                                Boolean_t IncludeSquareBrackets);
 
@@ -3491,7 +3410,7 @@ LINKTOADDON void STDCALL TecGUITextFieldSetSet(GUIInt_t TextFieldID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogLaunch(GUIInt_t DialogID);
+LINKTOADDON void STDCALL TecGUIDialogLaunch(LgIndex_t DialogID);
 
 /**
  * Closes a dialog. Usually this is called from the OK, Close, or Cancel button callbacks.
@@ -3515,7 +3434,7 @@ LINKTOADDON void STDCALL TecGUIDialogLaunch(GUIInt_t DialogID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogDrop(GUIInt_t DialogID);
+LINKTOADDON void STDCALL TecGUIDialogDrop(LgIndex_t DialogID);
 
 /**
  *   Returns TRUE if a dialog is currently displayed.
@@ -3538,35 +3457,7 @@ LINKTOADDON void STDCALL TecGUIDialogDrop(GUIInt_t DialogID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUIDialogIsUp(GUIInt_t DialogID);
-
-/*
- * NOTE: Currently undocumented....This will not show up in doxygen.
- *
- * Register another button in the button box.
- *
- * @param DialogID
- *   ID of the dialog
- *
- * @param buttonText
- *   Text to put on the button.  Use & for accelerator.
- *
- * @param isDefault
- *   Set to true to make this the default action.
- *
- * @param buttonCallback
- *   function to call when the button is pressed.
- *
- * @since
- *   2018.1
- *
- * #internalattributes exclude_sdkdoc
- */
-LINKTOADDON void STDCALL TecGUIDialogAddButtonToButtonBox(GUIInt_t    dialogID,
-                                                          const char* buttonText,
-                                                          Boolean_t   isDefault,
-                                                          TecGUIVoidCallback_pf  buttonCallback);
-
+LINKTOADDON Boolean_t STDCALL TecGUIDialogIsUp(LgIndex_t DialogID);
 
 /**
  *   Sets the title text of a dialog.
@@ -3592,7 +3483,7 @@ LINKTOADDON void STDCALL TecGUIDialogAddButtonToButtonBox(GUIInt_t    dialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIDialogSetTitle(GUIInt_t   DialogID,
+LINKTOADDON void STDCALL TecGUIDialogSetTitle(LgIndex_t   DialogID,
                                               const char *NewTitle);
 
 /**
@@ -3619,7 +3510,7 @@ LINKTOADDON void STDCALL TecGUIDialogSetTitle(GUIInt_t   DialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITextAppendString(GUIInt_t   TextID,
+LINKTOADDON void STDCALL TecGUITextAppendString(LgIndex_t   TextID,
                                                 const char *TextString);
 
 /**
@@ -3643,7 +3534,7 @@ LINKTOADDON void STDCALL TecGUITextAppendString(GUIInt_t   TextID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIMenuBarAdd(GUIInt_t ParentDialogID);
+LINKTOADDON LgIndex_t STDCALL TecGUIMenuBarAdd(LgIndex_t ParentDialogID);
 
 /**
  *   Add a menu to a menu bar or a walking menu to a menu list.
@@ -3673,7 +3564,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIMenuBarAdd(GUIInt_t ParentDialogID);
  *
  * @code
  *   {
- *     GUIInt_t OptionMenuID;
+ *     LgIndex_t OptionMenuID;
  *     OptionMenuID = TecGUIMenuAdd(MenuBar,"Op&tions");
  *   }
  * @endcode
@@ -3684,7 +3575,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIMenuBarAdd(GUIInt_t ParentDialogID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIMenuAdd(GUIInt_t   ParentMenuID,
+LINKTOADDON LgIndex_t STDCALL TecGUIMenuAdd(LgIndex_t   ParentMenuID,
                                             const char *Label);
 
 /**
@@ -3725,7 +3616,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIMenuAdd(GUIInt_t   ParentMenuID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIMenuAddItem(GUIInt_t              ParentMenuID,
+LINKTOADDON LgIndex_t STDCALL TecGUIMenuAddItem(LgIndex_t              ParentMenuID,
                                                 const char            *Label,
                                                 const char            *StatusLineText,
                                                 TecGUIVoidCallback_pf  Callback);
@@ -3770,7 +3661,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIMenuAddItem(GUIInt_t              ParentMenuI
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIMenuAddToggle(GUIInt_t             ParentMenuID,
+LINKTOADDON LgIndex_t STDCALL TecGUIMenuAddToggle(LgIndex_t             ParentMenuID,
                                                   const char           *Label,
                                                   const char           *StatusLineText,
                                                   TecGUIIntCallback_pf  Callback);
@@ -3793,7 +3684,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIMenuAddToggle(GUIInt_t             ParentMenu
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIMenuAddSeparator(GUIInt_t ParentMenuID);
+LINKTOADDON void STDCALL TecGUIMenuAddSeparator(LgIndex_t ParentMenuID);
 
 /**
  * Set the text for a menu item.
@@ -3819,7 +3710,7 @@ LINKTOADDON void STDCALL TecGUIMenuAddSeparator(GUIInt_t ParentMenuID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIMenuItemSetText(GUIInt_t   MenuItemID,
+LINKTOADDON void STDCALL TecGUIMenuItemSetText(LgIndex_t   MenuItemID,
                                                const char *NewText);
 
 /**
@@ -3846,7 +3737,7 @@ LINKTOADDON void STDCALL TecGUIMenuItemSetText(GUIInt_t   MenuItemID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIMenuSetToggle(GUIInt_t MenuItemID,
+LINKTOADDON void STDCALL TecGUIMenuSetToggle(LgIndex_t MenuItemID,
                                              Boolean_t SetOn);
 
 /**
@@ -3867,7 +3758,7 @@ LINKTOADDON void STDCALL TecGUIMenuSetToggle(GUIInt_t MenuItemID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIMenuDeleteItem(GUIInt_t MenuItemID);
+LINKTOADDON void STDCALL TecGUIMenuDeleteItem(LgIndex_t MenuItemID);
 
 /**
  * Adds a tab control to a dialog.
@@ -3927,11 +3818,11 @@ LINKTOADDON void STDCALL TecGUIMenuDeleteItem(GUIInt_t MenuItemID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUITabAdd(GUIInt_t            ParentDialogID,
-                                           GUIInt_t            X,
-                                           GUIInt_t            Y,
-                                           GUIInt_t            Width,
-                                           GUIInt_t            Height,
+LINKTOADDON LgIndex_t STDCALL TecGUITabAdd(LgIndex_t            ParentDialogID,
+                                           LgIndex_t            X,
+                                           LgIndex_t            Y,
+                                           LgIndex_t            Width,
+                                           LgIndex_t            Height,
                                            TecGUIIntCallback_pf ActivateCallback,
                                            TecGUIIntCallback_pf DeactivateCallback);
 
@@ -3969,7 +3860,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUITabAdd(GUIInt_t            ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUITabAddPage(GUIInt_t   TabID,
+LINKTOADDON LgIndex_t STDCALL TecGUITabAddPage(LgIndex_t   TabID,
                                                const char *Caption);
 
 /**
@@ -4004,8 +3895,8 @@ LINKTOADDON GUIInt_t STDCALL TecGUITabAddPage(GUIInt_t   TabID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUITabSetCurrentPage(GUIInt_t TabID,
-                                                 GUIInt_t PageID);
+LINKTOADDON void STDCALL TecGUITabSetCurrentPage(LgIndex_t TabID,
+                                                 LgIndex_t PageID);
 
 
 
@@ -4058,11 +3949,11 @@ LINKTOADDON void STDCALL TecGUITabSetCurrentPage(GUIInt_t TabID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIFormAdd(GUIInt_t ParentDialogID,
-                                            GUIInt_t X,
-                                            GUIInt_t Y,
-                                            GUIInt_t Width,
-                                            GUIInt_t Height);
+LINKTOADDON LgIndex_t STDCALL TecGUIFormAdd(LgIndex_t ParentDialogID,
+                                            LgIndex_t X,
+                                            LgIndex_t Y,
+                                            LgIndex_t Width,
+                                            LgIndex_t Height);
 
 /**
  * Creates a new form page.
@@ -4090,7 +3981,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIFormAdd(GUIInt_t ParentDialogID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIFormAddPage(GUIInt_t ParentFormID);
+LINKTOADDON LgIndex_t STDCALL TecGUIFormAddPage(LgIndex_t ParentFormID);
 
 /**
  *   Sets a specific form page to be displayed.
@@ -4110,7 +4001,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIFormAddPage(GUIInt_t ParentFormID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIFormSetCurrentPage(GUIInt_t FormID);
+LINKTOADDON void STDCALL TecGUIFormSetCurrentPage(LgIndex_t FormID);
 
 
 
@@ -4179,11 +4070,11 @@ LINKTOADDON void STDCALL TecGUIFormSetCurrentPage(GUIInt_t FormID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUISpinTextFieldAdd(GUIInt_t             ParentDialogID,
-                                                     GUIInt_t             X,
-                                                     GUIInt_t             Y,
-                                                     GUIInt_t             Width,
-                                                     GUIInt_t             Height,
+LINKTOADDON LgIndex_t STDCALL TecGUISpinTextFieldAdd(LgIndex_t             ParentDialogID,
+                                                     LgIndex_t             X,
+                                                     LgIndex_t             Y,
+                                                     LgIndex_t             Width,
+                                                     LgIndex_t             Height,
                                                      TecGUITextCallback_pf ValueChangedCallback,
                                                      TecGUIVoidCallback_pf ButtonUpCallback,
                                                      TecGUIVoidCallback_pf ButtonDownCallback);
@@ -4229,7 +4120,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUISpinTextFieldAdd(GUIInt_t             ParentD
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecGUISpinTextFieldIncLgIndex(GUIInt_t   SpinTextFieldID,
+LINKTOADDON Boolean_t STDCALL TecGUISpinTextFieldIncLgIndex(LgIndex_t   SpinTextFieldID,
                                                             LgIndex_t   Increment,
                                                             LgIndex_t   MinDomain,
                                                             LgIndex_t   MaxDomain);
@@ -4282,7 +4173,7 @@ LINKTOADDON Boolean_t STDCALL TecGUISpinTextFieldIncLgIndex(GUIInt_t   SpinTextF
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON Boolean_t STDCALL TecGUISpinTextFieldIncDouble(GUIInt_t   SpinTextFieldID,
+LINKTOADDON Boolean_t STDCALL TecGUISpinTextFieldIncDouble(LgIndex_t   SpinTextFieldID,
                                                            const char *Format,
                                                            double      Increment,
                                                            double      MinDomain,
@@ -4313,8 +4204,8 @@ LINKTOADDON Boolean_t STDCALL TecGUISpinTextFieldIncDouble(GUIInt_t   SpinTextFi
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIOptionMenuDeleteItemAtPos(GUIInt_t OptionMenuID,
-                                                         GUIInt_t Position);
+LINKTOADDON void STDCALL TecGUIOptionMenuDeleteItemAtPos(LgIndex_t OptionMenuID,
+                                                         LgIndex_t Position);
 
 /**
  *   Appends an item to an option menu control.
@@ -4340,7 +4231,7 @@ LINKTOADDON void STDCALL TecGUIOptionMenuDeleteItemAtPos(GUIInt_t OptionMenuID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIOptionMenuAppendItem(GUIInt_t   OptionMenuID,
+LINKTOADDON void STDCALL TecGUIOptionMenuAppendItem(LgIndex_t   OptionMenuID,
                                                     const char *Item);
 
 /**
@@ -4364,7 +4255,7 @@ LINKTOADDON void STDCALL TecGUIOptionMenuAppendItem(GUIInt_t   OptionMenuID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuGetItemCount(GUIInt_t OptionMenuID);
+LINKTOADDON LgIndex_t STDCALL TecGUIOptionMenuGetItemCount(LgIndex_t OptionMenuID);
 
 /**
  *   Remove all items from an option menu.
@@ -4384,7 +4275,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIOptionMenuGetItemCount(GUIInt_t OptionMenuID)
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIOptionMenuDeleteAllItems(GUIInt_t OptionMenuID);
+LINKTOADDON void STDCALL TecGUIOptionMenuDeleteAllItems(LgIndex_t OptionMenuID);
 
 /**
  * Get the text of an item in an option menu.
@@ -4418,8 +4309,8 @@ LINKTOADDON void STDCALL TecGUIOptionMenuDeleteAllItems(GUIInt_t OptionMenuID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON char * STDCALL TecGUIOptionMenuGetString(GUIInt_t OptionMenuID,
-                                                     GUIInt_t Position);
+LINKTOADDON char * STDCALL TecGUIOptionMenuGetString(LgIndex_t OptionMenuID,
+                                                     LgIndex_t Position);
 
 /**
  *   Replace the text of an item in an option menu control.
@@ -4450,9 +4341,9 @@ LINKTOADDON char * STDCALL TecGUIOptionMenuGetString(GUIInt_t OptionMenuID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIOptionMenuReplaceItem(GUIInt_t   OptionMenuID,
+LINKTOADDON void STDCALL TecGUIOptionMenuReplaceItem(LgIndex_t   OptionMenuID,
                                                      const char *NewText,
-                                                     GUIInt_t   Position);
+                                                     LgIndex_t   Position);
 
 
 /* Scale */
@@ -4480,7 +4371,7 @@ LINKTOADDON void STDCALL TecGUIOptionMenuReplaceItem(GUIInt_t   OptionMenuID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIScaleShowNumericDisplay(GUIInt_t ScaleID,
+LINKTOADDON void STDCALL TecGUIScaleShowNumericDisplay(LgIndex_t ScaleID,
                                                        Boolean_t ShowDisplay);
 
 
@@ -4538,10 +4429,10 @@ LINKTOADDON void STDCALL TecGUIScaleShowNumericDisplay(GUIInt_t ScaleID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUISidebarRegister(const char            *SidebarName,
+LINKTOADDON LgIndex_t STDCALL TecGUISidebarRegister(const char            *SidebarName,
                                                     AddOn_pa               AddOnID,
-                                                    GUIInt_t              Width,
-                                                    GUIInt_t              Height,
+                                                    LgIndex_t              Width,
+                                                    LgIndex_t              Height,
                                                     TecGUIVoidCallback_pf  ActivateCallback,
                                                     TecGUIVoidCallback_pf  DeactivateCallback);
 
@@ -4598,7 +4489,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUISidebarRegister(const char            *Sideba
  *
  * #internalattributes exclude_all, exclude_fglue, exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIMFCSidebarRegister(const char *SidebarName,
+LINKTOADDON LgIndex_t STDCALL TecGUIMFCSidebarRegister(const char *SidebarName,
                                                        TecGUIMFCAllocDialogBar_pf DialogBarCreateCallback,
                                                        TecGUIVoidCallback_pf  ActivateCallback,
                                                        TecGUIVoidCallback_pf  DeactivateCallback);
@@ -4646,7 +4537,7 @@ LINKTOADDON void STDCALL TecGUIMFCSidebarUpdateData(Boolean_t bSaveAndValidate);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUISidebarActivate(GUIInt_t SidebarID);
+LINKTOADDON void STDCALL TecGUISidebarActivate(LgIndex_t SidebarID);
 /**
  *   Deactivates any activate sidebar causing it to no longer be visible.
  *
@@ -4691,7 +4582,7 @@ LINKTOADDON void STDCALL TecGUISidebarDeactivateAll(void);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUISidebarIsActive(GUIInt_t SidebarID);
+LINKTOADDON Boolean_t STDCALL TecGUISidebarIsActive(LgIndex_t SidebarID);
 
 /**
  *   Gets the number of items that the list control can visibly display. This number is dependant on
@@ -4715,9 +4606,9 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUISidebarIsActive(GUIInt_t SidebarID)
  *   Change the selected item to appear in the middle of the list box:
  *
  * @code
- *   GUIInt_t SelectedItem = TecGUIListGetSelectedItem(ID)
- *   GUIInt_t ListCapacity = TecGUIListGetCapacity(ID)
- *   GUIInt_t NewTopItemPos = SelectedItem - ListCapacity / 2;
+ *   LgIndex_t SelectedItem = TecGUIListGetSelectedItem(ID)
+ *   LgIndex_t ListCapacity = TecGUIListGetCapacity(ID)
+ *   LgIndex_t NewTopItemPos = SelectedItem - ListCapacity / 2;
  *   if (NewTopItemPos > 0)
  *     TecGUIListSetTopItemPos(ID,NewTopItemPos);
  *   else
@@ -4728,7 +4619,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecGUISidebarIsActive(GUIInt_t SidebarID)
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIListGetCapacity(GUIInt_t ListID);
+LINKTOADDON LgIndex_t STDCALL TecGUIListGetCapacity(LgIndex_t ListID);
 /**
  *   Gets the index of the first visible item in a list box. This function will assert if there are no
  *   items in the list box.
@@ -4758,7 +4649,7 @@ LINKTOADDON GUIInt_t STDCALL TecGUIListGetCapacity(GUIInt_t ListID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON GUIInt_t STDCALL TecGUIListGetTopItemNum(GUIInt_t ListID);
+LINKTOADDON LgIndex_t STDCALL TecGUIListGetTopItemNum(LgIndex_t ListID);
 /**
  *   Scrolls the list box until either the item specified appears at the top of the list box or the
  *   maximum scroll range has been reached.
@@ -4791,8 +4682,8 @@ LINKTOADDON GUIInt_t STDCALL TecGUIListGetTopItemNum(GUIInt_t ListID);
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListSetTopItemNum(GUIInt_t ListID,
-                                                 GUIInt_t ItemNum);
+LINKTOADDON void STDCALL TecGUIListSetTopItemNum(LgIndex_t ListID,
+                                                 LgIndex_t ItemNum);
 
 /**
  * Replaces the contents of the list control with the items in the string list.
@@ -4821,7 +4712,7 @@ LINKTOADDON void STDCALL TecGUIListSetTopItemNum(GUIInt_t ListID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUIListSetItems(GUIInt_t     listID,
+LINKTOADDON void STDCALL TecGUIListSetItems(LgIndex_t     listID,
                                             StringList_pa stringList);
 
 
@@ -4843,4 +4734,5 @@ LINKTOADDON void STDCALL TecGUIListSetItems(GUIInt_t     listID,
  *
  * #internalattributes exclude_sdkdoc
  */
-LINKTOADDON void STDCALL TecGUISetInputFocus(GUIInt_t ControlID);
+LINKTOADDON void STDCALL TecGUISetInputFocus(LgIndex_t ControlID);
+

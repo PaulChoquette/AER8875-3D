@@ -20,14 +20,14 @@ class TecGUIScale
 public:
 
     TecGUIScale(
-        GUIInt_t 	            parentDialogID,
-        GUIInt_t 	            x,
-        GUIInt_t 	            y,
-        GUIInt_t 	            width,
-        GUIInt_t 	            height,
-        GUIInt_t 	            scaleMin,
-        GUIInt_t 	            scaleMax,
-        GUIInt_t 	            decimalPrecision,
+        LgIndex_t 	            parentDialogID,
+        LgIndex_t 	            x,
+        LgIndex_t 	            y,
+        LgIndex_t 	            width,
+        LgIndex_t 	            height,
+        LgIndex_t 	            scaleMin,
+        LgIndex_t 	            scaleMax,
+        LgIndex_t 	            decimalPrecision,
         TecGUIIntCallback_pf 	valueChangedCallback,
         TecGUIIntCallback_pf 	dragValueChangedCallback	 
         );

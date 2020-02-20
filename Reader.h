@@ -9,9 +9,10 @@
 #include <algorithm>
 #include <cmath>
 #include <functional> // std::divides
+#include "include/TECIO.h"
 using namespace std;
 
-class Reader {
+class Reader_c {
 	public:
 		ifstream file;
 		int linen;
@@ -35,4 +36,10 @@ class Reader {
 		void Fill_E2N_VTK(const char* cline);
 		void Fill_BC_E2N_VTK(const char* cline, int bc);
 		double** Fill_coord(const char* cline);
+};
+
+class TECIO {
+	public:
+		INTEGER4 npoint;
+		INTEGER4 nelem;
 };

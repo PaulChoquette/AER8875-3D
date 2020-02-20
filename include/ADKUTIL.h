@@ -27,10 +27,10 @@ extern "C"
      *     0 if input version is equal to current Tecplot version
      *     1 if input version is greater than current Tecplot version
      */
-    extern int TecVersionCmp(int32_t MajorTecplotVersion,
-    int32_t MinorTecplotVersion,
-    int32_t MajorTecplotRevision,
-    int32_t MinorTecplotRevision);
+    extern int TecVersionCmp(SmInteger_t MajorTecplotVersion,
+    SmInteger_t MinorTecplotVersion,
+    SmInteger_t MajorTecplotRevision,
+    SmInteger_t MinorTecplotRevision);
 
 
     /**
@@ -587,17 +587,13 @@ extern "C"
      */
     extern Boolean_t Data_AnyVariableIsShared(void);
 
-    /**
-     * @param VarNum
-     *     The variable number for which to get the aliased variable name
-     * @return
-     *     Returns an allocated string with the variable name.  This string must be deallocated
-     *     using TecUtilStringDealloc().  Returns NULL if an invalid VarNum is given.
-     */
-    extern char* VariableNameFormattedForAliases(EntIndex_t VarNum);
-
 # if defined (__cplusplus)
 }
 # endif
+
+/**
+ * @return the name of the indexed variable and all its aliases delimited by a semicolon (;)
+ */
+extern std::string VariableNameFormattedForAliases(EntIndex_t Index);
 
 #endif /*ADK_UTIL_H_*/

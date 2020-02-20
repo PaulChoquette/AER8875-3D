@@ -21,11 +21,11 @@ class TecGUIText
 public:
 
     TecGUIText(
-        GUIInt_t 	            parentDialogID,
-        GUIInt_t 	            x,
-        GUIInt_t 	            y,
-        GUIInt_t 	            width,
-        GUIInt_t 	            height,
+        LgIndex_t 	            parentDialogID,
+        LgIndex_t 	            x,
+        LgIndex_t 	            y,
+        LgIndex_t 	            width,
+        LgIndex_t 	            height,
         bool 	                isReadOnly,
         TecGUITextCallback_pf 	valueChangedCallback	
         );

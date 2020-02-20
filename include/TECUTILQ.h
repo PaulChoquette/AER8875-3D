@@ -61,17 +61,8 @@
 
 
 /*{{<exclude_fglue>
-                    TecUtilDataNodeGetRawPtrByRef
-                    TecUtilDataNodeGetRawPtrByRef64
-                    TecUtilDataNodeGetReadableRawPtrByRef
-                    TecUtilDataNodeGetReadableRawPtrByRef64
-                    TecUtilDataNodeGetWritableRawPtrByRef
-                    TecUtilDataNodeGetWritableRawPtrByRef64
                     TecUtilDataValueGetReadableNativeRefByUniqueID
-                    TecUtilDataValueGetRawPtrByRef
-                    TecUtilDataValueGetReadableRawPtrByRef
                     TecUtilDataValueGetWritableNativeRefByUniqueID
-                    TecUtilDataValueGetWritableRawPtrByRef
                     TecUtilDataValueRefGetGetFunc
                     TecUtilDataValueRefGetSetFunc
                     TecUtilInterfaceGetMotifHandles
@@ -98,7 +89,6 @@
                     TecUtilDataValueRefGetGetFunc
                     TecUtilDataValueRefGetSetFunc
                     TecUtilTecplotGetAppMode
-                    TecUtilDataValueGetRawPtrByRef
                     TecUtilDataValueGetReadableRawPtrByRef
                     TecUtilDataValueGetReadableRawPtr
                     TecUtilDataValueGetWritableRawPtrByRef
@@ -141,7 +131,7 @@
  * @code
  *   if (TecUtilDataSetIsAvailable())
  *     {
- *       int32_t MaxInstr = TecUtilImportGetLoaderInstrCount();
+ *       LgIndex_t MaxInstr = TecUtilImportGetLoaderInstrCount();
  *       if ( MaxInstr > 0 )
  *         {
  *           // only call TecUtilImportGetLoaderInstrByNum if
@@ -166,7 +156,7 @@
  * @ingroup AddOnLoaders
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilImportGetLoaderInstrCount(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilImportGetLoaderInstrCount(void);
 
 /**
  * Retrieves the instructions of the n'th data loader used to load the data into the
@@ -224,7 +214,7 @@ LINKTOADDON int32_t STDCALL TecUtilImportGetLoaderInstrCount(void);
  * @code
  *   if (TecUtilDataSetIsAvailable())
  *     {
- *       int32_t MaxInstr = TecUtilImportGetLoaderInstrCount();
+ *       LgIndex_t MaxInstr = TecUtilImportGetLoaderInstrCount();
  *       if ( MaxInstr > 0 )
  *         {
  *           // only call TecUtilImportGetLoaderInstrByNum if
@@ -249,7 +239,7 @@ LINKTOADDON int32_t STDCALL TecUtilImportGetLoaderInstrCount(void);
  * @ingroup AddOnLoaders
  *
  */
-LINKTOADDON void STDCALL TecUtilImportGetLoaderInstrByNum(int32_t                 Index,
+LINKTOADDON void STDCALL TecUtilImportGetLoaderInstrByNum(LgIndex_t               Index,
                                                           TP_GIVES char**         DataSetReaderName,
                                                           TP_GIVES StringList_pa* DataSetLoaderInstructions);
 
@@ -281,7 +271,7 @@ LINKTOADDON void STDCALL TecUtilImportGetLoaderInstrByNum(int32_t               
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFieldLayerIsActiveForFrame(FrameID, LayerShowFlag)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    CHARACTER*(*) LayerShowFlag
  * </FortranSyntax>
  *
@@ -303,7 +293,7 @@ LINKTOADDON void STDCALL TecUtilImportGetLoaderInstrByNum(int32_t               
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldLayerIsActiveForFrame(UniqueID_t   FrameID,
+LINKTOADDON Boolean_t STDCALL TecUtilFieldLayerIsActiveForFrame(UniqueID_t   FrameID,
                                                                 const char *LayerShowFlag);
 
 /**
@@ -354,7 +344,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldLayerIsActiveForFrame(UniqueI
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldLayerIsActive(const char *LayerShowFlag);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldLayerIsActive(const char *LayerShowFlag);
 
 /**
  * Indicates if the line plot layer of interest is active or not in the specified frame.
@@ -374,7 +364,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldLayerIsActive(const char *Lay
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilLinePlotLayerIsActiveForFrame(FrameID, LayerShowFlag)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    CHARACTER*(*) LayerShowFlag
  * </FortranSyntax>
  *
@@ -395,8 +385,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldLayerIsActive(const char *Lay
  * @ingroup LineMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLinePlotLayerIsActiveForFrame(UniqueID_t FrameID,
-                                                                            const char *LayerShowFlag);
+LINKTOADDON Boolean_t STDCALL TecUtilLinePlotLayerIsActiveForFrame(UniqueID_t FrameID, 
+                                                                   const char *LayerShowFlag);
 
 /**
  *   Indicates if the line plot layer of interest is active or not.
@@ -435,7 +425,9 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLinePlotLayerIsActiveForFrame(Uniq
  * @ingroup LineMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLinePlotLayerIsActive(const char *LayerShowFlag);
+LINKTOADDON Boolean_t STDCALL TecUtilLinePlotLayerIsActive(const char *LayerShowFlag);
+
+
 
 /**
  * @deprecated
@@ -446,7 +438,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLinePlotLayerIsActive(const char *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
 LINKTOADDON ArbParam_t STDCALL TecUtilFrameGetLinking(const char *Attribute);
-
 /**
  *   Gets frame linking attributes.
  *
@@ -463,7 +454,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilFrameGetLinking(const char *Attribute);
  * @return
  *   The type of return value is dependent upon the attribute parameter. If the
  *   subattribute is SV_LINKGROUP, the return value is the Group Number and
- *   should be cast to a int32_t, otherwise the return value is TRUE or
+ *   should be cast to a SmInteger_t, otherwise the return value is TRUE or
  *   FALSE and should be cast to a Boolean_t.
  *
  *
@@ -491,8 +482,8 @@ LINKTOADDON ArbParam_t STDCALL TecUtilFrameGetLinking(const char *Attribute);
  *   Query the group number of the current frame:
  *
  * @code
- *   int32_t GroupNumber;
- *   GroupNumber = (int32_t)TecUtilFrameGetLinking(SV_BETWEENFRAMES,
+ *   SmInteger_t GroupNumber;
+ *   GroupNumber = (SmInteger_t)TecUtilFrameGetLinking(SV_BETWEENFRAMES,
  *               SV_LINKGROUP);
  * @endcode
  *
@@ -534,7 +525,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilLinkingGetValue(const char *Attribute,
  *   Get the workspace size in paper coordinates:
  *
  * @code
- *   int32_t width_pixels, height_pixels;
+ *   LgIndex_t width_pixels, height_pixels;
  *   TecUtilWorkAreaGetDimensions(&width_pixels, &height_pixels);
  *   double XPos   = TecUtilConvertXPosition(CoordSys_Screen, CoordSys_Paper, 0.0);
  *   double YPos   = TecUtilConvertYPosition(CoordSys_Screen, CoordSys_Paper, 0.0);
@@ -545,8 +536,8 @@ LINKTOADDON ArbParam_t STDCALL TecUtilLinkingGetValue(const char *Attribute,
  * @ingroup WorkArea
  *
  */
-LINKTOADDON void STDCALL TecUtilWorkAreaGetDimensions(TP_OUT int32_t* Width,
-                                                      TP_OUT int32_t* Height);
+LINKTOADDON void STDCALL TecUtilWorkAreaGetDimensions(TP_OUT LgIndex_t* Width,
+                                                      TP_OUT LgIndex_t* Height);
 
 /**
  *   Get the dimensions of the currently defined paper in the Tecplot workspace.
@@ -588,6 +579,9 @@ LINKTOADDON void STDCALL TecUtilWorkAreaGetDimensions(TP_OUT int32_t* Width,
  */
 LINKTOADDON void STDCALL TecUtilPaperGetDimensions(TP_OUT double* Width,
                                                    TP_OUT double* Height);
+
+
+
 
 /**
  * Get the current view magnification.
@@ -631,6 +625,7 @@ LINKTOADDON void STDCALL TecUtilPaperGetDimensions(TP_OUT double* Width,
  */
 LINKTOADDON Boolean_t STDCALL TecUtilViewGetMagnification(TP_OUT double* Magnification);
 
+
 /**
  * Determine if blanking is active.
  *
@@ -655,7 +650,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilViewGetMagnification(TP_OUT double* Magnifi
  *
  * @since 11.3-17-015
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingIsActive(void);
+LINKTOADDON Boolean_t STDCALL TecUtilBlankingIsActive(void);
 
 /**
  * Determine if the specified data point in the specified zone is visible or if
@@ -703,8 +698,9 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingIsActive(void);
  * @ingroup Blanking
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckDataPoint(EntIndex_t Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilBlankingCheckDataPoint(EntIndex_t Zone,
                                                             LgIndex_t  PointIndex);
+
 
 /**
  * Determine if the specified element in the specified finite-element zone is
@@ -719,10 +715,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckDataPoint(EntIndex_t 
  *
  * @return
  *   TRUE if the element is visible, FALSE if it is blanked.
- *   NOTE: This function will return FALSE if the SDK is in an interrupted state. In that case the FALSE return
- *   value does not necessarily indicate that the cell is blanked. It is recommended that SDK clients call
- *   @ref TecUtilInterruptCheck() before calling this function, and not call this function if SDK is in an
- *   interrupted state.
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
@@ -749,7 +741,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckDataPoint(EntIndex_t 
  * @ingroup Blanking
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckFECell(EntIndex_t Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilBlankingCheckFECell(EntIndex_t Zone,
                                                          LgIndex_t  CellIndex);
 
 /**
@@ -771,10 +763,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckFECell(EntIndex_t Zon
  *
  * @return
  *   TRUE if the cell is visible, FALSE if it is blanked.
- *   NOTE: This function will return FALSE if the SDK is in an interrupted state. In that case the FALSE return
- *   value does not necessarily indicate that the cell is blanked. It is recommended that SDK clients call
- *   @ref TecUtilInterruptCheck() before calling this function, and not call this function if SDK is in an
- *   interrupted state.
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
@@ -803,7 +791,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckFECell(EntIndex_t Zon
  * @ingroup Blanking
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckIJKCell(EntIndex_t  Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilBlankingCheckIJKCell(EntIndex_t  Zone,
                                                           IJKPlanes_e ZonePlane,
                                                           LgIndex_t   CellIndex);
 
@@ -847,8 +835,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilBlankingCheckIJKCell(EntIndex_t  Z
  * @ingroup Lock
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilLockGetCount(void);
-
+LINKTOADDON int STDCALL TecUtilLockGetCount(void);
 /**
  * Determine if Tecplot is locked. See the Chapter "Locking and Unlocking
  * Tecplot," in the ADK User's Manual for more information on locks in Tecplot.
@@ -867,7 +854,7 @@ LINKTOADDON int32_t STDCALL TecUtilLockGetCount(void);
  * @ingroup Lock
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLockIsOn(void);
+LINKTOADDON Boolean_t STDCALL TecUtilLockIsOn(void);
 
 /**
  * Returns the number of pages managed by Tecplot.
@@ -888,7 +875,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLockIsOn(void);
  * @ingroup PageManagement
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilPageGetCount(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilPageGetCount(void);
 
 /**
  * Get the name of the current page.
@@ -959,7 +946,7 @@ LINKTOADDON UniqueID_t STDCALL TecUtilPageGetUniqueID(void);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilPageGetPosByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -973,7 +960,7 @@ LINKTOADDON UniqueID_t STDCALL TecUtilPageGetUniqueID(void);
  *
  * @ingroup PageManagement
  */
-LINKTOADDON int32_t STDCALL TecUtilPageGetPosByUniqueID(UniqueID_t UniqueID);
+LINKTOADDON LgIndex_t STDCALL TecUtilPageGetPosByUniqueID(UniqueID_t UniqueID);
 
 /**
  * @deprecated
@@ -984,7 +971,7 @@ LINKTOADDON int32_t STDCALL TecUtilPageGetPosByUniqueID(UniqueID_t UniqueID);
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON int32_t STDCALL TecUtilGetTecplotVersion(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilGetTecplotVersion(void);
 
 /**
  * Returns the next unique ID. The unique ID is generated using the same facility that Tecplot uses
@@ -1018,7 +1005,7 @@ LINKTOADDON UniqueID_t STDCALL TecUtilGetNextUniqueID(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilTecplotGetMajorVersion(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilTecplotGetMajorVersion(void);
 
 /**
  * Gets Tecplot's minor version number. Tecplot's version number has the form:
@@ -1044,7 +1031,7 @@ LINKTOADDON int32_t STDCALL TecUtilTecplotGetMajorVersion(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilTecplotGetMinorVersion(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilTecplotGetMinorVersion(void);
 
 /**
  * Gets Tecplot's major revision number. Tecplot's version number has the form:
@@ -1070,7 +1057,7 @@ LINKTOADDON int32_t STDCALL TecUtilTecplotGetMinorVersion(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilTecplotGetMajorRevision(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilTecplotGetMajorRevision(void);
 
 /**
  * Gets Tecplot's minor revision number. Tecplot's version number has the form:
@@ -1096,7 +1083,7 @@ LINKTOADDON int32_t STDCALL TecUtilTecplotGetMajorRevision(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilTecplotGetMinorRevision(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilTecplotGetMinorRevision(void);
 
 /**
  * Get the Tecplot home directory.
@@ -1243,7 +1230,9 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilAddOnGetPath(AddOn_pa AddOnID);
  * @ingroup FrameManagement
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilFrameGetCount(void);
+LINKTOADDON int STDCALL TecUtilFrameGetCount(void);
+
+
 
 /**
  * @deprecated
@@ -1254,6 +1243,7 @@ LINKTOADDON int32_t STDCALL TecUtilFrameGetCount(void);
  * #internalattributes exclude_python, exclude_sdkdoc
  */
 LINKTOADDON FrameMode_e STDCALL TecUtilFrameGetMode(void);
+
 
 /**
  * Get the plot type of the specified frame.
@@ -1272,7 +1262,7 @@ LINKTOADDON FrameMode_e STDCALL TecUtilFrameGetMode(void);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFrameGetPlotTypeForFrame(FrameID)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -1329,6 +1319,10 @@ LINKTOADDON PlotType_e STDCALL TecUtilFrameGetPlotTypeForFrame(UniqueID_t FrameI
  */
 LINKTOADDON PlotType_e STDCALL TecUtilFrameGetPlotType(void);
 
+
+
+
+
 /**
  * Get the number of items currently in the pick list. See Section "The
  * Pick List," in the ADK User's Manual for a discussion of pick lists.
@@ -1358,7 +1352,11 @@ LINKTOADDON PlotType_e STDCALL TecUtilFrameGetPlotType(void);
  * @ingroup Pick
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilPickListGetCount(void);
+LINKTOADDON int STDCALL TecUtilPickListGetCount(void);
+
+
+
+
 
 /**
  *   Gets the type of object from the pick list at the specified index. See
@@ -1408,7 +1406,7 @@ LINKTOADDON int32_t STDCALL TecUtilPickListGetCount(void);
  * @ingroup Pick
  *
  */
-LINKTOADDON PickObjects_e STDCALL TecUtilPickListGetType(int32_t PickListIndex);
+LINKTOADDON PickObjects_e STDCALL TecUtilPickListGetType(int PickListIndex);
 
 /**
  * Get the contour group number that owns the label item at index PickListIndex.
@@ -1433,7 +1431,8 @@ LINKTOADDON PickObjects_e STDCALL TecUtilPickListGetType(int32_t PickListIndex);
  * @ingroup Pick
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilPickListGetLabelsContourGroup(int32_t PickListIndex);
+LINKTOADDON int STDCALL TecUtilPickListGetLabelsContourGroup(int PickListIndex);
+
 
 /**
  * Get the contour group number that owns the legend item at index PickListIndex.
@@ -1458,7 +1457,8 @@ LINKTOADDON int32_t STDCALL TecUtilPickListGetLabelsContourGroup(int32_t PickLis
  * @ingroup Pick
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilPickListGetLegendContourGroup(int32_t PickListIndex);
+LINKTOADDON int STDCALL TecUtilPickListGetLegendContourGroup(int PickListIndex);
+
 
 /**
  *   Get the name of the frame from the pick list at the specified index. The
@@ -1500,7 +1500,11 @@ LINKTOADDON int32_t STDCALL TecUtilPickListGetLegendContourGroup(int32_t PickLis
  * @ingroup Pick
  *
  */
-LINKTOADDON TP_GIVES char* STDCALL TecUtilPickListGetFrameName(int32_t PickListIndex);
+LINKTOADDON TP_GIVES char* STDCALL TecUtilPickListGetFrameName(int PickListIndex);
+
+
+
+
 
 /**
  * Get the unique identifier of the frame from the pick list at the specified
@@ -1537,7 +1541,7 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilPickListGetFrameName(int32_t PickListI
  * @ingroup Pick
  *
  */
-LINKTOADDON UniqueID_t STDCALL TecUtilPickListGetFrameUniqueID(int32_t PickListIndex);
+LINKTOADDON UniqueID_t STDCALL TecUtilPickListGetFrameUniqueID(int PickListIndex);
 
 /**
  * Get dimension of the bounding box surrounding all frames in @ref CoordSys_Paper units.
@@ -1571,9 +1575,10 @@ LINKTOADDON void STDCALL TecUtilGetBoundingBoxOfAllFrames(TP_OUT double* X1,
                                                           TP_OUT double* X2,
                                                           TP_OUT double* Y2);
 
+
 /**
  * Get the current X and Y axis range grid values, this is used for getting
- * the X and Y ranges for the "grid" coordinate system used by text and
+ * the X and Y ranges for the "grid" coordinate system used by text and 
  * geometry annotations.
  * The result depends on the current plot type:
  *    Sketch & 2D: retrieve the axis ranges.
@@ -1597,7 +1602,7 @@ LINKTOADDON void STDCALL TecUtilGetBoundingBoxOfAllFrames(TP_OUT double* X1,
  *   Axis Y maximum grid value.
  *
  * @return
- *   Returns TRUE if the current frame is in a state and has a plot that employs
+ *   Returns TRUE if the current frame is in a state and has a plot that employs 
  *   axis ranges otherwise FALSE. One scenario where this could return FALSE is if
  *   you have an XY plot but no line mappings defined.
  *
@@ -1645,6 +1650,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAxisGetGridRange(TP_OUT double* AxisGridXMi
                                                       TP_OUT double* AxisGridYMin,
                                                       TP_OUT double* AxisGridXMax,
                                                       TP_OUT double* AxisGridYMax);
+
 
 /**
  * Get the current minimum and maximum values for the specified axis.
@@ -1698,7 +1704,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAxisGetGridRange(TP_OUT double* AxisGridXMi
  *
  */
 LINKTOADDON void STDCALL TecUtilAxisGetRange(char           Axis,
-                                             int32_t        AxisNum,
+                                             short          AxisNum,
                                              TP_OUT double* AxisMin,
                                              TP_OUT double* AxisMax);
 
@@ -1774,9 +1780,8 @@ LINKTOADDON void STDCALL TecUtilAxisGetVarAssignments(TP_OUT EntIndex_t* XOrThet
  * @since 12.2.1.10292
  * @ingroup Axis
  */
-LINKTOADDON NumberFormat_e STDCALL TecUtilAxisLabelGetNumberFormat(char    Axis,
-                                                                   int32_t AxisNum);
-
+LINKTOADDON NumberFormat_e STDCALL TecUtilAxisLabelGetNumberFormat(short Axis,
+                                                                   int   AxisNum);
 /**
  * Gets the specified axis label's time/date formatting.
  *
@@ -1813,9 +1818,8 @@ LINKTOADDON NumberFormat_e STDCALL TecUtilAxisLabelGetNumberFormat(char    Axis,
  * @since 12.2.1.10292
  * @ingroup Axis
  */
-LINKTOADDON TP_GIVES char* STDCALL TecUtilAxisLabelGetTimeDateFormat(char    Axis,
-                                                                     int32_t AxisNum);
-
+LINKTOADDON TP_GIVES char* STDCALL TecUtilAxisLabelGetTimeDateFormat(short Axis,
+                                                                     int   AxisNum);
 /**
  * Gets the specified axis label's formatting precision.
  *
@@ -1846,8 +1850,8 @@ LINKTOADDON TP_GIVES char* STDCALL TecUtilAxisLabelGetTimeDateFormat(char    Axi
  * @since 12.2.1.10292
  * @ingroup Axis
  */
-LINKTOADDON int32_t STDCALL TecUtilAxisLabelGetPrecisionFormat(char    Axis,
-                                                               int32_t AxisNum);
+LINKTOADDON SmInteger_t STDCALL TecUtilAxisLabelGetPrecisionFormat(short Axis,
+                                                                   int   AxisNum);
 
 /**
  * @since 14.2
@@ -1894,7 +1898,7 @@ LINKTOADDON int32_t STDCALL TecUtilAxisLabelGetPrecisionFormat(char    Axis,
  *
  */
 LINKTOADDON double STDCALL TecUtilAxisGetNextRangeValue(char      Axis,
-                                                        int32_t   AxisNum,
+                                                        short     AxisNum,
                                                         double    CurrentValue,
                                                         Boolean_t IsIncreasing,
                                                         Boolean_t AutoAdjustToNiceValues);
@@ -1942,7 +1946,7 @@ LINKTOADDON double STDCALL TecUtilAxisGetNextRangeValue(char      Axis,
 LINKTOADDON double STDCALL TecUtilGetNextNiceIncDecValue(double    startValue,
                                                          double    minValue,
                                                          double    maxValue,
-                                                         LgIndex_t preferredDivisions,
+                                                         int       preferredDivisions,
                                                          Boolean_t isIncreasing);
 
 /**
@@ -1951,7 +1955,7 @@ LINKTOADDON double STDCALL TecUtilGetNextNiceIncDecValue(double    startValue,
  *   Index into the pick list. The object in the pick list at the specified index must be of type
  * PickObjects_Axis. See Section "The Pick List," in the ADK User's Manual
  * for a discussion of pick lists.
- *
+ * 
  * @return
  *   The kind of the picked axis subobject from the pick list at the specified index.
  *
@@ -1960,7 +1964,7 @@ LINKTOADDON double STDCALL TecUtilGetNextNiceIncDecValue(double    startValue,
  *
  * @ingroup Pick
  */
-LINKTOADDON AxisSubObject_e STDCALL TecUtilPickListGetAxisSubObject(int32_t PickListIndex);
+LINKTOADDON AxisSubObject_e STDCALL TecUtilPickListGetAxisSubObject(int PickListIndex);
 
 /**
  * Get the kind of axis (X, Y, or Z) from the pick list at the specified index.
@@ -1991,7 +1995,7 @@ LINKTOADDON AxisSubObject_e STDCALL TecUtilPickListGetAxisSubObject(int32_t Pick
  *       if (TecUtilPickListGetType(PickIndex) == PickObjects_Axis)
  *         {
  *           char AxisKind = TecUtilPickListGetAxisKind(PickIndex);
- *           int32_t  AxisNum = TecUtilPickListGetAxisNumber(PickIndex);
+ *           int  AxisNum = TecUtilPickListGetAxisNumber(PickIndex);
  *           .
  *           .
  *         }
@@ -2001,7 +2005,8 @@ LINKTOADDON AxisSubObject_e STDCALL TecUtilPickListGetAxisSubObject(int32_t Pick
  * @ingroup Pick
  *
  */
-LINKTOADDON char STDCALL TecUtilPickListGetAxisKind(int32_t PickListIndex);
+LINKTOADDON char STDCALL TecUtilPickListGetAxisKind(int PickListIndex);
+
 
 /**
  * Get the number of the axis from the pick list at the specified index. The
@@ -2027,7 +2032,8 @@ LINKTOADDON char STDCALL TecUtilPickListGetAxisKind(int32_t PickListIndex);
  * @ingroup Pick
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilPickListGetAxisNumber(int32_t PickListIndex);
+LINKTOADDON int STDCALL TecUtilPickListGetAxisNumber(int PickListIndex);
+
 
 /**
  * Get the number of the zone from the pick list at the specified index. The
@@ -2052,7 +2058,7 @@ LINKTOADDON int32_t STDCALL TecUtilPickListGetAxisNumber(int32_t PickListIndex);
  * @ingroup Pick
  *
  */
-LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetZoneNumber(int32_t PickListIndex);
+LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetZoneNumber(int PickListIndex);
 
 /**
  * Get the slice group number from the pick list at the specified index. The
@@ -2080,7 +2086,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetZoneNumber(int32_t PickListInde
  * @ingroup Pick
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilPickListGetSliceGroup(int32_t PickListIndex);
+LINKTOADDON SmInteger_t STDCALL TecUtilPickListGetSliceGroup(int PickListIndex);
 
 /**
  * Get the iso-surface group number from the pick list at the specified index. The
@@ -2108,7 +2114,7 @@ LINKTOADDON int32_t STDCALL TecUtilPickListGetSliceGroup(int32_t PickListIndex);
  * @ingroup Pick
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilPickListGetIsoSurfaceGroup(int32_t PickListIndex);
+LINKTOADDON SmInteger_t STDCALL TecUtilPickListGetIsoSurfaceGroup(int PickListIndex);
 
 /**
  * Get the specific point that was selected in the zone from the pick list at
@@ -2170,10 +2176,14 @@ LINKTOADDON int32_t STDCALL TecUtilPickListGetIsoSurfaceGroup(int32_t PickListIn
  * @ingroup Pick
  *
  */
-LINKTOADDON void STDCALL TecUtilPickListGetZoneIndices(int32_t           PickListIndex,
+LINKTOADDON void STDCALL TecUtilPickListGetZoneIndices(int               PickListIndex,
                                                        TP_OUT LgIndex_t* IIndex,
                                                        TP_OUT LgIndex_t* JIndex,
                                                        TP_OUT LgIndex_t* KIndex);
+
+
+
+
 
 /**
  * @deprecated
@@ -2183,7 +2193,10 @@ LINKTOADDON void STDCALL TecUtilPickListGetZoneIndices(int32_t           PickLis
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetXYMapNumber(int32_t PickListIndex);
+LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetXYMapNumber(int PickListIndex);
+
+
+
 
 /**
  * Get the number of the Line-mapping from the pick list at the specified
@@ -2208,7 +2221,9 @@ LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetXYMapNumber(int32_t PickListInd
  * @ingroup Pick
  *
  */
-LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetLineMapNumber(int32_t PickListIndex);
+LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetLineMapNumber(int PickListIndex);
+
+
 
 /**
  * @deprecated
@@ -2218,7 +2233,11 @@ LINKTOADDON EntIndex_t STDCALL TecUtilPickListGetLineMapNumber(int32_t PickListI
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON LgIndex_t STDCALL TecUtilPickListGetXYMapIndex(int32_t PickListIndex);
+LINKTOADDON LgIndex_t STDCALL TecUtilPickListGetXYMapIndex(int PickListIndex);
+
+
+
+
 
 /**
  * Get the index value of the specific point that was selected in the
@@ -2261,7 +2280,15 @@ LINKTOADDON LgIndex_t STDCALL TecUtilPickListGetXYMapIndex(int32_t PickListIndex
  * @ingroup Pick
  *
  */
-LINKTOADDON LgIndex_t STDCALL TecUtilPickListGetLineMapIndex(int32_t PickListIndex);
+LINKTOADDON LgIndex_t STDCALL TecUtilPickListGetLineMapIndex(int PickListIndex);
+
+
+
+
+
+
+
+
 
 /**
  * Get the text from the pick list at the specified index. The object in the
@@ -2294,7 +2321,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilPickListGetLineMapIndex(int32_t PickListInd
  *     {
  *       if (TecUtilPickListGetType(PickIndex) == PickObjects_Text)
  *         {
- *           TextID_t TID = TecUtilPickListGetText(PickIndex);
+ *           Text_ID TID = TecUtilPickListGetText(PickIndex);
  *           TecUtilTextBoxSetType(TID, TextBox_Filled);
  *         }
  *     }
@@ -2303,7 +2330,9 @@ LINKTOADDON LgIndex_t STDCALL TecUtilPickListGetLineMapIndex(int32_t PickListInd
  * @ingroup Pick
  *
  */
-LINKTOADDON TextID_t STDCALL TecUtilPickListGetText(int32_t PickListIndex);
+LINKTOADDON Text_ID STDCALL TecUtilPickListGetText(int PickListIndex);
+
+
 
 /**
  * Get the geometry from the pick list at the specified index. The object in
@@ -2337,9 +2366,9 @@ LINKTOADDON TextID_t STDCALL TecUtilPickListGetText(int32_t PickListIndex);
  *     {
  *       if (TecUtilPickListGetType(PickIndex) == PickObjects_Geom)
  *         {
- *           int32_t PolylineNum;
+ *           SmInteger_t PolylineNum;
  *           LgIndex_t   PointIndex;
- *           GeomID_t GID = TecUtilPickListGetGeom(PickIndex);
+ *           Geom_ID GID = TecUtilPickListGetGeom(PickIndex);
  *           if (TecUtilGeomGetType(GID) == GeomForm_LineSegs)
  *             TecUtilPickListGetGeomInfo(PickIndex,
  *                                        &PolylineNum,
@@ -2354,8 +2383,7 @@ LINKTOADDON TextID_t STDCALL TecUtilPickListGetText(int32_t PickListIndex);
  * @ingroup Pick
  *
  */
-LINKTOADDON GeomID_t STDCALL TecUtilPickListGetGeom(int32_t PickListIndex);
-
+LINKTOADDON Geom_ID STDCALL TecUtilPickListGetGeom(int PickListIndex);
 /**
  * Get the specific point that was selected in the geometry from the pick list
  * at the specified index. The object in the pick list at the specified index
@@ -2401,21 +2429,22 @@ LINKTOADDON GeomID_t STDCALL TecUtilPickListGetGeom(int32_t PickListIndex);
  * @ingroup Pick
  *
  */
-LINKTOADDON void STDCALL TecUtilPickListGetGeomInfo(int32_t             PickListIndex,
-                                                    TP_OUT int32_t*     PolylineNum,
+LINKTOADDON void STDCALL TecUtilPickListGetGeomInfo(int                 PickListIndex,
+                                                    TP_OUT SmInteger_t* PolylineNum,
                                                     TP_OUT LgIndex_t*   PointIndex);
 
 /**
- * Gets the minimum and maximum values of a variable for the current active relevant zones.
+ *   Gets the minimum and maximum values of a variable.
  *
  * @param Var
- *     Index of the variable. Must be greater than zero and the variable must be enabled
+ *   Index of the variable. Must be greater than zero and the variable must be
+ *   enabled
+ *
  * @param VarMin
- *     Receives the minimum value of the variable. Must not be NULL
+ *   Receives the minimum value of the variable. Must not be NULL
+ *
  * @param VarMax
- *     Receives the maximum value of the variable. Must not be NULL
- * @return
- *     TRUE if successful, FALSE if interrupted or insufficient resources.
+ *   Receives the maximum value of the variable. Must not be NULL
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
@@ -2428,7 +2457,7 @@ LINKTOADDON void STDCALL TecUtilPickListGetGeomInfo(int32_t             PickList
  *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarGetMinMax(
+ *    SUBROUTINE TecUtilVarGetMinMax(
  *   &           Var,
  *   &           VarMin,
  *   &           VarMax)
@@ -2440,75 +2469,19 @@ LINKTOADDON void STDCALL TecUtilPickListGetGeomInfo(int32_t             PickList
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * Get the minimum and maximum values of the first variable in a data set:
+ *   Get the minimum and maximum values of the first variable in a data set:
  *
  * @code
  *   double VarMin,VarMax;
- *   Boolean_t isOk = TecUtilVarGetMinMax(1,&VarMin,&VarMax);
- *   if (isOk)
- *       ...
+ *   TecUtilVarGetMinMax(1,&VarMin,&VarMax);
  * @endcode
  *
  * @ingroup Variables
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilVarGetMinMax(EntIndex_t     Var,
-                                                  TP_OUT double* VarMin,
-                                                  TP_OUT double* VarMax);
-
-/**
- * Computes the variable's min/max value considering blanking over the subset of active relevant
- * zones. The min/max value calculated is essentially the variable's visible min/max over the set of
- * zones after blanking.
- *
- * @param ZoneSet
- *     Subset of active relevant zones over which to calculate the min/max value. If NULL the
- *     current set of active relevant zones is used.
- * @param Var
- *     Index of the variable. Must be greater than zero and the variable must be enabled.
- * @param VarMin
- *     If successful, receives the minimum value of the variable. Must not be NULL.
- * @param VarMax
- *     If successful, receives the maximum value of the variable. Must not be NULL.
- * @return
- *     TRUE if successful, FALSE if interrupted or insufficient resources.
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
- * @pre <em>ZoneSet</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>VarMin</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>VarMax</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarGetNonBlankedMinMax(
- *   &           ZoneSetPtr
- *   &           Var,
- *   &           VarMin,
- *   &           VarMax)
- *    POINTER         (ZoneSetPtr, ZoneSet)
- *    INTEGER*4       Var
- *    REAL*8          VarMin
- *    REAL*8          VarMax
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @since 16.1
- *
- * @ingroup Variables
- */
-LINKTOADDON Boolean_t STDCALL TecUtilVarGetNonBlankedMinMax(Set_pa         ZoneSet,
-                                                            EntIndex_t     Var,
-                                                            TP_OUT double* VarMin,
-                                                            TP_OUT double* VarMax);
+LINKTOADDON void STDCALL TecUtilVarGetMinMax(EntIndex_t     Var,
+                                             TP_OUT double* VarMin,
+                                             TP_OUT double* VarMax);
 
 /**
  * Gets the logically unique nodes, cell size, and cell center position of an
@@ -2543,7 +2516,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNonBlankedMinMax(Set_pa         ZoneS
  *   array which is at least large enough to hold the unique nodes.
  * @param UniqueNodes
  *   As input this value is a pointer to NULL or a pointer to an allocated
- *   array of LgIndex_t integers and dimensioned as specified by UniqueNodesSize items.
+ *   array dimensioned as specified by UniqueNodesSize items.
  *   @par
  *   As output it is a pointer to the resulting allocated or reallocated array
  *   containing the unique nodes. The resulting array is only reallocated if
@@ -2559,13 +2532,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNonBlankedMinMax(Set_pa         ZoneS
  *   If UniqueNodes was allocated by a call to this function you must
  *   deallocated it when no longer needed by a call to TecUtilArrayDealloc().
  * @param CellSize
- *   Cell size. The size is area for surface data and volume for volume data. If one or
- *   more cell faces is left-handed, the returned cell size will be negative.
+ *   Cell size. The size is area for surface data and volume for volume data.
  * @param CellCenter
  *   Cell center using the nodal average.
- * @param HasMixedOrientationFaces
- *   If TRUE, indicates that the cell is composed of both right-handed and left-handed
- *   faces. The returned cell size will be negative.
  *
  * @return
  *     TRUE if successful, FALSE otherwise.
@@ -2590,7 +2559,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNonBlankedMinMax(Set_pa         ZoneS
  *   FieldData_pa     ZFD  = TecUtilDataValueGetReadableNLRef(Zone, 3);
  *   double           CellSize;
  *   XYZ_s            CellCenter;
- *   Boolean_t        HasMixedOrientationFaces;
  *   LgIndex_t        NumUniqueNodes;
  *   LgIndex_t        UniqueNodesSize = 0;    // ...let Tecplot allocate
  *   LgIndex_t       *UniqueNodes     = NULL; // ...let Tecplot allocate
@@ -2603,8 +2571,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNonBlankedMinMax(Set_pa         ZoneS
  *                                                      &UniqueNodesSize,
  *                                                      &UniqueNodes,
  *                                                      &CellSize,
- *                                                      &CellCenter,
- *                                                      &HasMixedOrientationFaces);
+ *                                                      &CellCenter);
  *   if (IsOk)
  *     {
  *       ...do something useful with the unique nodes, size, or center of cell 362
@@ -2621,8 +2588,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNonBlankedMinMax(Set_pa         ZoneS
  *                                                         &UniqueNodesSize,
  *                                                         &UniqueNodes,
  *                                                         &CellSize,
- *                                                         &CellCenter,
- *                                                         &HasMixedOrientationFaces);
+ *                                                         &CellCenter);
  *     }
  *
  *   if (IsOk)
@@ -2631,7 +2597,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNonBlankedMinMax(Set_pa         ZoneS
  *     }
  *
  *   // cleanup
- *   TecUtilArrayDealloc((void**)&UniqueNodes));
+ *   TecUtilArrayDealloc(&((void *)UniqueNodes));
  * @endcode
  *
  * <PythonSyntax>
@@ -2648,13 +2614,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFEPolyGetCellNodesSizeAndCenter(FaceMap
                                                                          FieldData_pa                        XFieldData,
                                                                          FieldData_pa                        YFieldData,
                                                                          FieldData_pa                        ZFieldData,
-                                                                         TP_OUT int32_t*                     NumUniqueNodes,
-                                                                         TP_IN_OUT int32_t*                  UniqueNodesSize,
+                                                                         TP_OUT LgIndex_t*                   NumUniqueNodes,
+                                                                         TP_IN_OUT LgIndex_t*                UniqueNodesSize,
                                                                          TP_ARRAY_RECEIVES_GIVES LgIndex_t** UniqueNodes,
                                                                          TP_OUT double*                      CellSize,
-                                                                         TP_OUT XYZ_s*                       CellCenter,
-                                                                         TP_OUT Boolean_t*                   HasMixedOrientationFaces);
-
+                                                                         TP_OUT XYZ_s*                       CellCenter);
 /**
  * Gets the logically unique nodes of an entire finite element cell or, for
  * finite element volume data only, a finite element face.
@@ -2682,7 +2646,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFEPolyGetCellNodesSizeAndCenter(FaceMap
  *   array which is at least large enough to hold the unique nodes.
  * @param UniqueNodes
  *   As input this value is a pointer to NULL or a pointer to an allocated
- *   array of LgIndex_t's dimensioned as specified by UniqueNodesSize items.
+ *   array dimensioned as specified by UniqueNodesSize items.
  *   @par
  *   As output it is a pointer to the resulting allocated or reallocated array
  *   containing the unique nodes. The resulting array is only reallocated if
@@ -2745,7 +2709,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFEPolyGetCellNodesSizeAndCenter(FaceMap
  *     }
  *
  *   // cleanup
- *   TecUtilArrayDealloc((void**)&UniqueNodes));
+ *   TecUtilArrayDealloc(&((void *)UniqueNodes));
  * @endcode
  *
  * Get the unique face nodes for a classic FE cell where we supply an automatic
@@ -2760,7 +2724,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFEPolyGetCellNodesSizeAndCenter(FaceMap
  *   IsOk = TecUtilDataFECellGetUniqueNodes(Zone, FaceOffset, 276,
  *                                          &NumUniqueNodes,
  *                                          &UniqueNodesSize,
- *                                          &ClassicUniqueNodes);
+ *                                          &UniqueNodes);
  *   if (IsOk)
  *     {
  *       ...do something useful with the unique face nodes of cell 276, face 2
@@ -2773,7 +2737,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFEPolyGetCellNodesSizeAndCenter(FaceMap
  *       IsOk = TecUtilDataFECellGetUniqueNodes(Zone, FaceOffset, 657,
  *                                              &NumUniqueNodes,
  *                                              &UniqueNodesSize,
- *                                              &ClassicUniqueNodes);
+ *                                              &UniqueNodes);
  *     }
  *
  *   if (IsOk)
@@ -2796,8 +2760,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFEPolyGetCellNodesSizeAndCenter(FaceMap
 LINKTOADDON Boolean_t STDCALL TecUtilDataFECellGetUniqueNodes(EntIndex_t                          Zone,
                                                               ElemFaceOffset_t                    FaceOffset,
                                                               LgIndex_t                           CellIndex,
-                                                              TP_OUT int32_t*                     NumUniqueNodes,
-                                                              TP_IN_OUT int32_t*                  UniqueNodesSize,
+                                                              TP_OUT LgIndex_t*                   NumUniqueNodes,
+                                                              TP_IN_OUT LgIndex_t*                UniqueNodesSize,
                                                               TP_ARRAY_RECEIVES_GIVES LgIndex_t** UniqueNodes);
 
 /**
@@ -2885,7 +2849,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFECellGetUniqueNodes(EntIndex_t        
  *
  */
 LINKTOADDON void STDCALL TecUtilDataFECellGetNodes(EntIndex_t        Zone,
-                                                   int32_t           Face,
+                                                   int               Face,
                                                    LgIndex_t         CellIndex,
                                                    TP_OUT LgIndex_t* I1,
                                                    TP_OUT LgIndex_t* I2,
@@ -3324,23 +3288,6 @@ LINKTOADDON GetValueReturnCode_e STDCALL TecUtilStyleGetLowLevelX(ArgList_pa Arg
 LINKTOADDON TP_GIVES char* STDCALL TecUtilStyleGetLastErrorString(void);
 
 /**
- * Post the last error message deposited during an action in 360.
- *
- * Normally addons are responsibile for posting error messages when TecUtil
- * functions fail if the engine is locked in a state that shuts down the display
- * of error messages.
- *
- * This is useful for cases where an addon is "generally" taking care of error
- * reporting but would like to defer to just posing the error message that was retained by the engine.
- *
- */
-LINKTOADDON void STDCALL TecUtilPostLastErrorMessage(void);
-
-
-
-
-
-/**
  * Returns the last recorded error message by Tecplot. The operation does not modify Tecplot's
  * internal state.
  *
@@ -3586,7 +3533,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilXYMapStyleGetArbValue(EntIndex_t  XYMap,
  *   &           S2,
  *   &           S3,
  *   &           ResultPtr)
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID 
  *    INTEGER*4       LineMap
  *    CHARACTER*(*)   S1
  *    CHARACTER*(*)   S2
@@ -3837,7 +3784,7 @@ LINKTOADDON double STDCALL TecUtilLineMapStyleGetDoubleValue(EntIndex_t  LineMap
  * @ingroup ScriptSupport
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStateIsProcessingMacro(void);
+LINKTOADDON Boolean_t STDCALL TecUtilStateIsProcessingMacro(void);
 
 /**
  * Determine if Tecplot is currently processing a stylesheet.
@@ -3857,7 +3804,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStateIsProcessingMacro(void);
  * @ingroup ScriptSupport
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStateIsProcessingStylesheet(void);
+LINKTOADDON Boolean_t STDCALL TecUtilStateIsProcessingStylesheet(void);
 
 /**
  * Query Tecplot to find out if Tecplot is in the middle of processing the data
@@ -3877,7 +3824,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStateIsProcessingStylesheet(void);
  * @ingroup LayoutSupport
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStateIsProcessingJournal(void);
+LINKTOADDON Boolean_t STDCALL TecUtilStateIsProcessingJournal(void);
 /**
  *   Query Tecplot to find out if Tecplot is in the middle of processing a layout.
  *   This function is \ref threadsafe.
@@ -3895,91 +3842,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStateIsProcessingJournal(void);
  * @ingroup LayoutSupport
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilStateIsProcessingLayout(void);
-
-/**
- * Gets the unique ID for the dataset attached to a given frame.
- * This function is \ref threadsafe.
- *
- * @return
- *   The unique ID for the dataset.   If no dataset is attached to the given
- *   frame then INVALID_UNIQUE_ID is returned.
- *
- * @pre Must have one or more frames.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilFrameGetDataSetUniqueIDByFrameID(FrameID)
- *    INTEGER*4 FrameID
- * </FortranSyntax>
- *
- * Get the dataset id for a frame
- * @code
- *   {
- *     TecUtilLockStart(AddOnID);
- *     UniqueID_t datasetID = TecUtilFrameGetDataSetUniqueIDByFrameID(frameID);
- *     ....
- *     TecUtilLockFinish(AddOnID);
- *   }
- * @endcode
- *
- * @since 2017.3
- *
- * @ingroup FrameManagement
- */
-LINKTOADDON UniqueID_t STDCALL TecUtilFrameGetDataSetUniqueIDByFrameID(UniqueID_t frameID);
-
-/**
- * Gets the unique ID for the current active frame. A unique ID is an integer value
- * unique to a frame during the Tecplot session. Using the unique ID a frame
- * can be compared to other frames and manipulated via TecUtil calls that take
- * unique IDs.    There is a subtle difference beween TecUtilFrameGetActiveID() and
- * TecUtilFrameGetUniqueID().   This difference only manifests itself when in the
- * context of lightweight frame loop (See TecUtilFrameLightweightLoopStart() and
- * related family of functions).   When in the middle of a lightweight frame loop
- * TecUtilFrameGetActiveID() will return the ID of the frame that was active BEFORE
- * starting the lightweight frame loop whereas TecUtilFrameGetUniqueID() will return
- * the unique ID of the frame that is currently switched to in within the lightweight
- * frame loop.
- * This function is \ref threadsafe.
- *
- * @return
- *   The unique ID for the current active frame.
- *
- * @pre Must have one or more frames.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilFrameGetActiveID()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * Push the current frame using its unique ID:
- * @code
- *   {
- *     UniqueID_t ID;
- *     TecUtilLockStart(AddOnID);
- *     ID = TecUtilFrameGetActiveID();
- *     TecUtilFramePushByUniqueID(ID);
- *     TecUtilLockFinish(AddOnID);
- *   }
- * @endcode
- *
- * @since 14.3
- *
- * @sa TecUtilFramePopByUniqueID(), TecUtilFramePushByUniqueID() and TecUtilFrameGetUniqueID().
- * @ingroup FrameManagement
- */
-LINKTOADDON UniqueID_t STDCALL TecUtilFrameGetActiveID(void);
+LINKTOADDON Boolean_t STDCALL TecUtilStateIsProcessingLayout(void);
 
 /**
  * Gets the unique ID for the current frame. A unique ID is an integer value
  * unique to a frame during the Tecplot session. Using the unique ID a frame
  * can be compared to other frames and manipulated via TecUtil calls that take
- * unique IDs.  See TecUtilFrameGetActiveID() for a description of the difference between
- * TecUtilFrameGetUniqueID() and TecUtilFrameGetActiveID().
+ * unique IDs.
  * This function is \ref threadsafe.
  *
  * @return
@@ -4103,57 +3972,9 @@ LINKTOADDON UniqueID_t STDCALL TecUtilDataSetGetUniqueID(void);
 LINKTOADDON UniqueID_t STDCALL TecUtilZoneGetUniqueID(EntIndex_t Zone);
 
 /**
- * Gets a unique ID for a zone in a dataset. A unique ID is an integer that
- * uniquely identifies a zone. An addon can use these IDs to internally keep track of a set of zones.
- * TecUtilZoneGetNumByUniqueID() can be used to convert between a unique ID and a zone number.
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   ID of the DataSet.
- *
- * @param Zone
- *   Zone number to query.
- *
- * @return
- *   A unique ID for a zone.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneGetUniqueIDByDataSetID(DataSetID, Zone)
- *    INTEGER*8 DataSetID
- *    INTEGER*4 Zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * Get the UniqueID for zone 1 in DataSet 1:
- *
- * @code
- *   {
- *     TecUtilLockStart(AddOnID);
- *     if ( TecUtilDataSetIsAvailableForDataSet(1) && TecUtilZoneIsEnabledForDataSet(1, 1) )
- *       {
- *         UniqueID_t ID = TecUtilZoneGetUniqueIDByDataSetID(1, 1);
- *         ...
- *       }
- *     TecUtilLockFinish(AddOnID);
- *   }
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON UniqueID_t STDCALL TecUtilZoneGetUniqueIDByDataSetID(UniqueID_t DataSetID,
-                                                                 EntIndex_t Zone);
-
-
-/**
  * Gets a unique ID for a zone in the dataset of the specified frame. A unique ID is an integer that
  * uniquely identifies a zone. An addon can use these IDs to internally keep track of a set of zones.
- * TecUtilZoneGetNumByUniqueID() can be used to convert between a unique ID and a zone number.
+ * TecUtilZoneGetNumByUniqueIDForFrame() can be used to convert between a unique ID and a zone number.
  * This function is \ref threadsafe.
  *
  * @param FrameID
@@ -4169,7 +3990,7 @@ LINKTOADDON UniqueID_t STDCALL TecUtilZoneGetUniqueIDByDataSetID(UniqueID_t Data
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilZoneGetUniqueIDForFrame(FrameID, Zone)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 Zone
  * </FortranSyntax>
  *
@@ -4192,12 +4013,10 @@ LINKTOADDON UniqueID_t STDCALL TecUtilZoneGetUniqueIDByDataSetID(UniqueID_t Data
  *
  * @since 14.1
  *
- * @sa TecUtilZoneGetUniqueIDByDataSetID
- *
  * @ingroup Zone
  *
  */
-LINKTOADDON UniqueID_t STDCALL TecUtilZoneGetUniqueIDForFrame(UniqueID_t FrameID,
+LINKTOADDON UniqueID_t STDCALL TecUtilZoneGetUniqueIDForFrame(UniqueID_t FrameID, 
                                                               EntIndex_t Zone);
 
 /**
@@ -4246,57 +4065,9 @@ LINKTOADDON UniqueID_t STDCALL TecUtilZoneGetUniqueIDForFrame(UniqueID_t FrameID
 LINKTOADDON UniqueID_t STDCALL TecUtilVarGetUniqueID(EntIndex_t Var);
 
 /**
- * Gets a unique ID for a variable in the specified dataset. A unique ID is an integer
+ * Gets a unique ID for a variable inf the dataset of the specified frame. A unique ID is an integer
  * that uniquely identifies a variable. An addon can use these IDs to internally keep track
- * of a set of variables.
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   An ID of the DataSet.
- *
- * @param Var
- *   Variable number to query.
- *
- * @return
- *   A unique ID for a variable.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarGetUniqueIDByDataSetID(DataSetID, Var)
- *    INTEGER*8 DataSetID
- *    INTEGER*4 Var
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * Get the unique ID for variable 1 in the DataSet 1:
- *
- * @code
- *   {
- *     TecUtilLockStart(AddOnID);
- *     if ( TecUtilDataSetIsAvailableForDataSet(1) && TecUtilVarIsEnabledByDataSetID(1, 1) )
- *       {
- *         UniqueID_t ID = TecUtilVarGetUniqueIDByDataSetID(1, 1);
- *         ...
- *       }
- *     TecUtilLockFinish(AddOnID);
- *   }
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Variables
- *
- */
-LINKTOADDON UniqueID_t STDCALL TecUtilVarGetUniqueIDByDataSetID(UniqueID_t DataSetID,
-                                                               EntIndex_t Var);
-
-
-/**
- * Gets a unique ID for a variable in the dataset of the specified frame. A unique ID is an integer
- * that uniquely identifies a variable. An addon can use these IDs to internally keep track
- * of a set of variables.  TecUtilVarGetNumByUniqueID() can be used to convert
+ * of a set of variables.  TecUtilVarGetNumByUniqueIDForFrame() can be used to convert
  * between a unique ID and a variable number.
  * This function is \ref threadsafe.
  *
@@ -4309,8 +4080,8 @@ LINKTOADDON UniqueID_t STDCALL TecUtilVarGetUniqueIDByDataSetID(UniqueID_t DataS
  *   A unique ID for a variable.
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarGetUniqueIDForFrame(FrameID, Var)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FUNCTION TecUtilVarGetNumByUniqueIDForFrame(FrameID, Var)
+ *    INTEGER*4 FrameID
  *    INTEGER*4 Var
  * </FortranSyntax>
  *
@@ -4324,7 +4095,7 @@ LINKTOADDON UniqueID_t STDCALL TecUtilVarGetUniqueIDByDataSetID(UniqueID_t DataS
  *     TecUtilLockStart(AddOnID);
  *     if ( TecUtilDataSetIsAvailableForFrame(1) && TecUtilVarIsEnabledForFrame(1, 1) )
  *       {
- *         UniqueID_t ID = TecUtilVarGetUniqueIDForFrame(1, 1);
+ *         UniqueID_t ID = TecUtilVarGetNumByUniqueIDForFrame(1, 1);
  *         ...
  *       }
  *     TecUtilLockFinish(AddOnID);
@@ -4333,12 +4104,10 @@ LINKTOADDON UniqueID_t STDCALL TecUtilVarGetUniqueIDByDataSetID(UniqueID_t DataS
  *
  * @since 14.1
  *
- * @sa TecUtilVarGetUniqueIDByDataSetID
- *
  * @ingroup Variables
  *
  */
-LINKTOADDON UniqueID_t STDCALL TecUtilVarGetUniqueIDForFrame(UniqueID_t FrameID,
+LINKTOADDON UniqueID_t STDCALL TecUtilVarGetUniqueIDForFrame(UniqueID_t FrameID, 
                                                              EntIndex_t Var);
 
 /**
@@ -4405,7 +4174,7 @@ LINKTOADDON UniqueID_t STDCALL TecUtilLineMapGetUniqueID(EntIndex_t LineMap);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilVarGetNumByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -4452,7 +4221,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilVarGetNumByUniqueID(UniqueID_t UniqueID);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilLineMapGetNumByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -4499,7 +4268,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilLineMapGetNumByUniqueID(UniqueID_t UniqueI
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilZoneGetNumByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -4644,7 +4413,9 @@ LINKTOADDON EntIndex_t STDCALL TecUtilVarGetNumByName(const char *VarName);
  *   indicates that the variable is currently memory-resident. \ref VarStatus_NotLoaded
  *   indicates that the variable is available for loading but is not yet loaded.
  *
- * @pre Must have one or more frames.
+ *
+ * @pre <em>VALID_REF(FieldData)</em>
+ *   Pointer must be a valid address and non-NULL.
  * @pre Current frame must have a data set with at least one zone.
  *
  *
@@ -4702,12 +4473,6 @@ LINKTOADDON VarStatus_e STDCALL TecUtilVarGetStatus(EntIndex_t  Zone,
  *   indicates that the variable is currently memory-resident. \ref VarStatus_NotLoaded
  *   indicates that the variable is available for loading but is not yet loaded.
  *
- *
- * @pre <em>FieldData</em>
- *   Pointer must be a valid address and non-NULL.
- * @pre Current frame must have a data set with at least one zone.
- *
- *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilVarGetStatusByRef(
  *   &                   FieldDataPtr)
@@ -4723,7 +4488,7 @@ LINKTOADDON VarStatus_e STDCALL TecUtilVarGetStatus(EntIndex_t  Zone,
  *   EntIndex_t  zone = 2;
  *   EntIndex_t  var  = 3;
  *   FieldData_pa FieldData = TecUtilDataValueGetReadableNativeRef(zone, var);
- *   VarStatus_e status = TecUtilVarGetStatusByRef(FieldData);
+ *   VarStatus_s status = TecUtilVarGetStatusByRef(FieldData);
  * @endcode
  *
  * @ingroup Variables
@@ -4732,26 +4497,29 @@ LINKTOADDON VarStatus_e STDCALL TecUtilVarGetStatus(EntIndex_t  Zone,
 LINKTOADDON VarStatus_e STDCALL TecUtilVarGetStatusByRef(FieldData_pa FieldData);
 
 /**
- * Get a handle to the raw field data in the data set attached to the current frame. If possible
- * this function provides direct access to a Tecplot variable's internal representation. If
- * performance is not a concern consider using TecUtilDataValueGetByRef(). If high performance is
- * essential then use TecUtilDataValueArrayGetByRef() which provide nearly equivalent performance to
- * direct access. Alternatively for high performance consider using the field data's accessor
- * functions by calling TecUtilDataValueRefGetGetFunc(). Note that these high performance functions
- * are a very thin layer over a Tecplot variable's internal representation and unlike the raw field
- * data pointer provided by this function, they are always available.  This function is \ref
- * threadsafe.
+ * Get a read-only handle to the raw field data in the data set attached to the
+ * current frame. If possible this function provides direct access to a Tecplot
+ * variable's internal representation. If performance is not a concern consider
+ * using TecUtilDataValueGetByRef(). If high performance is essential then use
+ * TecUtilDataValueArrayGetByRef() which provide nearly equivalent performance
+ * to direct access. Alternatively for high performance consider using the field
+ * data's accessor functions by calling TecUtilDataValueRefGetGetFunc(). Note
+ * that these high performance functions are a very thin layer over a Tecplot
+ * variable's internal representation and unlike the raw field data pointer
+ * provided by this function, they are always available.
+ * This function is \ref threadsafe.
  *
  * @par Note:
- *     Do not assume that raw data internal to Tecplot remains in the same location at all times.
- *     Always refetch the field data handle and this raw pointer again after any event where Tecplot
+ *     The array is read-only therefore be sure not to change any value. Do not
+ *     assume that raw data internal to Tecplot remains in the same location at
+ *     all times. Always call this function again after any event where Tecplot
  *     itself may move/alter the raw data.
  *
  * @since
- *     16.3
+ *     14.1
  *
  * @param FieldData
- *     Valid readable or writable field data handle.
+ *     Valid readable field data handle.
  * @return
  *     The address of the raw field data. NULL may be returned if the type is
  *     too complex. If the type is too complex, you may use
@@ -4764,21 +4532,6 @@ LINKTOADDON VarStatus_e STDCALL TecUtilVarGetStatusByRef(FieldData_pa FieldData)
  *
  *
  * @ingroup DataValue
- *
- * #internalattributes exclude_tcl
- */
-LINKTOADDON void* STDCALL TecUtilDataValueGetRawPtrByRef(FieldData_pa FieldData);
-
-/**
- *
- *
- * @pre <em>VALID_REF(FieldData)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @deprecated:
- *     Please use TecUtilDataValueGetRawPtrByRef() instead. The is no need for readable or writable
- *     versions of this function as the field data handle needed to be fetched as a readable or
- *     writable and it established the required activity on this handle.
  *
  * #internalattributes exclude_tcl
  */
@@ -4829,10 +4582,10 @@ LINKTOADDON const void* STDCALL TecUtilDataValueGetReadableRawPtrByRef(FieldData
      -------------------------------------------
      FieldDataType_Float      float *
      FieldDataType_Double     double *
-     FieldDataType_Int32      int32_t *
-     FieldDataType_Int16      int16_t *
+     FieldDataType_Int32      Int32_t *
+     FieldDataType_Int16      Int16_t *
      FieldDataType_Byte       char *
-     FieldDataType_Bit        uint32_t *
+     FieldDataType_Bit        UInt32_t *
      FieldDataType_Invalid    too complex
    @endverbatim
  *
@@ -4900,15 +4653,44 @@ LINKTOADDON void STDCALL TecUtilDataValueGetReadableRawPtr(EntIndex_t           
                                                            TP_OUT FieldDataType_e* FieldDataType);
 
 /**
+ * Get a read/write handle to the raw field data in the data set attached to
+ * the current frame. If possible this function provides direct access to a
+ * Tecplot variable's internal representation. If performance is not a concern
+ * consider using TecUtilDataValueGetByRef(), TecUtilDataValueSetByRef(). If
+ * high performance is essential then use TecUtilDataValueArrayGetByRef(), and
+ * TecUtilDataValueArraySetByRef() which provide nearly equivalent preformance
+ * to direct access. Alternatively for high performance consider using the
+ * field data's accessor functions by calling TecUtilDataValueRefGetGetFunc()
+ * and TecUtilDataValueRefGetSetFunc(). Note that these high performance
+ * functions are a very thin layer over a Tecplot variable's internal
+ * representation and unlike the raw field data pointer provided by this
+ * function, they are always available.
+ * This function is \ref threadsafe.
+ *
+ * @par Note:
+ *   Do not assume that raw data internal to Tecplot remains in the same
+ *   location at all times. Always call this function again after any event
+ *   where Tecplot itself may move/alter the raw data. Make sure to call
+ *   TecUtilStateChanged() after any field values have changed.
+ *
+ * @since
+ *     14.1
+ *
+ * @param FieldData
+ *     Valid writable field data handle.
+ * @return
+ *     The address of the raw field data. NULL may be returned if the type is
+ *     too complex. If the type is too complex, you may use
+ *     TecUtilDataValueRefGetGetFunc() and TecUtilDataValueRefGetSetFunc() to
+ *     get functions that will deal with the data at a lower level than
+ *     TecUtilDataValueGetByRef() and TecUtilDataValueSetByRef().
  *
  *
- * @pre <em>VALID_REF(FieldData)</em>
+ * @pre <em>FieldData</em>
  *   Pointer must be a valid address and non-NULL.
  *
- * @deprecated:
- *     Please use TecUtilDataValueGetRawPtrByRef() instead. The is no need for readable or writable
- *     versions of this function as the field data handle needed to be fetched as a readable or
- *     writable and it established the required activity on this handle.
+ *
+ * @ingroup DataValue
  *
  * #internalattributes exclude_tcl
  */
@@ -4961,10 +4743,10 @@ LINKTOADDON void* STDCALL TecUtilDataValueGetWritableRawPtrByRef(FieldData_pa Fi
      -------------------------------------------
      FieldDataType_Float      float *
      FieldDataType_Double     double *
-     FieldDataType_Int32      int32_t *
-     FieldDataType_Int16      int16_t *
+     FieldDataType_Int32      Int32_t *
+     FieldDataType_Int16      Int16_t *
      FieldDataType_Byte       char *
-     FieldDataType_Bit        uint32_t *
+     FieldDataType_Bit        UInt32_t *
      FieldDataType_Invalid    too complex
    @endverbatim
  *
@@ -5059,34 +4841,82 @@ LINKTOADDON void STDCALL TecUtilDataValueGetRawPtr(EntIndex_t              Zone,
                                                    TP_OUT FieldDataType_e* FieldDataType);
 
 /**
- * Get a read-only handle to the element orientation state for the specified zone in the dataset
- * attached to the current frame. The request is only allowed for FE triangle and FE quadrangle zone
- * types. Element orientation is useful for determining if the nodes for an element are assembled
- * the same way or the opposite way as compared to a reference element in the zone. The reference
- * element is the first element. Its surface normal is either compared, via a dot product, to the
- * reference normal used to create the surface zone, such as an extracted slice, or the sum of the
- * surface normal vector components are compared to zero, where a positive value is given standard
- * orientation and a negative value is given reversed orientation.
+ * @deprecated
+ *   Please use TecUtilDataNodeGetReadableRef() or TecUtilDataNodeGetWritableRef()
+ *   in conjunction with TecUtilDataNodeArrayGetByRef() or TecUtilDataNodeArraySetByRef()
+ *   or else use TecUtilDataNodeGetReadableRawPtr() or TecUtilDataNodeGetWritableRawPtr()
+ *   instead. Calling TecUtilDataNodeGetRawPtr() is equivalent to calling TecUtilDataNodeGetWritableRef()
+ *   and the acquiring the raw data pointer.
+ *
+ * @ingroup DataStructure
+ *
+ * #internalattributes exclude_tcl
+ */
+LINKTOADDON void STDCALL TecUtilDataNodeGetRawPtr(EntIndex_t               Zone,
+                                                  TP_ARRAY_OUT NodeMap_t** NodeMapPtr);
+
+/**
+ * Get the readable raw pointer from the readable finite-element node map.
  *
  * This function is \ref threadsafe.
  *
  * @since
- *   15.2
+ *     14.1
  *
- * @param Zone
- *   Number of the zone for which to get the element orientation.
+ * @par Note:
+ *     The array is read-only therefore be sure not to change any value. Do not
+ *     assume that raw data internal to Tecplot remains in the same location at
+ *     all times. Always call this function again after any event where Tecplot
+ *     itself may move/alter the raw data.
  *
  * @return
- *   A read-only element orientation state for the specified zone in the dataset attached to the
- *   current frame or NULL if Tecplot was interrupted or was not able to load and calculate the
- *   element orientations.
+ *     The address of the raw node map. NULL may be returned if the type is too
+ *     complex. If the type is too complex, you may use
+ *     TecUtilDataNodeGetReadableRef() in conjunction with
+ *     TecUtilDataNodeGetByRef().
+ *
+ *
+ * @pre <em>VALID_REF(NodeMap)</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
+ *
+ * @ingroup DataServices
+ */
+LINKTOADDON const NodeMap_t* STDCALL TecUtilDataNodeGetReadableRawPtrByRef(NodeMap_pa NodeMap);
+
+/**
+ * Get a readable raw pointer to the finite-element node map of the specified zone
+ * in the data set attached to the current frame.
+ *
+ * This function is \ref threadsafe.
+ *
+ * @since
+ *   12.0-1-5410
+ *
+ * @par Note:
+ *   The array is read-only therefore be sure not to change any value. Do not
+ *   assume that raw data internal to Tecplot remains in the same location at
+ *   all times. Always call this function again after any event where Tecplot
+ *   itself may move/alter the raw data.
+ *
+ * @param Zone
+ *   Number of the zone for which to get the readable raw node map pointer. This
+ *   must be a finite-element zone
+ *
+ * @param NodeMapPtr
+ *   Receives the address of the raw node map.  May return NULL if
+ *   the type is too complex. If the type is too complex, you may use
+ *   TecUtilDataNodeGetReadableRef() in conjunction with TecUtilDataNodeGetByRef().
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
  *
+ * @pre <em>NodeMapPtr</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
  *
  * <FortranSyntax>
- *    SUBROUTINE TecUtilElemOrientGetReadableRef(
+ *    SUBROUTINE TecUtilDataNodeGetReadableRawPtr(
  *   &           Zone,
  *   &           ResultPtr)
  *    INTEGER*4       Zone
@@ -5096,246 +4926,81 @@ LINKTOADDON void STDCALL TecUtilDataValueGetRawPtr(EntIndex_t              Zone,
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilElemOrientGetOrientation(),
+ * @ingroup DataServices
+ */
+LINKTOADDON void STDCALL TecUtilDataNodeGetReadableRawPtr(EntIndex_t               Zone,
+                                                          TP_ARRAY_OUT NodeMap_t** NodeMapPtr);
+
+/**
+ * Get the writable raw pointer from the writable finite-element node map.
+ *
+ * This function is \ref threadsafe.
+ *
+ * @par Note:
+ *     Do not assume that raw data internal to Tecplot remains in the same
+ *     location at all times. Always call this function again after any event
+ *     where Tecplot itself may move/alter the raw data. Make sure to call
+ *     TecUtilStateChanged() after any values have changed.
+ *
+ * @since
+ *     14.1
+ *
+ * @return
+ *     The address of the raw node map. NULL may be returned if the type is too
+ *     complex. If the type is too complex, you may use
+ *     TecUtilDataNodeGetWritableRef() in conjunction with
+ *     TecUtilDataNodeGetByRef() and TecUtilDataNodeSetByRef().
+ *
+ *
+ * @pre <em>VALID_REF(NodeMap)</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
  *
  * @ingroup DataServices
  */
-LINKTOADDON ElementOrientation_pa STDCALL TecUtilElemOrientGetReadableRef(EntIndex_t Zone);
+LINKTOADDON NodeMap_t* STDCALL TecUtilDataNodeGetWritableRawPtrByRef(NodeMap_pa NodeMap);
 
 /**
- * Get the element's orientation.
+ * Get a writable raw pointer to the finite-element node map of the specified zone
+ * in the data set attached to the current frame.
+ *
  * This function is \ref threadsafe.
  *
- * @param ElementOrientation
- *   A zone's element orientation state obtained by calling TecUtilElemOrientGetReadableRef().
- *
  * @since
- *   15.2
+ *   12.0-1-5410
  *
- * @param Element
- *   Element for which the orientation is desired.
+ * @param Zone
+ *   Number of the zone for which to get the writable raw node map pointer. This
+ *   must be a finite-element zone
  *
- * @return
- *   Three values can be returned. For surfaces created using a reference direction, such as
- *   extracted slices, ElementOrientation_Standard indicates that the surface normal is pointing
- *   in the same direction as the reference direction. For surface zones where there is no associated
- *   reference direction, such as extracted iso-surfaces or surface zones read from data
- *   files, the first element's orientation is determined by summing its surface normal vector
- *   components; ElementOrientation_Standard is reported for this element if the sum is positive.
- *   Orientation of all subsequent elements is then determined by comparing their node ordering to
- *   the first element. If an element's nodes progress around the element in the same direction
- *   (clockwise or counter-clockwise) as the first element, then its orientation will be the same
- *   as the first element. In all cases, ElementOrientation_Reversed indicates that the surface
- *   normal is pointing in the opposite direction to those identified with standard orientation.
- *   ElementOrientation_Arbitrary indicates the orientation could not be determined and is
- *   generally treated in a similar way as an element with standard orientation.
+ * @param NodeMapPtr
+ *   Receives the address of the raw node map.  May return NULL if
+ *   the type is too complex. If the type is too complex, you may use
+ *   TecUtilDataNodeGetWritableRef() in conjunction with
+ *   TecUtilDataNodeGetByRef() or TecUtilDataNodeSetByRef().
+ *
+ * @pre Must have one or more frames.
+ * @pre Current frame must have a data set with at least one zone.
+ *
+ * @pre <em>NodeMapPtr</em>
+ *   Pointer must be a valid address and non-NULL.
+ *
  *
  * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilElemOrientGetOrientation(
- *   &                   ElementOrientation,
- *   &                   Element)
- *    POINTER         (ElementOrientationPtr, ElementOrientation)
- *    INTEGER*4       Element
+ *    SUBROUTINE TecUtilDataNodeGetWritableRawPtr(
+ *   &           Zone,
+ *   &           ResultPtr)
+ *    INTEGER*4       Zone
+ *    POINTER         (ResultPtr, Result)
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilElemOrientGetReadableRef()
- *
  * @ingroup DataServices
  */
-LINKTOADDON ElementOrientation_e STDCALL TecUtilElemOrientGetOrientation(ElementOrientation_pa ElementOrientation,
-                                                                         LgIndex_t             Element);
-
-/**
- * @deprecated
- *   Please use TecUtilDataNodeGetReadableRef() or TecUtilDataNodeGetWritableRef()
- *   in conjunction with TecUtilDataNodeArrayGetByRef(), TecUtilDataNodeArraySetByRef() or TecUtilDataNodeArraySetByRef64()
- *   or else use TecUtilDataNodeGetRawPtrByRef() or TecUtilDataNodeGetRawPtrByRef64() instead.
-*    Calling TecUtilDataNodeGetRawPtr() is equivalent to calling TecUtilDataNodeGetWritableRef()
- *   and the acquiring the raw data pointer.
- *
- * @ingroup DataStructure
- *
- * #internalattributes exclude_tcl
- */
-LINKTOADDON void STDCALL TecUtilDataNodeGetRawPtr(EntIndex_t             Zone,
-                                                  TP_ARRAY_OUT int32_t** NodeMapPtr);
-
-
-/**
- * Get the data type used for node offsets
- *
- * This function is \ref threadsafe.
- *
- * @param NodeMap
- *  Nodemap to query.
- *
- * @since
- *     15.3
- *
- * @return
- *     The offset data type
- *
- *
- * @pre <em>NodeMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup DataServices
- */
-LINKTOADDON OffsetDataType_e STDCALL TecUtilDataNodeGetRawItemType(NodeMap_pa NodeMap);
-
-/**
- * Get the raw pointer from the readable or writable finite-element node map.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *     14.1
- *
- * @par Note:
- *     Do not assume that raw data internal to Tecplot remains in the same location at all times.
- *     Always refetch the node map handle and this raw pointer again after any event where Tecplot
- *     itself may move/alter the raw data.
- *
- * @return
- *     The address of the raw node map. NULL may be returned if the type is too
- *     complex. If the type is too complex, you may use
- *     TecUtilDataNodeGetReadableRef() in conjunction with
- *     TecUtilDataNodeGetByRef().
- *     This function MUST be used if the underlying data type for the nodemap array
- *     is 32-bit integers.  If the underlying data type for the nodemap array is
- *     64-bit integers use TecUtilDataNodeGetRawPtrByRef64() instead.
- *     See TecUtilDataNodeGetRawItemType() for additional information.
- *
- *
- * @pre <em>VALID_REF(NodeMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup DataServices
- */
-LINKTOADDON int32_t* STDCALL TecUtilDataNodeGetRawPtrByRef(NodeMap_pa NodeMap);
-
-
-/**
- * Get the raw pointer from the readable or writable finite-element node map.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *     14.1
- *
- * @par Note:
- *     Do not assume that raw data internal to Tecplot remains in the same location at all times.
- *     Always refetch the node map handle and this raw pointer again after any event where Tecplot
- *     itself may move/alter the raw data.
- *
- * @return
- *     The address of the raw node map. NULL may be returned if the type is too
- *     complex. If the type is too complex, you may use
- *     TecUtilDataNodeGetReadableRef() in conjunction with
- *     TecUtilDataNodeGetByRef().
- *     This function MUST be used if the underlying data type for the nodemap array
- *     is 64-bit integers.  If the underlying data type for the nodemap array is
- *     32-bit integers use TecUtilDataNodeGetRawPtrByRef() instead.
- *     See TecUtilDataNodeGetRawItemType() for additional information.
- *
- *
- * @pre <em>VALID_REF(NodeMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup DataServices
- */
-LINKTOADDON int64_t* STDCALL TecUtilDataNodeGetRawPtrByRef64(NodeMap_pa NodeMap);
-
-
-/**
- *
- *
- * @pre <em>VALID_REF(NodeMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @deprecated:
- *     Please use TecUtilDataNodeGetRawPtrByRef() instead. There is no need for readable or writable
- *     versions of this function as the node map handle needed to be fetched as a readable or
- *     writable and it established the required activity on this handle.
- *
- * @ingroup DataServices
- */
-LINKTOADDON const int32_t* STDCALL TecUtilDataNodeGetReadableRawPtrByRef(NodeMap_pa NodeMap);
-
-
-/**
- *
- *
- * @pre <em>VALID_REF(NodeMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @deprecated:
- *     Please use TecUtilDataNodeGetRawPtrByRef64() instead. The is no need for readable or writable
- *     versions of this function as the node map handle needed to be fetched as a readable or
- *     writable and it established the required activity on this handle.
- *
- * @ingroup DataServices
- */
-LINKTOADDON const int64_t* STDCALL TecUtilDataNodeGetReadableRawPtrByRef64(NodeMap_pa NodeMap);
-
-/**
- *
- *
- * @pre <em>VALID_REF(NodeMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @deprecated:
- *     Please use TecUtilDataNodeGetRawPtrByRef() instead. The is no need for readable or writable
- *     versions of this function as the node map handle needed to be fetched as a readable or
- *     writable and it established the required activity on this handle.
- *
- * @ingroup DataServices
- */
-LINKTOADDON int32_t* STDCALL TecUtilDataNodeGetWritableRawPtrByRef(NodeMap_pa NodeMap);
-
-
-/**
- *
- *
- * @pre <em>VALID_REF(NodeMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @deprecated:
- *     Please use TecUtilDataNodeGetRawPtrByRef64() instead. The is no need for readable or writable
- *     versions of this function as the node map handle needed to be fetched as a readable or
- *     writable and it established the required activity on this handle.
- *
- * @ingroup DataServices
- */
-LINKTOADDON int64_t* STDCALL TecUtilDataNodeGetWritableRawPtrByRef64(NodeMap_pa NodeMap);
-
-
-/**
- * Get the data type used for face neighbor cell offsets.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *     15.3
- *
- * @return
- *     The offset data type
- *
- *
- * @pre <em>VALID_REF(FaceNeighbor)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup DataServices
- */
-LINKTOADDON OffsetDataType_e STDCALL TecUtilDataFaceNbrRawItemType(FaceNeighbor_pa FaceNeighbor);
-
+LINKTOADDON void STDCALL TecUtilDataNodeGetWritableRawPtr(EntIndex_t               Zone,
+                                                          TP_ARRAY_OUT NodeMap_t** NodeMapPtr);
 
 
 /**
@@ -5347,66 +5012,11 @@ LINKTOADDON OffsetDataType_e STDCALL TecUtilDataFaceNbrRawItemType(FaceNeighbor_
  *
  * #internalattributes exclude_python, exclude_sdkdoc, exclude_tcl
  */
-LINKTOADDON void STDCALL TecUtilDataFaceNbrGetRawPtr(EntIndex_t             Zone,
-                                                     TP_ARRAY_OUT int32_t** FNPtr);
+LINKTOADDON void STDCALL TecUtilDataFaceNbrGetRawPtr(EntIndex_t               Zone,
+                                                     TP_ARRAY_OUT LgIndex_t** FNPtr);
 
-/**
- * Get the name of a specified zone in a data set.
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   ID of the DataSet.
- *
- * @param Zone
- *   Number of the zone for which to get the zone name information
- *
- * @param ZName
- *   Receives the name of the specified zone. You must free the returned string
- *   with TecUtilStringDealloc().
- *
- * @return
- *   TRUE if successful, FALSE if not. FALSE usually indicates an unenabled zone.
- *
- *
- * @pre <em>ZName</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneGetNameByDataSetID(
- *   &                   DataSetID,
- *   &                   Zone,
- *   &                   ZName,
- *   &                   ZNameLength)
- *    INTEGER*8       DataSetID
- *    INTEGER*4       Zone
- *    CHARACTER*(*)   ZName
- *    INTEGER*4       ZNameLength
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Get the name of the first zone for the DataSet with ID=1:
- *
- * @code
- *   char *name = NULL;
- *   if (TecUtilZoneGetNameByDataSetID(1,&name)
- *   {
- *     // do something with the name here
- *     TecUtilStringDealloc(&name);
- *   }
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneGetNameByDataSetID(UniqueID_t      DataSetID,
-                                                           EntIndex_t      Zone,
-                                                           TP_GIVES char** ZName);
+
+
 
 /**
  * Get the name of a specified zone in the data set attached to the supplied
@@ -5427,7 +5037,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetNameByDataSetID(UniqueID_t      Data
  *   or that the current frame does not have an attached data set.
  *
  *
- * @pre <em>VALID_DATASET(dataSet,TRUE)</em>
+ * @pre <em>VALID_DATASET(dataSet,true)</em>
  *   Data set must have at least one zone.
  *
  * @pre <em>ZName</em>
@@ -5440,7 +5050,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetNameByDataSetID(UniqueID_t      Data
  *   &                   Zone,
  *   &                   ZName,
  *   &                   ZNameLength)
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID 
  *    INTEGER*4       Zone
  *    CHARACTER*(*)   ZName
  *    INTEGER*4       ZNameLength
@@ -5461,8 +5071,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetNameByDataSetID(UniqueID_t      Data
  * @endcode
  *
  * @since 14.1
- *
- * @sa TecUtilZoneGetNameByDataSetID
  *
  * @ingroup Zone
  *
@@ -5511,7 +5119,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetNameForFrame(UniqueID_t      FrameID
  *
  * @code
  *   char *name = NULL;
- *   if (TecUtilZoneGetName(1,&name))
+ *   if (TecUtilZoneGetName(1,&name)
  *   {
  *     // do something with the name here
  *     TecUtilStringDealloc(&name);
@@ -5525,182 +5133,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetNameForFrame(UniqueID_t      FrameID
  */
 LINKTOADDON Boolean_t STDCALL TecUtilZoneGetName(EntIndex_t      Zone,
                                                  TP_GIVES char** ZName);
-
-/**
- * Returns an allocated array of unique IDs for all the enabled zone.
- *
- * @since 2018.2
- *
- * This function is \ref threadsafe.
- *
- * @param dataSetID
- *   An ID of the dataset
- * @param numZoneIDs
- *   Receives the size of the allocated array zoneIDs
- * @param zoneIDs
- *   Receives the array of unique IDs.
- *   You must free this pointer by calling TecUtilArrayDealloc().
- *
- * @return
- *   TRUE if successful, FALSE otherwise
- *
- *
- * @pre <em>numZoneIDs</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>zoneIDs</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup Zones
- */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneGetUniqueIDsByDataSetID(UniqueID_t dataSetID,
-                                                                 TP_OUT EntIndex_t* numZoneIDs,
-                                                                 TP_ARRAY_GIVES UniqueID_t** zoneIDs);
-
-/**
- * Returns an allocated array of zone types for all the enabled zone.
- *
- * @since 2018.2
- *
- * This function is \ref threadsafe.
- *
- * @param dataSetID
- *   An ID of the dataset
- * @param numTypes
- *   Receives the size of the allocated array zoneIDs
- * @param types
- *   Receives the array of zone types.
- *   You must free this pointer by calling TecUtilArrayDealloc().
- *
- * @return
- *   TRUE if successful, FALSE otherwise
- *
- *
- * @pre <em>numTypes</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>types</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup Zones
- */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneGetTypesByDataSetID(UniqueID_t dataSetID,
-                                                             TP_OUT EntIndex_t* numTypes,
-                                                             TP_ARRAY_GIVES ZoneType_e** types);
-
-/**
- * Get the list of enabled zone names in a dataset.
- *
- * @since 2017.3
- *
- * This function is \ref threadsafe.
- *
- * @param dataSetID
- *   The dataset unique ID number.
- * @param names
- *   Receives the string list of zone names.
- *   You must free this pointer by calling TecUtilStringListDealloc().
- *
- * @return
- *   TRUE if successful, FALSE otherwise
- *
- *
- * @pre <em>VALID_REF(zoneNames)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneGetNamesByDataSetID(DataSetID, namesPtr)
- *    INTEGER*8 DataSetID
- *    POINTER (namesPtr, names)
- * </FortranSyntax>
- *
- * @code
- *   StringList_pa names = nulllptr;
- *   if (TecUtilZoneGetNamesByDataSetID(dataSet, &names))
- *   {
- *    // do something with the string list here
- *    TecUtilStringListDealloc(&names);
- *   }
- * @endcode
- *
- * @ingroup Zones
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneGetNamesByDataSetID(UniqueID_t dataSetID,
-                                                             TP_GIVES StringList_pa* names);
-
-/**
- *
- * @deprecated
- *   This has been renamed to TecUtilZoneGetNamesByDataSetID()
- */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneGetEnabledNamesByDataSetID(UniqueID_t dataSetID,
-                                                                    TP_GIVES StringList_pa* names);
-
-/**
- * Get the name of a variable in the data set.
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   ID of the DataSet.
- *
- * @param VarNum
- *   Number of the variable for which to get the variable name information.
- *   Must be greater than zero, and the variable must be enabled
- *
- * @param VName
- *   Receives the name of the specified variable. Must not be NULL. You must
- *   free this string with TecUtilStringDealloc().
- *
- * @return
- *   TRUE if successful, FALSE if not.
- *
- *
- * @pre <em>VarNum</em>
- *   Must specify a valid variable.
- *
- * @pre <em>VName</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarGetNameByDataSetID(
- *   &                   DataSetID,
- *   &                   VarNum,
- *   &                   VName,
- *   &                   VNameLength)
- *    INTEGER*8       DataSetID
- *    INTEGER*4       VarNum
- *    CHARACTER*(*)   VName
- *    INTEGER*4       VNameLength
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Get the name of the first variable for the DataSet with ID=myDataSetID:
- *
- * @code
- *   char buffer[100];
- *   VarName_t Name;
- *   TecUtilVarGetNameByDataSetID(myDataSetID, 1,&Name);
- *   sprintf(buffer,"The name of the first variable is %s",Name);
- *   TecUtilStringDealloc(&Name);
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Variables
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilVarGetNameByDataSetID(UniqueID_t      DataSetID,
-                                                          EntIndex_t      VarNum,
-                                                          TP_GIVES char** VName);
-
 /**
  * Get the name of a variable in the data set attached to the specified frame.
  * There must be a data set attached to the current frame.
@@ -5721,7 +5153,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNameByDataSetID(UniqueID_t      DataS
  *   TRUE if successful, FALSE if not.
  *
  *
- * @pre <em>VALID_DATASET(dataSet,FALSE)</em>
+ * @pre <em>VALID_DATASET(dataSet,false)</em>
  *   Must have a valid data set.
  *
  * @pre <em>VarNum</em>
@@ -5737,7 +5169,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNameByDataSetID(UniqueID_t      DataS
  *   &                   VarNum,
  *   &                   VName,
  *   &                   VNameLength)
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID
  *    INTEGER*4       VarNum
  *    CHARACTER*(*)   VName
  *    INTEGER*4       VNameLength
@@ -5757,8 +5189,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNameByDataSetID(UniqueID_t      DataS
  * @endcode
  *
  * @since 14.1
- *
- * @sa TecUtilVarGetNameByDataSetID
  *
  * @ingroup Variables
  *
@@ -5824,86 +5254,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetNameForFrame(UniqueID_t      FrameID,
 LINKTOADDON Boolean_t STDCALL TecUtilVarGetName(EntIndex_t      VarNum,
                                                 TP_GIVES char** VName);
 
-/**
- * Returns an allocated array of unique IDs for all the variables in the dataset.
- *
- * @since 2018.2
- *
- * This function is \ref threadsafe.
- *
- * @param dataSetID
- *   An ID of the dataset
- * @param numVarIDs
- *   Receives the size of the allocated array varIDs
- * @param varIDs
- *   Receives the array of unique IDs.
- *   You must free this pointer by calling TecUtilArrayDealloc().
- *
- * @return
- *   TRUE if successful, FALSE otherwise
- *
- *
- * @pre <em>numVarIDs</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>varIDs</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup Variables
- */
-LINKTOADDON Boolean_t STDCALL TecUtilVarGetUniqueIDsByDataSetID(UniqueID_t dataSetID,
-                                                                TP_OUT EntIndex_t* numVarIDs,
-                                                                TP_ARRAY_GIVES UniqueID_t** varIDs);
 
-/**
- * Get the list of enabled variable names in a dataset.
- *
- * @since 2017.3
- *
- * This function is \ref threadsafe.
- *
- * @param dataSetID
- *   The dataset unique ID number.
- * @param names
- *   Receives the string list of variable names.
- *   You must free this pointer by calling TecUtilStringListDealloc().
- *
- * @return
- *   TRUE if successful, FALSE otherwise
- *
- *
- * @pre <em>VALID_REF(varNames)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarGetNamesByDataSetID(DataSetID, namesPtr)
- *    INTEGER*8 DataSetID
- *    POINTER (namesPtr, names)
- * </FortranSyntax>
- *
- * @code
- *   StringList_pa names = nulllptr;
- *   if (TecUtilVarGetNamesByDataSetID(dataSet, &names))
- *   {
- *    // do something with the string list here
- *    TecUtilStringListDealloc(&names);
- *   }
- * @endcode
- *
- * @ingroup Variables
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilVarGetNamesByDataSetID(UniqueID_t dataSetID,
-                                                            TP_GIVES StringList_pa* names);
-
-/**
- * @deprecated
- *   This has been renamed to TecUtilVarGetNamesByDataSetID()
- */
-LINKTOADDON Boolean_t STDCALL TecUtilVarGetEnabledNamesByDataSetID(UniqueID_t dataSetID,
-                                                                   TP_GIVES StringList_pa* names);
 
 /**
  * @deprecated
@@ -5915,7 +5266,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetEnabledNamesByDataSetID(UniqueID_t da
  */
 LINKTOADDON Boolean_t STDCALL TecUtilXYMapGetName(EntIndex_t      Map,
                                                   TP_GIVES char** Name);
-
 /**
  *   Get the name of an Line-map in the specified frame.
  *
@@ -5941,7 +5291,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilXYMapGetName(EntIndex_t      Map,
  *   &                   Map,
  *   &                   Name,
  *   &                   ReturnedNameLength)
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID
  *    INTEGER*4       Map
  *    CHARACTER*(*)   Name
  *    INTEGER*4       ReturnedNameLength
@@ -5966,7 +5316,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilXYMapGetName(EntIndex_t      Map,
 LINKTOADDON Boolean_t STDCALL TecUtilLineMapGetNameForFrame(UniqueID_t FrameID,
                                                             EntIndex_t      Map,
                                                             TP_GIVES char** Name);
-
 /**
  *   Get the name of an Line-map.
  *
@@ -6015,6 +5364,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilLineMapGetNameForFrame(UniqueID_t FrameID,
 LINKTOADDON Boolean_t STDCALL TecUtilLineMapGetName(EntIndex_t      Map,
                                                     TP_GIVES char** Name);
 
+
 /**
  * Gets the number of values associated with the field data reference.
  *
@@ -6058,7 +5408,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilDataValueGetCountByRef(FieldData_pa FieldDa
 
 /**
  * Convenience function used to obtain information about a specific zone in the dataset attached to
- * the specified frame.
+ * the specified frame.  
  * This function is primarily targeted for use with 2D and 3D frame modes. If the
  * frame mode is XY, only the zone dimensions can be queried. To get a field
  * data pointer to axis variables when the frame mode is XY use
@@ -6158,7 +5508,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilDataValueGetCountByRef(FieldData_pa FieldDa
  *   &           BVarPtr,
  *   &           CVarPtr,
  *   &           SVarPtr)
- *    INTEGER*8       FrameID
+ *    INTEGER*4       FrameID
  *    INTEGER*4       CurZone
  *    INTEGER*4       IMax
  *    INTEGER*4       JMax
@@ -6238,6 +5588,7 @@ LINKTOADDON void STDCALL TecUtilZoneGetInfoForFrame(UniqueID_t           FrameID
                                                     TP_OUT FieldData_pa* BVar,
                                                     TP_OUT FieldData_pa* CVar,
                                                     TP_OUT FieldData_pa* SVar);
+
 
 /**
  * Convenience function used to obtain information about a specific zone.  This
@@ -6417,6 +5768,7 @@ LINKTOADDON void STDCALL TecUtilZoneGetInfo(EntIndex_t           CurZone,
                                             TP_OUT FieldData_pa* CVar,
                                             TP_OUT FieldData_pa* SVar);
 
+
 /**
  * Used to obtain the I, J, and K dimensions of a specific zone.
  * This function is \ref threadsafe.
@@ -6436,7 +5788,7 @@ LINKTOADDON void STDCALL TecUtilZoneGetInfo(EntIndex_t           CurZone,
  *   Receives the K-dimension for ordered data. Number of nodes per cell for
  *   cell-based FE-data (triangle, brick, tetrahedral, quadtrilateral).  Number of
  *   faces for face-based FE-data (polygons and polyhedrons).  If face generation
- *   is deferred via TecUtilDataFaceMapAssignElemToNodeMap or TecUtilDataFaceMapAssignElemToNodeMap64() this value will be 0
+ *   is deferred via TecUtilDataFaceMapAssignElemToNodeMap, this value will be 0 
  *   until faces are calculated.  Passing NULL indicates the value is not desired.
  *
  * @pre Must have one or more frames.
@@ -6486,11 +5838,12 @@ LINKTOADDON void STDCALL TecUtilZoneGetIJK(EntIndex_t        CurZone,
                                            TP_OUT LgIndex_t* JMax,
                                            TP_OUT LgIndex_t* KMax);
 
+
 /**
  * Used to obtain the I, J, and K dimensions of a specific zone in the specified data set.
  * This function is \ref threadsafe.
  *
- * @param DatasetID
+ * @param DatasetID 
  *   A unique ID of a dataset.
  *
  * @param Zone
@@ -6508,7 +5861,7 @@ LINKTOADDON void STDCALL TecUtilZoneGetIJK(EntIndex_t        CurZone,
  *   Receives the K-dimension for ordered data. Number of nodes per cell for
  *   cell-based FE-data (triangle, brick, tetrahedral, quadtrilateral).  Number of
  *   faces for face-based FE-data (polygons and polyhedrons).  If face generation
- *   is deferred via TecUtilDataFaceMapAssignElemToNodeMap or TecUtilDataFaceMapAssignElemToNodeMap64() this value will be 0
+ *   is deferred via TecUtilDataFaceMapAssignElemToNodeMap, this value will be 0 
  *   until faces are calculated.  Passing NULL indicates that the value is not desired.
  *
  * @pre Must have one or more frames.
@@ -6531,7 +5884,7 @@ LINKTOADDON void STDCALL TecUtilZoneGetIJK(EntIndex_t        CurZone,
  *   &           IMax,
  *   &           JMax,
  *   &           KMax)
- *    INTEGER*8       DatasetID
+ *    INTEGER*4       DatasetID 
  *    INTEGER*4       Zone
  *    INTEGER*4       IMax
  *    INTEGER*4       JMax
@@ -6562,28 +5915,6 @@ LINKTOADDON void STDCALL TecUtilZoneGetIJKByUniqueID(UniqueID_t        DatasetID
                                                      TP_OUT LgIndex_t* IMax,
                                                      TP_OUT LgIndex_t* JMax,
                                                      TP_OUT LgIndex_t* KMax);
-
-/**
- * Get the offset data type used for arrays of integers.
- *
- * This function is \ref threadsafe.
- *
- * @param MaxValueStoredInArray
- * Maximum value expected to be stored in the array.  This is NOT the dimension of the array.  For
- * example suppose you are working with an array that is only dimensioned by 10 yet it stores values
- * that could be as large as 4,000,000,000.   Call this function with MaxValueStoredInArray set to
- * 4000000000.
- *
- * @since
- *     15.3
- *
- * @return
- *     The offset data type
- *
- * @ingroup DataServices
- */
-LINKTOADDON OffsetDataType_e STDCALL TecUtilDataSetGetIntItemTypeForContentRange(int64_t MaxValueStoredInArray);
-
 /**
  * Get the title, number of zones, and number of variables of the data set
  * attached to the current frame.
@@ -6653,79 +5984,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetGetInfo(TP_GIVES char**    DataSetTi
                                                     TP_OUT EntIndex_t* NumVars);
 
 /**
- * Get the title, number of zones, and number of variables of the specified data set.
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   An ID of the dataset.
- *
- * @param DataSetTitle
- *   Character string containing the title of the data set.
- *   If you pass NULL, this will not be assigned. Deallocate the
- *   returned string with TecUtilStringDealloc() when you are done with it.
- *
- * @param NumZones
- *   The number of zones in the data set. If you
- *   pass NULL, this will not be assigned
- *
- * @param NumVars
- *   The number of variables in the data set. If
- *   you pass NULL, this will not be assigned.
- *
- * @return
- *   TRUE if successful, FALSE if not.
- *
- *
- * @pre <em>DataSetTitle</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>NumZones</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>NumVars</em>
- *   Pointer must be a valid address or NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataSetGetInfo(
- *   &                   DataSetID,
- *   &                   DataSetTitle,
- *   &                   DataSetTitleLength,
- *   &                   NumZones,
- *   &                   NumVars)
- *    INTEGER*8       DataSetID
- *    CHARACTER*(*)   DataSetTitle
- *    INTEGER*4       DataSetTitleLength
- *    INTEGER*4       NumZones
- *    INTEGER*4       NumVars
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * Get the data set title and number of zones and variables from the specified
- * data set:
- *
- * @code
- *   char *dataset_title = NULL;
- *   EntIndex_t nzones, nvars;
- *
- *   TecUtilDataSetGetInfo(someDataSet,&dataset_title, &nzones, &nvars);
- *   // use dataset_title
- *   TecUtilStringDealloc(&dataset_title);
- * @endcode
- *
- * @ingroup DataServices
- *
- * @since 16.3
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataSetGetInfoByUniqueID(UniqueID_t         DataSetID,
-                                                              TP_GIVES char**    DataSetTitle,
-                                                              TP_OUT EntIndex_t* NumZones,
-                                                              TP_OUT EntIndex_t* NumVars);
-
-/**
  * Get the number of zones in the data set attached to the current frame.
  *
  * This function is \ref threadsafe.
@@ -6752,35 +6010,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataSetGetInfoByUniqueID(UniqueID_t        
 LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumZones(void);
 
 /**
- * Get the number of zones in the data set.
- *
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   An ID of the dataset.
- * @return
- *   The number of zones in the data set.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataSetGetNumZonesByUniqueID(DataSetID)
- *    INTEGER*8 DataSetID
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa
- *   TecUtilDataSetGetInfo, TecUtilDataSetGetNumVarsForFrame, TecUtilDataSetGetNumZonesForFrame
- *
- * @since
- *   16.2
- *
- * @ingroup DataSetInfo
- *
- */
-LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumZonesByUniqueID(UniqueID_t DataSetID);
-
-/**
  * Get the number of zones in the data set attached to the specified frame.
  *
  * This function is \ref threadsafe.
@@ -6792,14 +6021,14 @@ LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumZonesByUniqueID(UniqueID_t Da
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilDataSetGetNumZonesForFrame(FrameID)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
  *
  * @sa
- *   TecUtilDataSetGetInfo, TecUtilDataSetGetNumVarsForFrame, TecUtilDataSetGetNumZonesByUniqueID
+ *   TecUtilDataSetGetInfo, TecUtilDataSetGetNumVarsForFrame
  *
  * @since 14.1
  *
@@ -6835,36 +6064,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumZonesForFrame(UniqueID_t Fram
 LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumVars(void);
 
 /**
- * Get the number of variables in the specified data set.
- *
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   An ID of the dataset
- * @return
- *   The number of variables in the data set
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataSetGetNumVarsByUniqueID(DataSetID)
- *    INTEGER*8 DataSetID
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa
- *   TecUtilDataSetGetInfo, TecUtilDataSetGetNumZonesForFrame, TecUtilDataSetGetNumVarsForFrame
- *
- * @since
- *   16.2
- *
- * @ingroup DataSetInfo
- *
- */
-LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumVarsByUniqueID(UniqueID_t DataSetID);
-
-/**
- * Get the number of variables in the dataset attached to the specified frame.
+ * Get the number of variables in the data set attached to the specified frame.
  *
  * This function is \ref threadsafe.
  *
@@ -6875,7 +6075,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumVarsByUniqueID(UniqueID_t Dat
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilDataSetGetNumVarsForFrame(FrameID)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -6910,7 +6110,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumVarsForFrame(UniqueID_t Frame
  *
  * @code
  *   Arglist_pa ArgList;
- *   EntIndex_t   MaxStrand;
+ *   Strand_t   MaxStrand;
  *   TecUtilLockStart(AddOnID);
  *   ArgList = TecUtilArgListAlloc();
  *   TecUtilArgListAppendString(ArgList, SV_NAME, "New Zone");
@@ -6932,7 +6132,8 @@ LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetNumVarsForFrame(UniqueID_t Frame
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetMaxStrandID(void);
+LINKTOADDON Strand_t STDCALL TecUtilDataSetGetMaxStrandID(void);
+
 
 /**
  * Query Tecplot to see if the journal for the data set attached to the current
@@ -6959,7 +6160,9 @@ LINKTOADDON EntIndex_t STDCALL TecUtilDataSetGetMaxStrandID(void);
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetJournalIsValid(void);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetJournalIsValid(void);
+
+
 
 /**
  * @deprecated
@@ -6969,7 +6172,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetJournalIsValid(void);
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetRequiresSaving(void);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetRequiresSaving(void);
 
 /**
  * Get the position and size of a frame.
@@ -7113,6 +6316,12 @@ LINKTOADDON void STDCALL TecUtilFrameGetPosAndSize(TP_OUT double* X,
  */
 LINKTOADDON void STDCALL TecUtilProbeAtPosSequenceBeginX(ArgList_pa ArgList);
 
+
+
+
+
+
+
 /**
  * End a sequence of calling TecUtilProbeAtPosition() many times.
  * See TecUtilProbeAtPosSequenceEnd() for an details and an example.
@@ -7128,6 +6337,12 @@ LINKTOADDON void STDCALL TecUtilProbeAtPosSequenceBeginX(ArgList_pa ArgList);
  *
  */
 LINKTOADDON void STDCALL TecUtilProbeAtPosSequenceEnd(void);
+
+
+
+
+
+
 
 /**
  * Use Tecplot's probe capability to return field values at a specified X, Y,
@@ -7353,53 +6568,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilProbeAtPosition(double                 X,
                                                      Boolean_t              GetZoneOnly,
                                                      Boolean_t              GetNearestPoint);
 
-/*
- * This function is not yet ready for public release.
- * The idea is to combine the configuration parameters
- * such as frame, dataSet, zones, numNearestNodes,
- * tolerance and ignoreVolumeBoundaries into a context
- * object. Something like:
-        ProbeContext_pa* ctx
- * which would be allocated/decallocated by the user.
- *
- * The zoneIndices should be changed to something like
- * objectIndices and come along with an objectTypes
- * array to indicate the type of object (zone, or other
- * type of object).
- *
- * The parameters to be combined into a context object
- * when this is function is made public in the sense that
- * it gets proper documentation:
- *      Set_pa zoneSet,
- *      Set_pa varSet,
- *      ProbeNearest_e probeNearest,
- *      Boolean_t obeyBlanking,
- *      LgIndex_t numNearestNodes,
- *      double tolerance,
- *
- * possibly-reasonable values:
- *      zoneSet = nullptr
- *      varSet = nullptr
- *      probeNearest = ProbeNearest.Position
- *      obeyBlanking = TRUE
- *      numNearestNodes = 20
- *      tolerance = 1e-5        // percentage of max dimensional length of polygon
- */
-LINKTOADDON Boolean_t TecUtilProbeOnSurface(
-    LgIndex_t     numPoints,
-    const double* x,
-    const double* y,
-    const double* z,
-    Set_pa         zoneSet,
-    Set_pa         varSet,
-    ProbeNearest_e probeNearest,
-    Boolean_t      obeyBlanking,
-    LgIndex_t      numNearestNodes,
-    double         tolerance,
-    TP_ARRAY_OUT double*        values,
-    TP_ARRAY_OUT LgIndex_t*     cellsOrNodes,
-    TP_ARRAY_OUT IJKPlanes_e*   planes,
-    TP_ARRAY_OUT EntIndex_t*    zoneIndices);
+
 
 /**
  * Allocate a line segment probe result structure to receive
@@ -7418,6 +6587,7 @@ LINKTOADDON Boolean_t TecUtilProbeOnSurface(
  */
 LINKTOADDON TP_GIVES LineSegProbeResult_pa STDCALL TecUtilLineSegProbeResultAlloc(void);
 
+
 /**
  * Deallocate a line segment probe result structure
  * previously allocated by TecUtilLineSegProbeResultAlloc().
@@ -7434,6 +6604,7 @@ LINKTOADDON TP_GIVES LineSegProbeResult_pa STDCALL TecUtilLineSegProbeResultAllo
  */
 LINKTOADDON void STDCALL TecUtilLineSegProbeResultDealloc(TP_RECEIVES_GIVES LineSegProbeResult_pa* LineSegProbeResult);
 
+
 /**
  * Clears a line segment probe result structure
  * of any stored results.
@@ -7449,6 +6620,8 @@ LINKTOADDON void STDCALL TecUtilLineSegProbeResultDealloc(TP_RECEIVES_GIVES Line
  *
  */
 LINKTOADDON void STDCALL TecUtilLineSegProbeResultClear(TP_RECEIVES_GIVES LineSegProbeResult_pa LineSegProbeResult);
+
+
 
 /**
  * Perform "ray shooting" probe along line segments from
@@ -7541,18 +6714,19 @@ LINKTOADDON void STDCALL TecUtilLineSegProbeResultClear(TP_RECEIVES_GIVES LineSe
  * @ingroup Probe
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilLineSegProbe(LineSegProbeResult_pa   LineSegProbeResult,
-                                                  const double *          StartingPosition, /* IN */
-                                                  const double *          EndingPositions,  /* IN */
-                                                  LgIndex_t               NumEndingPositions,
-                                                  LgIndex_t               ICell,
-                                                  LgIndex_t               JCell,
-                                                  LgIndex_t               KCell,
-                                                  EntIndex_t              CurZone,
-                                                  Set_pa                  ZonesToSearch,
-                                                  Set_pa                  VarsToReturn,
-                                                  LineSegProbeCallback_pf LineSegProbeCallback,
-                                                  ArbParam_t              ClientData);
+LINKTOADDON Boolean_t STDCALL TecUtilLineSegProbe (LineSegProbeResult_pa   LineSegProbeResult,
+                                                   double *                StartingPosition, /* IN */
+                                                   double *                EndingPositions,  /* IN */
+                                                   LgIndex_t               NumEndingPositions,
+                                                   LgIndex_t               ICell,
+                                                   LgIndex_t               JCell,
+                                                   LgIndex_t               KCell,
+                                                   LgIndex_t               CurZone,
+                                                   Set_pa                  ZonesToSearch,
+                                                   Set_pa                  VarsToReturn,
+                                                   LineSegProbeCallback_pf LineSegProbeCallback,
+                                                   ArbParam_t              ClientData);
+
 
 /**
  * Return the number of segments probed by a "ray shooting" probe.
@@ -7572,7 +6746,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilLineSegProbe(LineSegProbeResult_pa   LineSe
  *
  * @ingroup Probe
  */
-LINKTOADDON int32_t STDCALL TecUtilLineSegProbeResultGetCount(LineSegProbeResult_pa LineSegProbeResult);
+LINKTOADDON int STDCALL TecUtilLineSegProbeResultGetCount(LineSegProbeResult_pa LineSegProbeResult);
+
 
 /**
  * Return the status of a "ray shooting" probe.
@@ -7598,7 +6773,8 @@ LINKTOADDON int32_t STDCALL TecUtilLineSegProbeResultGetCount(LineSegProbeResult
  * @ingroup Probe
  */
 LINKTOADDON ProbeStatus_e STDCALL TecUtilLineSegProbeGetStatus(LineSegProbeResult_pa LineSegProbeResult,
-                                                               int32_t               WhichSegment);
+                                                               int                   WhichSegment);
+
 
 /**
  * Return a variable value at the terminus of a "ray shooting" probe.
@@ -7626,8 +6802,9 @@ LINKTOADDON ProbeStatus_e STDCALL TecUtilLineSegProbeGetStatus(LineSegProbeResul
  * @ingroup Probe
  */
 LINKTOADDON double STDCALL TecUtilLineSegProbeGetVarValue(LineSegProbeResult_pa LineSegProbeResult,
-                                                          int32_t               WhichSegment,
+                                                          int                   WhichSegment,
                                                           EntIndex_t            Var);
+
 
 /**
  * Return the I index of the cell containing the terminus of a "ray shooting" probe.
@@ -7651,7 +6828,7 @@ LINKTOADDON double STDCALL TecUtilLineSegProbeGetVarValue(LineSegProbeResult_pa 
  * @ingroup Probe
  */
 LINKTOADDON LgIndex_t STDCALL TecUtilLineSegProbeGetICell(LineSegProbeResult_pa LineSegProbeResult,
-                                                          int32_t               WhichSegment);
+                                                          int                   WhichSegment);
 
 
 /**
@@ -7676,7 +6853,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilLineSegProbeGetICell(LineSegProbeResult_pa 
  * @ingroup Probe
  */
 LINKTOADDON LgIndex_t STDCALL TecUtilLineSegProbeGetJCell(LineSegProbeResult_pa LineSegProbeResult,
-                                                          int32_t               WhichSegment);
+                                                          int                   WhichSegment);
 
 
 /**
@@ -7701,7 +6878,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilLineSegProbeGetJCell(LineSegProbeResult_pa 
  * @ingroup Probe
  */
 LINKTOADDON LgIndex_t STDCALL TecUtilLineSegProbeGetKCell(LineSegProbeResult_pa LineSegProbeResult,
-                                                          int32_t               WhichSegment);
+                                                          int                   WhichSegment);
 
 
 /**
@@ -7726,7 +6903,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilLineSegProbeGetKCell(LineSegProbeResult_pa 
  * @ingroup Probe
  */
 LINKTOADDON EntIndex_t STDCALL TecUtilLineSegProbeGetZone(LineSegProbeResult_pa LineSegProbeResult,
-                                                          int32_t               WhichSegment);
+                                                          int                   WhichSegment);
 
 
 /**
@@ -7752,8 +6929,8 @@ LINKTOADDON EntIndex_t STDCALL TecUtilLineSegProbeGetZone(LineSegProbeResult_pa 
  *
  * @ingroup Probe
  */
-LINKTOADDON int32_t STDCALL TecUtilLineSegProbeGetFace(LineSegProbeResult_pa LineSegProbeResult,
-                                                       int32_t               WhichSegment);
+LINKTOADDON LgIndex_t STDCALL TecUtilLineSegProbeGetFace(LineSegProbeResult_pa LineSegProbeResult,
+                                                         int                   WhichSegment);
 
 
 
@@ -7798,56 +6975,7 @@ LINKTOADDON int32_t STDCALL TecUtilLineSegProbeGetFace(LineSegProbeResult_pa Lin
 LINKTOADDON Boolean_t STDCALL TecUtilZoneGetEnabled(TP_GIVES Set_pa* EnabledZones);
 
 /**
- * Get the set of enabled zones for the specified dataset.  Zones are
- * enabled/disabled when they are read in.
- *
- * @param DataSetID
- *   An ID of the DataSet.
- *
- * @param EnabledZones
- *   Receives the set of enabled zones. You must free this pointer by calling
- *   TecUtilSetDealloc().
- *
- * @return
- *   TRUE if successful, FALSE otherwise
- *
- *
- * @pre <em>EnabledZones</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneGetEnabledByDataSetID(DataSetID, EnabledZonesPtr)
- *    INTEGER*8 DataSetID
- *    POINTER (EnabledZonesPtr, EnabledZones)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Get the set of enabled zones:
- *
- * @code
- *   Set_pa set = NULL;
- *   if (TecUtilZoneGetEnabledByDataSetID(1, &set))
- *   {
- *    // do something with the set here
- *    TecUtilSetDealloc(&set);
- *   }
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneGetEnabledByDataSetID(UniqueID_t       DataSetID,
-                                                              TP_GIVES Set_pa* EnabledZones);
-
-
-/**
- * Get the set of enabled zones for the dataset attached to the specified frame. Zones are
+ * Get the set of enabled zones for the dataset attached to the specified frame. Zones are 
  * enabled/disabled when they are read in.
  *
  * @param FrameID
@@ -7861,7 +6989,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetEnabledByDataSetID(UniqueID_t       
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilZoneGetEnabledForFrame(FrameID, EnabledZonesPtr)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    POINTER (EnabledZonesPtr, EnabledZones)
  * </FortranSyntax>
  *
@@ -7881,8 +7009,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetEnabledByDataSetID(UniqueID_t       
  *
  * @since 14.1
  *
- * @sa TecUtilZoneGetEnabledByDataSetID
- *
  * @ingroup Zone
  *
  */
@@ -7901,10 +7027,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetRelevant(double           SolutionTi
 
 /**
  * Get the set of relevant zones between the supplied maximum and minimum solution time.
- * A transient zone is relevant if its solution time is less than the supplied solution
+ * A transient zone is relevant if its solution time is less than the supplied solution 
  * time and there are no other zones in its strand that have closer solution times.
- * No zones of a strand are relevant if the solution time is outside the range of solution
- * times for the entire strand. Static zones (non-transient) are always considered relevant.
+ * No zones of a strand are relevant if the solution time is outside the range of solution 
+ * times for the entire strand. Static zones (non-transient) are always considered relevant. 
  * For more information on transient zones see the Tecplot User's Manual.
  * This function is \ref threadsafe.
  *
@@ -7924,10 +7050,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetRelevant(double           SolutionTi
  * @return
  *    Allocated Set_pa with the resulting set of zones. If something went wrong
  *    RelevantZones will be NULL.
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
  *
  * <FortranSyntax>
  * </FortranSyntax>
@@ -8005,7 +7127,7 @@ LINKTOADDON TP_GIVES Set_pa STDCALL TecUtilDataSetGetRelevantZones(
  *
  */
 LINKTOADDON TP_GIVES Set_pa STDCALL TecUtilDataSetGetStrandRelevantZones(
-    EntIndex_t StrandID,
+    Strand_t StrandID,
     double   SolutionTimeMin,
     double   SolutionTimeMax);
 
@@ -8048,47 +7170,7 @@ LINKTOADDON TP_GIVES Set_pa STDCALL TecUtilDataSetGetStrandRelevantZones(
 LINKTOADDON Boolean_t STDCALL TecUtilVarGetEnabled(TP_GIVES Set_pa* EnabledVars);
 
 /**
- * Get the set of enabled variables for the dataset.  Variables are
- * enabled/disabled when they are read in.
- *
- * @param DataSetID
- *   ID of the DataSet.
- * @param EnabledVars
- *   Set of enabled variables. Must not be NULL
- *
- * @return
- *   TRUE if successful, FALSE otherwise
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarGetEnabledByDataSetID(DataSetID, EnabledVarsPtr)
- *    INTEGER*8 DataSetID
- *    POINTER (EnabledVarsPtr, EnabledVars)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Get the set of enabled variables. It is assumed that a data set has been
- *   created:
- *
- * @code
- *   Set_pa set = NULL;
- *   TecUtilVarGetEnabledByDataSetID(myDataSetID, &set);
- *   // Do something with set
- *   TecUtilSetDealloc(&set);
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Variables
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilVarGetEnabledByDataSetID(UniqueID_t       DataSetID,
-                                                             TP_GIVES Set_pa* EnabledVars);
-
-/**
- * Get the set of enabled variables for the dataset attached to the specified frame. Variables are
+ * Get the set of enabled variables for the dataset attached to the specified frame. Variables are 
  * enabled/disabled when they are read in. There must be a data set attached to the current frame.
  *
  * @param FrameID
@@ -8101,7 +7183,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetEnabledByDataSetID(UniqueID_t       D
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilVarGetEnabledForFrame(FrameID, EnabledVarsPtr)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    POINTER (EnabledVarsPtr, EnabledVars)
  * </FortranSyntax>
  *
@@ -8119,8 +7201,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilVarGetEnabledByDataSetID(UniqueID_t       D
  * @endcode
  *
  * @since 14.1
- *
- * @sa TecUtilVarGetEnabledByDataSetID
  *
  * @ingroup Variables
  *
@@ -8183,7 +7263,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetActive(TP_GIVES Set_pa* ActiveZones)
  *    INTEGER*4 FUNCTION TecUtilZoneGetActiveForFrame(
  *    & FrameID
  *    & ActiveZonesPtr)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID 
  *    POINTER (ActiveZonesPtr, ActiveZones)
  * </FortranSyntax>
  *
@@ -8207,8 +7287,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetActive(TP_GIVES Set_pa* ActiveZones)
  * @ingroup Zone
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilZoneGetActiveForFrame(UniqueID_t FrameID,
-                                                           TP_GIVES Set_pa *ActiveZones);
+LINKTOADDON Boolean_t STDCALL TecUtilZoneGetActiveForFrame(UniqueID_t FrameID, 
+                                                           Set_pa *ActiveZones);
 
 /**
  * @deprecated
@@ -8219,6 +7299,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilZoneGetActiveForFrame(UniqueID_t FrameID,
  * #internalattributes exclude_python, exclude_sdkdoc
  */
 LINKTOADDON Boolean_t STDCALL TecUtilXYMapGetActive(TP_GIVES Set_pa* ActiveXYMaps);
+
+
 
 /**
  * Obtain the set of active Line-maps.
@@ -8262,6 +7344,9 @@ LINKTOADDON Boolean_t STDCALL TecUtilXYMapGetActive(TP_GIVES Set_pa* ActiveXYMap
  */
 LINKTOADDON Boolean_t STDCALL TecUtilLineMapGetActive(TP_GIVES Set_pa* ActiveLineMaps);
 
+
+
+
 /**
  * @deprecated
  *   Please use TecUtilLineMapGetAssignment() instead.
@@ -8274,10 +7359,9 @@ LINKTOADDON void STDCALL TecUtilXYMapGetAssignment(EntIndex_t                   
                                                    TP_OUT EntIndex_t*           Zone,
                                                    TP_OUT EntIndex_t*           XAxisVar,
                                                    TP_OUT EntIndex_t*           YAxisVar,
-                                                   TP_OUT int32_t*              XAxis,
-                                                   TP_OUT int32_t*              YAxis,
+                                                   TP_OUT SmInteger_t*          XAxis,
+                                                   TP_OUT SmInteger_t*          YAxis,
                                                    TP_OUT FunctionDependency_e* FunctionDependency);
-
 /**
  * Get the assignment information for a given Line-map.
  * This function is \ref threadsafe.
@@ -8366,22 +7450,21 @@ LINKTOADDON void STDCALL TecUtilXYMapGetAssignment(EntIndex_t                   
  *                               &Zone,
  *                               &XVar,
  *                               &YVar,
- *                               (int32_t *)NULL,
- *                               (int32_t *)NULL,
+ *                               (SmInteger_t *)NULL,
+ *                               (SmInteger_t *)NULL,
  *                               (FunctionDependency_e *)NULL);
  * @endcode
  *
  * @ingroup LineMap
  *
  */
-LINKTOADDON void STDCALL TecUtilLineMapGetAssignment(EntIndex_t               LineMap,
-                                                     TP_OUT EntIndex_t*       Zone,
-                                                     TP_OUT EntIndex_t*       XOrThetaVar,
-                                                     TP_OUT EntIndex_t*       YOrRVar,
-                                                     TP_OUT int32_t*          XAxis,
-                                                     TP_OUT int32_t*          YAxis,
+LINKTOADDON void STDCALL TecUtilLineMapGetAssignment(EntIndex_t                   LineMap,
+                                                     TP_OUT EntIndex_t*           Zone,
+                                                     TP_OUT EntIndex_t*           XOrThetaVar,
+                                                     TP_OUT EntIndex_t*           YOrRVar,
+                                                     TP_OUT SmInteger_t*          XAxis,
+                                                     TP_OUT SmInteger_t*          YAxis,
                                                      TP_OUT FunctionDependency_e* FunctionDependency);
-
 /**
  * Determine if a zone in the data set attached to the current frame contains
  * finite-element data.
@@ -8420,7 +7503,8 @@ LINKTOADDON void STDCALL TecUtilLineMapGetAssignment(EntIndex_t               Li
  * @ingroup Zone
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsFiniteElement(EntIndex_t Zone);
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsFiniteElement(EntIndex_t Zone);
+
 
 /**
  * Determine if the specified zone in the data set attached to the current
@@ -8460,48 +7544,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsFiniteElement(EntIndex_t Zon
  * @ingroup Zone
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsOrdered(EntIndex_t Zone);
-
-/**
- * Determine if the specified zone contains ordered data.
- * This function is \ref threadsafe.
- *
- * @param DataSetID
- *   ID of the DataSet.
- *
- * @param Zone
- *   Number of the zone for which to get the zone type information
- *
- * @return
- *   TRUE if the zone is an I-ordered, IJ-ordered, or IJK-ordered zone; FALSE
- *   if it is not.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneIsOrderedByDataSetID(DataSetID, Zone)
- *    INTEGER*8 DataSetID
- *    INTEGER*4 Zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Check if the first zone is ordered for the DataSet with ID=myDataSetID:
- *
- * @code
- *   if (TecUtilZoneIsOrderedByDataSetID(myDataSetID, 1))
- *   {
- *     // sure is!
- *   }
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsOrderedByDataSetID(UniqueID_t DataSetID,
-                                                             EntIndex_t Zone);
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsOrdered(EntIndex_t Zone);
 
 /**
  * Determine if the specified zone in the data set attached to the specified
@@ -8518,13 +7561,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsOrderedByDataSetID(UniqueID_
  *   if it is not.
  *
  *
- * @pre <em>VALID_DATASET(dataSet,TRUE)</em>
+ * @pre <em>VALID_DATASET(dataSet,true)</em>
  *   Data set must have at least one zone.
  *
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilZoneIsOrderedForFrame(FrameID, Zone)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 Zone
  * </FortranSyntax>
  *
@@ -8542,12 +7585,10 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsOrderedByDataSetID(UniqueID_
  *
  * @since 14.1
  *
- * @sa TecUtilZoneIsOrderedByDataSetID
- *
  * @ingroup Zone
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsOrderedForFrame(UniqueID_t FrameID,
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsOrderedForFrame(UniqueID_t FrameID, 
                                                            EntIndex_t Zone);
 
 /**
@@ -8588,75 +7629,9 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsOrderedForFrame(UniqueID_t F
  * @ingroup Zone
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsSZL(EntIndex_t Zone);
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsSZL(EntIndex_t Zone);
 
-/**
- * Convenience function to determine if a particular zone is classic FE
- *
- * @param Zone
- *   zone to query.
- *
- * @return
- *   TRUE if the zone is one of the classic FE zone types.
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
- * @pre <em>Zone</em>
- *   Must specify a valid zone.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneIsFEClassic(Zone)
- *    INTEGER*4 Zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @code
- *   Boolean_t isFEClassic = TecUtilZoneIsFEClassic(1);
- * @endcode
- *
- * @ingroup Zone
- * @since 16.1
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsFEClassic(EntIndex_t Zone);
 
-/**
- * Convenience function to determine if a particular zone is FEPolytope (polyhedral or polygonal)
- *
- * @param Zone
- *   zone to query.
- *
- * @return
- *   TRUE if the zone is one of the polytope types.
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
- * @pre <em>Zone</em>
- *   Must specify a valid zone.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneIsFEPolytope(Zone)
- *    INTEGER*4 Zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @code
- *   Boolean_t isPoly = TecUtilZoneIsFEPolytope(1);
- * @endcode
- *
- * @ingroup Zone
- * @since 16.1
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsFEPolytope(EntIndex_t Zone);
 
 /**
  * Get the type of a specified zone in the data set attached to the current
@@ -8690,46 +7665,12 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsFEPolytope(EntIndex_t Zone);
  *   ZoneType_e type = TecUtilZoneGetType(1);
  * @endcode
  *
- * @sa TecUtilZoneGetTypeByDataSetID
- *
  * @ingroup Zone
  *
  */
 LINKTOADDON ZoneType_e STDCALL TecUtilZoneGetType(EntIndex_t Zone);
 
-/**
- * Get the type of a specified zone in the specified data set.
- *
- * @since 2017.3
- *
- * This function is \ref threadsafe.
- *
- * @param dataSetID
- *   Unique ID of the dataset
- * @param zone
- *   Number of the zone for which to get the zone type information
- *
- * @return
- *   The zone type.
- *
- *
- * @pre <em>zone</em>
- *   Must specify a valid zone.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneGetType(dataSetID, zone)
- *    INTEGER*8 dataSetID
- *    INTEGER*4 zone
- * </FortranSyntax>
- *
- * @sa TecUtilZoneGetType
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON ZoneType_e STDCALL TecUtilZoneGetTypeByDataSetID(UniqueID_t dataSetID,
-                                                             EntIndex_t zone);
+
 
 /**
  * Get a field data value. This function does not require you to obtain the
@@ -8745,14 +7686,14 @@ LINKTOADDON ZoneType_e STDCALL TecUtilZoneGetTypeByDataSetID(UniqueID_t dataSetI
  * @param Var
  *   The variable number
  *
- * @param ValueIndex
+ * @param PointIndex
  *   Position in the array of field data values. Position starts at one. If
  *   FieldData came from an IJ- or IJK-ordered zone then the position is
  *   calculated by treating the two- or three-dimensional array as a
  *   one-dimensional array
  *
  * @return
- *   The variable value at a specific index in a zone.
+ *   The variable value at a specific point in a zone.
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set with at least one zone.
@@ -8762,17 +7703,17 @@ LINKTOADDON ZoneType_e STDCALL TecUtilZoneGetTypeByDataSetID(UniqueID_t dataSetI
  *
  * @pre <em>Var</em>
  *   Must specify a valid variable.
- * @pre @e ValueIndex must be at least 1 and no more than the number of data values in the field.
+ * @pre @e PointIndex must be at least 1 and no more than the number of data values in the field.
  *
  *
  * <FortranSyntax>
  *    REAL*8 FUNCTION TecUtilDataValueGetByZoneVar(
  *   &                   Zone,
  *   &                   Var,
- *   &                   ValueIndex)
+ *   &                   PointIndex)
  *    INTEGER*4       Zone
  *    INTEGER*4       Var
- *    INTEGER*4       ValueIndex
+ *    INTEGER*4       PointIndex
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -8790,7 +7731,7 @@ LINKTOADDON ZoneType_e STDCALL TecUtilZoneGetTypeByDataSetID(UniqueID_t dataSetI
  */
 LINKTOADDON double STDCALL TecUtilDataValueGetByZoneVar(EntIndex_t Zone,
                                                         EntIndex_t Var,
-                                                        LgIndex_t  ValueIndex);
+                                                        LgIndex_t  PointIndex);
 
 /**
  * Get a read-only handle to the native data for the specified zone and
@@ -8812,7 +7753,6 @@ LINKTOADDON double STDCALL TecUtilDataValueGetByZoneVar(EntIndex_t Zone,
  *   Tecplot was not able to load the data.
  *
  * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
  *
  *
  * <FortranSyntax>
@@ -8866,9 +7806,9 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetReadableNativeRef(EntIndex_t
  * @since
  *   14.1-0
  *
- * @param DatasetID
+ * @param DatasetID 
  *   A unique ID of a dataset.
- *
+ * 
  * @param Zone
  *   Number of the zone for which to get the field data
  *
@@ -8878,9 +7818,6 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetReadableNativeRef(EntIndex_t
  * @return
  *   A read-only field data handle to the native data for the specified zone
  *   and variable in the specified data set or NULL if Tecplot was not able to load the data.
- *
- * @pre Must have one or more frames.
- *
  *
  * Function that loads the values of a field variable into
  * a supplied double precision array.  Assume the array is
@@ -9115,7 +8052,7 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetReadableCCRef(EntIndex_t Zon
 
 /**
  * Get a native read/write handle to the data for the specified dataset, zone and
- * variable. It is important to realize that when altering the values this variable may in fact be
+ * variable. It is important to realize that when altering the values this variable may in fact be 
  * shared.
  * If you want the new values to only apply to the specific zone and variable
  * associated with this dataset then you must first make the DatasetID the current dataset and call
@@ -9126,9 +8063,9 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetReadableCCRef(EntIndex_t Zon
  * @since
  *   14.1-0
  *
- * @param DatasetID
+ * @param DatasetID 
  *   A unique ID of a dataset.
- *
+ * 
  * @param Zone
  *   Number of the zone for which to get the field data
  *
@@ -9152,7 +8089,6 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetReadableCCRef(EntIndex_t Zon
 LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetWritableNativeRefByUniqueID(UniqueID_t DatasetID,
                                                                                 EntIndex_t Zone,
                                                                                 EntIndex_t Var);
-
 /**
  * Get a native read/write handle to the data for the specified zone and
  * variable in the data set attached to the current frame. It is important to
@@ -9200,7 +8136,7 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetWritableNativeRefByUniqueID(
  *                           EntIndex_t VarNum)
  * {
  *   // Make sure we are only modifying var VarNum in zone ZoneNum.
- *   if (TecUtilDataValueBranchShared(ZoneNum,VarNum, TRUE))
+ *   if (TecUtilDataValueBranchShared(ZoneNum,VarNum))
  *     {
  *       FieldData_pa FieldData = TecUtilDataValueGetWritableNativeRef(ZoneNum, VarNum);
  *       if (FieldData)
@@ -9227,7 +8163,6 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetWritableNativeRefByUniqueID(
  */
 LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetWritableNativeRef(EntIndex_t Zone,
                                                                       EntIndex_t Var);
-
 /**
  * @deprecated
  *   Please use TecUtilDataValueGetWritableNativeRef() instead. Calling TecUtilDataValueGetWritableRef()
@@ -9239,7 +8174,6 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetWritableNativeRef(EntIndex_t
  */
 LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetWritableRef(EntIndex_t Zone,
                                                                 EntIndex_t Var);
-
 /**
  * @deprecated
  *   Please use TecUtilDataValueGetReadableNativeRef(), TecUtilDataValueGetReadableDerivedRef(),
@@ -9265,6 +8199,7 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetReadableRef(EntIndex_t Zone,
  */
 LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetRef(EntIndex_t Zone,
                                                         EntIndex_t Var);
+
 
 /**
  * Get the low-level "get value" function associated with a field
@@ -9321,6 +8256,7 @@ LINKTOADDON FieldData_pa STDCALL TecUtilDataValueGetRef(EntIndex_t Zone,
  * #internalattributes exclude_fglue, exclude_tcl
  */
 LINKTOADDON FieldValueGetFunction_pf STDCALL TecUtilDataValueRefGetGetFunc(FieldData_pa FD);
+
 
 /**
  * Get the low-level "set value" function associated with a field data handle.
@@ -9380,6 +8316,7 @@ LINKTOADDON FieldValueGetFunction_pf STDCALL TecUtilDataValueRefGetGetFunc(Field
  */
 LINKTOADDON FieldValueSetFunction_pf STDCALL TecUtilDataValueRefGetSetFunc(FieldData_pa FD);
 
+
 /**
  * Get a candidate zone and variable associated with the given field data
  * reference. Note that if the variable is shared then more than one zone and
@@ -9431,7 +8368,7 @@ LINKTOADDON FieldValueSetFunction_pf STDCALL TecUtilDataValueRefGetSetFunc(Field
  * @code
  *   EntIndex_t  Zone;
  *   EntIndex_t  Var;
- *   FieldData_pa FD = TecUtilDataValueGetReadableNaiveRef(5, 2);
+ *   FieldData_pa FD = TecUtilDataValueGetReadableNaiveRef(5, 2);;
  *
  *   if (TecUtilDataValueGetZoneVarByRef(FD,&Zone,&Var))
  *     {
@@ -9621,7 +8558,6 @@ LINKTOADDON FieldDataType_e STDCALL TecUtilDataValueGetRefType(FieldData_pa Fiel
  */
 LINKTOADDON FieldDataType_e STDCALL TecUtilDataValueGetType(EntIndex_t Zone,
                                                             EntIndex_t Var);
-
 /**
  * Queries for the location of the variable.
  * This function is \ref threadsafe.
@@ -9662,7 +8598,6 @@ LINKTOADDON FieldDataType_e STDCALL TecUtilDataValueGetType(EntIndex_t Zone,
  */
 LINKTOADDON ValueLocation_e STDCALL TecUtilDataValueGetLocation(EntIndex_t Zone,
                                                                 EntIndex_t Var);
-
 /**
  * Queries for the location of the data values associated with the field data reference.
  * This function is \ref threadsafe.
@@ -9695,6 +8630,7 @@ LINKTOADDON ValueLocation_e STDCALL TecUtilDataValueGetLocation(EntIndex_t Zone,
  * @sa TecUtilDataValueGetLocation
  */
 LINKTOADDON ValueLocation_e STDCALL TecUtilDataValueGetLocationByRef(FieldData_pa FieldData);
+
 
 /**
  * Get the instructions of the last data loader used to load the data into the
@@ -9781,9 +8717,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilImportGetLoaderInstr(TP_GIVES char**       
  * Display a message to the user and, if desired, prompt for yes or no input.
  *
  * @par Note:
- *   If this function is called when Tecplot is running in batch mode it will
- *   deposit the error message in the batch.log file (if it has been established)
- *   and return right away with TRUE;
+ *   If this function is called when Tecplot is running in batch mode, then it will
+ *   return right away and return TRUE;
  *
  * @param Message
  *   Character string to display at the top of the dialog. Must not be NULL
@@ -9842,6 +8777,101 @@ LINKTOADDON Boolean_t STDCALL TecUtilDialogMessageBox(const char       *Message,
  * @ingroup UserInterface
  */
 LINKTOADDON Boolean_t STDCALL TecUtilDialogLastMessageBox(void);
+
+
+/**
+ * Launch a dialog that prompts the user for a color or for a multi-color
+ * setting.
+ *
+ * @since
+ *   10.0-3-129
+ *
+ * @par Note:
+ *   This function cannot be called when Tecplot is running in batch mode.
+ *
+ * @param AllowMultiColor
+ *   Set to TRUE if you wish to allow the user to select RGB or multi-color.
+ *
+ * @param Color
+ *   The returned color value. If AllowMultiColor is FALSE then this is in the
+ *   range between Black_C and Custom56_C (See GLOBAL.h). If AllowMultiColor
+ *   is TRUE then the following constants may also be returned:
+ *
+ * @verbatim
+     MultiColor_C             The user selected the first "MultiColor" option
+                              which implies they want the object colored by
+                              the contour variable used by contour group 1.
+
+     MultiColor2_C            The user selected the "C2" button
+                              which implies they want the object colored by
+                              the contour variable used by contour group 2.
+
+     MultiColor3_C            The user selected the "C3" button
+                              which implies they want the object colored by
+                              the contour variable used by contour group 3.
+
+     MultiColor4_C            The user selected the "C4" button
+                              which implies they want the object colored by
+                              the contour variable used by contour group 4.
+
+     MultiColor5_C            The user selected the "C5" button
+                              which implies they want the object colored by
+                              the contour variable used by contour group 5.
+
+     MultiColor6_C            The user selected the "C6" button
+                              which implies they want the object colored by
+                              the contour variable used by contour group 6.
+
+     MultiColor7_C            The user selected the "C7" button
+                              which implies they want the object colored by
+                              the contour variable used by contour group 7.
+
+     MultiColor8_C            The user selected the "C8" button
+                              which implies they want the object colored by
+                              the contour variable used by contour group 8.
+
+     RGBColor_C               The user selected the "RGB" button
+                              which implies they want the object colored by
+                              RGB.
+   @endverbatim
+ *
+ * @return
+ *   TRUE if successful, FALSE if the user pressed the "Cancel" button in the
+ *   dialog.
+ *
+ * <FortranSyntax>
+ *    INTEGER*4 FUNCTION TecUtilDialogGetColor(
+ *   &                   AllowMultiColor,
+ *   &                   Color)
+ *    INTEGER*4       AllowMultiColor
+ *    INTEGER*4       Color
+ * </FortranSyntax>
+ *
+ * <PythonSyntax>
+ * </PythonSyntax>
+ *
+ * Prompt the user for a basic color (no multi-color options):
+ *
+ * @code
+ *   ColorIndex_t Color;
+ *   if (TecUtilDialogGetColor(FALSE, // AllowMultiColor
+ *                             &Color))
+ *     {
+ *       // Do something with Color.
+ *     }
+ * @endcode
+ *
+ * @sa TecUtilMacroIsBatchModeActive()
+ *
+ * @ingroup UserInterface
+ *
+ * #internalattributes exclude_sdkdoc
+ */
+LINKTOADDON Boolean_t STDCALL TecUtilDialogGetColor(Boolean_t            AllowMultiColor,
+                                                    TP_OUT ColorIndex_t* Color);
+
+
+
 
 /**
  * Launch a dialog to prompt the user to input into a simple text field.
@@ -9976,7 +9006,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilMacroFunctionExists(const char *FunctionNam
  * @ingroup ScriptSupport
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilMacroIsBatchModeActive(void);
+LINKTOADDON Boolean_t STDCALL TecUtilMacroIsBatchModeActive(void);
 
 /**
  *
@@ -10027,7 +9057,8 @@ LINKTOADDON void STDCALL TecUtilInterfaceGetDotsPerInch(TP_OUT double* VDotsPerI
  *
  * #internalattributes exclude_alldoc
  */
-LINKTOADDON int32_t STDCALL TecUtilInterfaceGetBaseFontSize(void);
+LINKTOADDON int STDCALL TecUtilInterfaceGetBaseFontSize(void);
+
 
 /**
  * Fetch an Array of values by reference.
@@ -10167,7 +9198,7 @@ LINKTOADDON double STDCALL TecUtilDataValueGetByRef(FieldData_pa FieldData,
  * @ingroup DataValue
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueIsMinMaxValidByZoneVar(EntIndex_t Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilDataValueIsMinMaxValidByZoneVar(EntIndex_t Zone,
                                                                      EntIndex_t Var);
 
 /**
@@ -10363,7 +9394,7 @@ LINKTOADDON void STDCALL TecUtilDataValueGetMinMaxByRef(FieldData_pa   FieldData
  */
 LINKTOADDON NodeMap_t STDCALL TecUtilDataNodeGetByZone(EntIndex_t Zone,
                                                        LgIndex_t  Element,
-                                                       int32_t    Corner);
+                                                       LgIndex_t  Corner);
 
 /**
  * Fetch an array of nodes by reference.
@@ -10384,8 +9415,6 @@ LINKTOADDON NodeMap_t STDCALL TecUtilDataNodeGetByZone(EntIndex_t Zone,
  * @param DestNodeArray
  *   Pre-allocated array large enough to hold the requested node. The first
  *   node is placed at the base of the array. The node values are one based.
- *   This must be the correct type (32 or 64-bit) based on the raw item
- *   type for the nodemap (@sa TecUtilDataNodeGetRawItemType);
  *
  *
  * @pre <em>SourceNodeMap</em>
@@ -10401,10 +9430,10 @@ LINKTOADDON NodeMap_t STDCALL TecUtilDataNodeGetByZone(EntIndex_t Zone,
  * @ingroup DataStructure
  *
  */
-LINKTOADDON void STDCALL TecUtilDataNodeArrayGetByRef(NodeMap_pa         SourceNodeMap,
-                                                      LgIndex_t          SourceOffset,
-                                                      LgIndex_t          SourceCount,
-                                                      TP_ARRAY_OUT void* DestNodeArray);
+LINKTOADDON void STDCALL TecUtilDataNodeArrayGetByRef(NodeMap_pa              SourceNodeMap,
+                                                      LgIndex_t               SourceOffset,
+                                                      LgIndex_t               SourceCount,
+                                                      TP_ARRAY_OUT NodeMap_t* DestNodeArray);
 
 /**
  * Get the node index for a particular corner of a finite-element. To use this
@@ -10457,7 +9486,7 @@ LINKTOADDON void STDCALL TecUtilDataNodeArrayGetByRef(NodeMap_pa         SourceN
  */
 LINKTOADDON NodeMap_t STDCALL TecUtilDataNodeGetByRef(NodeMap_pa NodeMapPtr,
                                                       LgIndex_t  Element,
-                                                      int32_t    Corner);
+                                                      LgIndex_t  Corner);
 /**
  * Get the number of nodes per element. To use this
  * function you must have already obtained a handle to a node map.
@@ -10488,7 +9517,7 @@ LINKTOADDON NodeMap_t STDCALL TecUtilDataNodeGetByRef(NodeMap_pa NodeMapPtr,
  * @ingroup DataStructure
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilDataNodeGetNodesPerElem(NodeMap_pa NodeMapPtr);
+LINKTOADDON EntIndex_t STDCALL TecUtilDataNodeGetNodesPerElem(NodeMap_pa NodeMapPtr);
 /**
  * @deprecated
  *   Please use TecUtilDataFaceNbrGetNbrByRef() instead.
@@ -10499,7 +9528,7 @@ LINKTOADDON int32_t STDCALL TecUtilDataNodeGetNodesPerElem(NodeMap_pa NodeMapPtr
  */
 LINKTOADDON LgIndex_t STDCALL  TecUtilDataFaceNbrGetByZone(EntIndex_t Zone,
                                                            LgIndex_t  Element,
-                                                           int32_t    Face);
+                                                           LgIndex_t  Face);
 /**
  * @deprecated
  *   Please use TecUtilDataFaceNbrGetNbrByRef() instead.
@@ -10510,7 +9539,7 @@ LINKTOADDON LgIndex_t STDCALL  TecUtilDataFaceNbrGetByZone(EntIndex_t Zone,
  */
 LINKTOADDON LgIndex_t STDCALL  TecUtilDataFaceNbrGetByRef(FaceNeighbor_pa FaceNeighbor,
                                                           LgIndex_t       Element,
-                                                          int32_t         Face);
+                                                          LgIndex_t       Face);
 
 /**
  * Returns the FaceNeigborMode_e value for the referenced zone.
@@ -10582,15 +9611,6 @@ LINKTOADDON FaceNeighborMode_e STDCALL TecUtilDataFaceNbrGetModeByRef(FaceNeighb
  *   faces.ZoneType_FEQuad: Four faces.ZoneType_FETetra: Four
  *   faces.ZoneType_FEBrick: Six faces
  *
- * @param NeighborsAreUserSpecified
- *   May be NULL. If not NULL, then:
- *     Set to TRUE in the following cases:
- *       - There are face neighbors, and they were specified in the data file or
- *         created by the add-on that loaded the data;
- *       - There are no neighbors, and this was specified in the data file or by the
- *         add-on that loaded the data by specifying NO_NEIGHBORING_ELEMENT as the neighbor.
- *     Set to FALSE otherwise.
- *
  * @return
  *   Number of neighbors for the element's face.
  *
@@ -10598,12 +9618,10 @@ LINKTOADDON FaceNeighborMode_e STDCALL TecUtilDataFaceNbrGetModeByRef(FaceNeighb
  *    INTEGER*4 FUNCTION TecUtilDataFaceNbrGetNumNByRef(
  *   &                   FaceNeighborPtr,
  *   &                   Element,
- *   &                   Face,
- *   &                   NeighborsAreUserSpecified)
+ *   &                   Face)
  *    POINTER         (FaceNeighborPtr, FaceNeighbor)
  *    INTEGER*4       Element
  *    INTEGER*4       Face
- *    INTEGER*4       NeighborsAreUserSpecified
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -10613,20 +9631,18 @@ LINKTOADDON FaceNeighborMode_e STDCALL TecUtilDataFaceNbrGetModeByRef(FaceNeighb
  *   type ZoneType_FEBrick.
  *
  * @code
- *   int32_t NumNeighbors;
- *   Boolean_t NeighborsAreUserSpecified;
+ *   LgIndex_t NumNeighbors;
  *   FaceNeighbor_pa FNbr;
  *   FNbr = TecUtilDataFaceNbrGetReadableRef(2);
- *   NumNeighbors = TecUtilDataFaceNbrGetNumNByRef(FNbr, 23, 5, &NeighborsAreUserSpecified);
+ *   NumNeighbors = TecUtilDataFaceNbrGetNumNByRef(FNbr, 23, 5);
  * @endcode
  *
  * @ingroup FaceNeighbors
  *
  */
-LINKTOADDON int32_t STDCALL  TecUtilDataFaceNbrGetNumNByRef(FaceNeighbor_pa   FaceNeighbor,
-                                                            LgIndex_t         Element,
-                                                            int32_t           Face,
-                                                            TP_OUT Boolean_t* NeighborsAreUserSpecified);
+LINKTOADDON LgIndex_t STDCALL  TecUtilDataFaceNbrGetNumNByRef(FaceNeighbor_pa FaceNeighbor,
+                                                              LgIndex_t       Element,
+                                                              LgIndex_t       Face);
 /**
  * Get the cell index of the element the is a neighbor of the specified Element
  * and Face. To use this function you must have already obtained a handle to
@@ -10654,7 +9670,7 @@ LINKTOADDON int32_t STDCALL  TecUtilDataFaceNbrGetNumNByRef(FaceNeighbor_pa   Fa
  *   to get the number of neighbors
  *
  * @param NeighborElem
- *   LgIndex_t Pointer that gives the value of the neighboring element number.
+ *   Pointer that gives the value of the neighboring element number
  *
  * @param NeighborZone
  *   Pointer that gives the value of the neighboring zone number
@@ -10708,8 +9724,8 @@ LINKTOADDON int32_t STDCALL  TecUtilDataFaceNbrGetNumNByRef(FaceNeighbor_pa   Fa
  */
 LINKTOADDON void STDCALL TecUtilDataFaceNbrGetNbrByRef(FaceNeighbor_pa    FaceNeighbor,
                                                        LgIndex_t          Element,
-                                                       int32_t            Face,
-                                                       int32_t            NeighborNumber,
+                                                       LgIndex_t          Face,
+                                                       LgIndex_t          NeighborNumber,
                                                        TP_OUT LgIndex_t*  NeighborElem,
                                                        TP_OUT EntIndex_t* NeighborZone);
 /**
@@ -10737,22 +9753,22 @@ LINKTOADDON Boolean_t STDCALL  TecUtilDataFaceNbrBeginAssign(EntIndex_t Zone);
  *
  */
 LINKTOADDON Boolean_t STDCALL  TecUtilDataFaceNbrAssign(LgIndex_t   Element,
-                                                        int32_t     Face,
+                                                        LgIndex_t   Face,
                                                         Boolean_t   NeighborsCompletelyObscure,
-                                                        int32_t     NumNeighbors,
-                                                        int32_t    *NeighborElems,
+                                                        LgIndex_t   NumNeighbors,
+                                                        LgIndex_t  *NeighborElems,
                                                         EntIndex_t *NeighborZones);
 
 /**
  * @deprecated
  *
- * Use TecUtilDataFaceNbrAssignArrayByRef() or TecUtilDataFaceNbrAssignArrayByRef64()  instead.
+ * Use TecUtilDataFaceNbrAssignArrayByRef() instead.
  *
  * @ingroup FaceNeighbors
  */
 LINKTOADDON void STDCALL  TecUtilDataFaceNbrArrayAssign(LgIndex_t  DestOffset,
                                                         LgIndex_t  DestCount,
-                                                        int32_t   *NeighborElems);
+                                                        LgIndex_t *NeighborElems);
 
 /**
  * @deprecated
@@ -10819,7 +9835,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceNbrGetClientData(FaceNeighbor_pa F
  * the callbacks.
  *
  * This function is used in conjunction with deferred variable creation. See
- * the SV_DEFERCONNECTCREATION option for TecUtilDataSetAddZoneX() for details.
+ * the SV_DEFERFACENBRCREATION option for TecUtilDataSetAddZoneX()for details.
  *
  * The method for loading and accessing face neighbor data with custom
  * load-on-demand is similar to custom load-on-demand for field data (see ADK
@@ -10845,8 +9861,7 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceNbrGetClientData(FaceNeighbor_pa F
  *   Indicates if Tecplot should auto assign any remaining face neighbors after
  *   the add-on has supplied the boundary connection face neighbors. This is
  *   useful when an add-on only needs to deliver a few specific neighbors. See
- *   TecUtilDataFaceNbrAssignArrayByRef() or TecUtilDataFaceNbrAssignArrayByRef64() and
- *   TecUtilDataFaceNbrAssignByRef() or TecUtilDataFaceNbrAssignByRef64()
+ *   TecUtilDataFaceNbrAssignArrayByRef() and TecUtilDataFaceNbrAssignByRef()
  *   for details. Add-ons that wish to supply all the face neighbor connections
  *   should set this value to FALSE.
  *
@@ -10982,7 +9997,6 @@ LINKTOADDON ArbParam_t STDCALL TecUtilDataFaceNbrGetClientData(FaceNeighbor_pa F
  *
  * @sa TecUtilDataConnectShare(),
  *     TecUtilDataFaceNbrAssignArrayByRef(),
- *     TecUtilDataFaceNbrAssignArrayByRef64(),
  *     TecUtilDataFaceNbrAssignByRef()
  *
  * @ingroup DataServices
@@ -11063,10 +10077,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilDataFaceNbrCustomLOD(EntIndex_t            
  * @ingroup FaceNeighbors
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataFaceNbrFaceIsObscured(
+LINKTOADDON Boolean_t STDCALL TecUtilDataFaceNbrFaceIsObscured(
     FaceNeighbor_pa FaceNeighbor,
     LgIndex_t Element,
-    int32_t   Face,
+    LgIndex_t Face,
     Set_pa ActiveZones);
 
 /**
@@ -11130,10 +10144,7 @@ LINKTOADDON FaceNeighbor_pa STDCALL TecUtilDataFaceNbrGetReadableRef(EntIndex_t 
  *     Number of neighbor elements to assign to Tecplot's face neighbor array.
  * @param NeighborElems
  *     An array containing the one based cell face neighbor elements to copy.
- *     The first element is assumed to be at the base of the array.  The array
- *     type must match the internal type as returned by TecUtilFaceNbrGetRawItemType()).
- *     This is an array of 32-bit integers.   See TecUtilDataFaceNbrAssignArrayByRef64()
- *     if the neighboring element value range requires the use of 64-bit integers.
+ *     The first element is assumed to be at the base of the array.
  *
  * @pre Current frame must have a data set with at least one zone.
  *
@@ -11143,68 +10154,13 @@ LINKTOADDON FaceNeighbor_pa STDCALL TecUtilDataFaceNbrGetReadableRef(EntIndex_t 
  *
  * <PythonSyntax>
  * </PythonSyntax>
- *
- * @sa TecUtilDataFaceNbrAssignArrayByRef64()
  *
  * @ingroup DataServices
  */
 LINKTOADDON void STDCALL TecUtilDataFaceNbrAssignArrayByRef(FaceNeighbor_pa  FaceNeighbor,
                                                             LgIndex_t        DestOffset,
-                                                            int32_t          NumNeighbors,
-                                                            const int32_t*   NeighborElems);
-
-/**
- * Copies the specified number of local one-to-one cell face neighbors from the
- * base of the neighbor element array to the currently open face neighbor
- * assignment sequence starting at the specified destination offset. The face
- * neighbor element array should be organized as follows:
- *      E1F1 E1F2 ... E1Fm E2F1 E2F2 ... EnFm
- * where n is the number of elements and m is the number of faces per element.
- * In the above layout E1F1 is the neighboring element of element 1 face 1.
- * This function is \ref threadsafe.
- *
- * @par Note:
- *   If TecUtilDataFaceNbrAssignArrayByRef() is used in conjunction with
- *   TecUtilDataFaceNbrAssignByRef() then the local one-to-one face neighbors
- *   must be delivered via TecUtilDataFaceNbrAssignArrayByRef() before
- *   delivering discrete boundary connection face neighbors via
- *   TecUtilDataFaceNbrAssignByRef().
- *
- * @since
- *   11.3-0-020
- *
- * @param FaceNeighbor
- *     Face neighbor handle that was passed to a custom face neighbor load
- *     callback.
- * @param DestOffset
- *     Offset in Tecplot's face neighbor array to begin assigning the supplied
- *     neighbor elements.
- * @param NumNeighbors
- *     Number of neighbor elements to assign to Tecplot's face neighbor array.
- * @param NeighborElems
- *     An array containing the one based cell face neighbor elements to copy.
- *     The first element is assumed to be at the base of the array.  The array
- *     type must match the internal type as returned by TecUtilFaceNbrGetRawItemType()).
- *     This is an array of 64-bit integers.   See TecUtilDataFaceNbrAssignArrayByRef()
- *     if the neighboring element value range does not require the use of 64-bit integers.
- *
- * @pre Current frame must have a data set with at least one zone.
- *
- * @pre <em>FaceNeighbor</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilDataFaceNbrAssignArrayByRef()
- *
- * @ingroup DataServices
- */
-LINKTOADDON void STDCALL TecUtilDataFaceNbrAssignArrayByRef64(FaceNeighbor_pa  FaceNeighbor,
-                                                              LgIndex_t        DestOffset,
-                                                              int32_t          NumNeighbors,
-                                                              const int64_t*   NeighborElems);
+                                                            LgIndex_t        NumNeighbors,
+                                                            const LgIndex_t *NeighborElems);
 
 /**
  * Sets the boundary connection face neighbors within an open face neighbor
@@ -11224,8 +10180,6 @@ LINKTOADDON void STDCALL TecUtilDataFaceNbrAssignArrayByRef64(FaceNeighbor_pa  F
  *   Number of neighbors for this face.
  * @param NeighborElems
  *   Array containing the one based element numbers of the neighbors.
- *   Array of 32-bit integers.  If the internal type (see TecUtilFaceNbrGetRawItemType())
- *   requires 64-bit integers you must use TecUtilDataFaceNbrAssignByRef64() instead.
  * @param NeighborZones
  *   Array containing the one based zone numbers of the neighbors for global
  *   neighbors or NULL for local neighbors.
@@ -11264,88 +10218,15 @@ LINKTOADDON void STDCALL TecUtilDataFaceNbrAssignArrayByRef64(FaceNeighbor_pa  F
  * <PythonSyntax>
  * </PythonSyntax>
  *
- * @sa TecUtilDataFaceNbrAssignByRef64()
- *
  * @ingroup DataServices
  */
 LINKTOADDON Boolean_t STDCALL TecUtilDataFaceNbrAssignByRef(FaceNeighbor_pa   FaceNeighbor,
                                                             LgIndex_t         Element,
-                                                            int32_t           Face,
+                                                            LgIndex_t         Face,
                                                             Boolean_t         NbrsCompObscure,
-                                                            int32_t           NumNeighbors,
-                                                            const int32_t*    NeighborElems,
+                                                            LgIndex_t         NumNeighbors,
+                                                            const LgIndex_t  *NeighborElems,
                                                             const EntIndex_t *NeighborZones);
-
-
-/**
- * Sets the boundary connection face neighbors within an open face neighbor
- * assignment sequence for the specified element and face.
- * This function is \ref threadsafe.
- *
- * @param FaceNeighbor
- *   Face neighbor handle that was passed to a custom face neighbor load
- *   callback.
- * @param Element
- *   The one based element number (starts at one).
- * @param Face
- *   The one based face for which the face neighbor information is desired.
- * @param NbrsCompObscure
- *   Set to TRUE if the supplied neighbors completely obscure the face.
- * @param NumNeighbors
- *   Number of neighbors for this face.
- * @param NeighborElems
- *   Array containing the one based element numbers of the neighbors.
- *   Array of 64-bit integers.  If the internal type (see TecUtilFaceNbrGetRawItemType())
- *   does not require 64-bit integers you must use TecUtilDataFaceNbrAssignByRef() instead.
- * @param NeighborZones
- *   Array containing the one based zone numbers of the neighbors for global
- *   neighbors or NULL for local neighbors.
- *
- * @return
- *   TRUE if successful in assigning to the open face neighbor assignment
- *   sequence, FALSE otherwise.
- *
- * @pre Current frame must have a data set with at least one zone.
- *
- * @pre <em>FaceNeighbor</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>NeighborElems</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataFaceNbrAssignByRef64(
- *   &                   FaceNeighborPtr,
- *   &                   Element,
- *   &                   Face,
- *   &                   NbrsCompObscure,
- *   &                   NumNeighbors,
- *   &                   NeighborElems,
- *   &                   NeighborZones)
- *    POINTER         (FaceNeighborPtr, FaceNeighbor)
- *    INTEGER*4       Element
- *    INTEGER*4       Face
- *    INTEGER*4       NbrsCompObscure
- *    INTEGER*4       NumNeighbors
- *    INTEGER*8       NeighborElems
- *    INTEGER*4       NeighborZones
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilDataFaceNbrAssignByRef()
- *
- * @ingroup DataServices
- */
-LINKTOADDON Boolean_t STDCALL TecUtilDataFaceNbrAssignByRef64(FaceNeighbor_pa   FaceNeighbor,
-                                                              LgIndex_t         Element,
-                                                              int32_t           Face,
-                                                              Boolean_t         NbrsCompObscure,
-                                                              int32_t           NumNeighbors,
-                                                              const int64_t*    NeighborElems,
-                                                              const EntIndex_t *NeighborZones);
 
 /**
  * @deprecated
@@ -11507,7 +10388,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFieldMapGetActive(TP_GIVES Set_pa* ActiveFi
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFieldMapIsActiveForFrame(FrameID, FieldMap)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 FieldMap
  * </FortranSyntax>
  *
@@ -11519,8 +10400,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFieldMapGetActive(TP_GIVES Set_pa* ActiveFi
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapIsActiveForFrame(UniqueID_t FrameID,
-                                                              EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapIsActiveForFrame(UniqueID_t FrameID, EntIndex_t FieldMap);
 
 /**
  * Determine if an Field-map is active.
@@ -11550,7 +10430,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapIsActiveForFrame(UniqueID_
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapIsActive(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapIsActive(EntIndex_t FieldMap);
 
 /**
  *   Returns the mode of a fieldmap in a frame.
@@ -11564,7 +10444,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapIsActive(EntIndex_t FieldM
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFieldMapGetModeForFrame(FrameID, FieldMap)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 FieldMap
  * </FortranSyntax>
  *
@@ -11576,8 +10456,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapIsActive(EntIndex_t FieldM
  * @ingroup FieldMap
  *
  */
-LINKTOADDON FieldMapMode_e STDCALL TecUtilFieldMapGetModeForFrame(UniqueID_t
-                                                                  FrameID, EntIndex_t FieldMap);
+LINKTOADDON FieldMapMode_e STDCALL TecUtilFieldMapGetModeForFrame(UniqueID_t FrameID, EntIndex_t FieldMap);
 
 /**
  *   Returns the mode of a fieldmap.
@@ -11667,7 +10546,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilFieldMapGetZones(EntIndex_t       FieldMap,
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFieldMapGetCandidateZoneForFrame(FrameID, FieldMap)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 FieldMap
  * </FortranSyntax>
  *
@@ -11730,27 +10609,27 @@ LINKTOADDON EntIndex_t STDCALL TecUtilFieldMapGetCandidateZone(EntIndex_t FieldM
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapIsRelevant(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapIsRelevant(EntIndex_t FieldMap);
 
 /**
  * Determines if the fieldmap contains any ordered zones in the specified frame.
  *
- *
+ * 
  * @param FrameID
  *   Unique ID of a frame for which the query should be made.
- * @param FieldMap
+ * @param FieldMap 
  *   Number of the field map.
  * @return
  *   TRUE if the field map contains a zone that is ordered. FALSE otherwise.
  *
  *
- * @pre <em>VALID_DATASET(frame->DataSet,TRUE)</em>
+ * @pre <em>VALID_DATASET(frame->DataSet,true)</em>
  *   Data set must have at least one zone.
  *
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFieldMapHasOrderedZonesForFrame(FrameID, FieldMap)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 FieldMap
  * </FortranSyntax>
  *
@@ -11762,7 +10641,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapIsRelevant(EntIndex_t Fiel
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasOrderedZonesForFrame(UniqueID_t FrameID,
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasOrderedZonesForFrame(UniqueID_t FrameID, 
                                                                      EntIndex_t FieldMap);
 
 
@@ -11792,7 +10671,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasOrderedZonesForFrame(Un
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasOrderedZones(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasOrderedZones(EntIndex_t FieldMap);
 
 /**
  * Determines if the fieldmap contains any IJK ordered zones in the specified frame.
@@ -11805,13 +10684,13 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasOrderedZones(EntIndex_t
  *   TRUE if the field map contains a zone that is IJK ordered. FALSE otherwise.
  *
  *
- * @pre <em>VALID_DATASET(frame->DataSet,TRUE)</em>
+ * @pre <em>VALID_DATASET(frame->DataSet,true)</em>
  *   Data set must have at least one zone.
  *
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFieldMapHasIJKOrderedZonesForFrame(FrameID, FieldMap)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 FieldMap
  * </FortranSyntax>
  *
@@ -11823,7 +10702,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasOrderedZones(EntIndex_t
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasIJKOrderedZonesForFrame(UniqueID_t FrameID,
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasIJKOrderedZonesForFrame(UniqueID_t FrameID,
                                                                         EntIndex_t FieldMap);
 
 /**
@@ -11852,7 +10731,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasIJKOrderedZonesForFrame
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasIJKOrderedZones(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasIJKOrderedZones(EntIndex_t FieldMap);
 
 /**
  * Determines if the fieldmap contains any FE zones.
@@ -11878,7 +10757,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasIJKOrderedZones(EntInde
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasFEZones(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasFEZones(EntIndex_t FieldMap);
 
 /**
  * Determines if the fieldmap contains any Volume zones.
@@ -11906,29 +10785,29 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasFEZones(EntIndex_t Fiel
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasVolumeZones(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasVolumeZones(EntIndex_t FieldMap);
 
 /**
  * Determines if the fieldmap contains any volume zones for the dataset attached to the specified frame.
  *
- * @since 14.1
+ * @since 14.1 
  *
  * @param FrameID
  *   An ID of the frame that is attached to the dataset for which the query is made.
  * @param FieldMap number of the field map.
- *
+ * 
  * @return
  *   TRUE if the field map for the dataset attached to the specified frame contains a volume zone.
  *   FALSE otherwise.
  *
  *
- * @pre <em>VALID_DATASET(frame->DataSet,TRUE)</em>
+ * @pre <em>VALID_DATASET(frame->DataSet,true)</em>
  *   Data set must have at least one zone.
  *
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilFieldMapHasVolumeZonesForFrame(FrameID, FieldMap)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 FieldMap
  * </FortranSyntax>
  *
@@ -11938,7 +10817,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasVolumeZones(EntIndex_t 
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasVolumeZonesForFrame(UniqueID_t FrameID,
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasVolumeZonesForFrame(UniqueID_t FrameID, 
                                                                     EntIndex_t FieldMap);
 
 /**
@@ -11965,7 +10844,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasVolumeZonesForFrame(Uni
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasSurfaceZones(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasSurfaceZones(EntIndex_t FieldMap);
 
 /**
  * Determines if the fieldmap contains any Linear zones.
@@ -11991,7 +10870,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasSurfaceZones(EntIndex_t
  * @ingroup FieldMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasLinearZones(EntIndex_t FieldMap);
+LINKTOADDON Boolean_t STDCALL TecUtilFieldMapHasLinearZones(EntIndex_t FieldMap);
 
 /**
  *   Determine if Tecplot is currently recording a user macro.
@@ -12019,7 +10898,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFieldMapHasLinearZones(EntIndex_t 
  * @ingroup ScriptSupport
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilUserMacroIsRecordingActive(void);
+LINKTOADDON Boolean_t STDCALL TecUtilUserMacroIsRecordingActive(void);
 
 /**
  *   Determine if Tecplot is currently recording a macro.
@@ -12047,7 +10926,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilUserMacroIsRecordingActive(void);
  * @ingroup ScriptSupport
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilMacroIsRecordingActive(void);
+LINKTOADDON Boolean_t STDCALL TecUtilMacroIsRecordingActive(void);
 
 /**
  * Convenience function to query Tecplot for a limit value. These are the same
@@ -12100,7 +10979,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilLimitGetValue(const char *LimitString);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilDataSetIsAvailableByUniqueID(UniqueID)
- *    INTEGER*8 UniqueID
+ *    INTEGER*4 UniqueID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12108,7 +10987,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilLimitGetValue(const char *LimitString);
  *
  * @ingroup DataSetInfo
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsAvailableByUniqueID(UniqueID_t UniqueID);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetIsAvailableByUniqueID(UniqueID_t UniqueID);
 
 /**
  * Determine if the specified frame has a data set attached.
@@ -12123,7 +11002,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsAvailableByUniqueID(Uniqu
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilDataSetIsAvailableForFrame(FrameID)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  * </FortranSyntax>
  *
  * <PythonSyntax>
@@ -12143,7 +11022,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsAvailableByUniqueID(Uniqu
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsAvailableForFrame(UniqueID_t FrameID);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetIsAvailableForFrame(UniqueID_t FrameID);
 
 /**
  * Determine if the current frame has a data set attached.
@@ -12175,69 +11054,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsAvailableForFrame(UniqueI
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsAvailable(void);
-
-/**
-* Determine if any frame in any page has a data set attached.
-* This function is \ref threadsafe.
-*
-* @return
-*   TRUE if if any frame in any page has an attached data set, FALSE if not.
-*
-* <FortranSyntax>
-*    INTEGER*4 FUNCTION TecUtilDataSetIsUsedInLayout()
-* </FortranSyntax>
-*
-* <PythonSyntax>
-* </PythonSyntax>
-*
-* @sa TecUtilDataSetIsAvailableForFrame, TecUtilDataSetIsAvailable, TecUtilDataSetIsAvailableByUniqueID
-*
-* @ingroup DataSetInfo
-*
-* @since 16.1
-*
-*/
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsUsedInLayout(void);
-
-/**
- *   Determine if a variable is enabled in the specified dataset.
- *   This function is \ref threadsafe.
- *
- * @param DataSetID
- *   ID of the dataset.
- * @param Var
- *   Variable whose status is queried.
- *
- * @return
- *   TRUE, if a variable is enabled, otherwise, FALSE.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilVarIsEnabledByDataSetID(DataSetID, Var)
- *    INTEGER*8 DataSetID
- *    INTEGER*4 Var
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Check if the first variable is enabled for dataset myDataSetID.
- *
- * @code
- *   if (TecUtilVarIsEnabledByDataSetID(myDataSetID, 1))
- *     {
- *       // sure is!
- *     }
- * @endcode
- *
- * @since
- *   16.2
- *
- * @ingroup Variables
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsEnabledByDataSetID(UniqueID_t DataSetID,
-                                                            EntIndex_t Var);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetIsAvailable(void);
 
 /**
  *   Determine if a variable is enabled in the dataset attached to the specified frame.
@@ -12253,7 +11070,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsEnabledByDataSetID(UniqueID_t
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilVarIsEnabledForFrame(FrameID, Var)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 Var
  * </FortranSyntax>
  *
@@ -12271,13 +11088,10 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsEnabledByDataSetID(UniqueID_t
  *
  * @since 14.1
  *
- * @sa TecUtilVarIsEnabledByDataSetID
- *
  * @ingroup Variables
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsEnabledForFrame(UniqueID_t FrameID,
-                                                          EntIndex_t Var);
+LINKTOADDON Boolean_t STDCALL TecUtilVarIsEnabledForFrame(UniqueID_t FrameID, EntIndex_t Var);
 
 /**
  *   Determine if a variable is enabled.
@@ -12311,7 +11125,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsEnabledForFrame(UniqueID_t Fr
  * @ingroup Variables
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsEnabled(EntIndex_t Var);
+LINKTOADDON Boolean_t STDCALL TecUtilVarIsEnabled(EntIndex_t Var);
 
 /**
  *   Determine if a zone is enabled.
@@ -12346,54 +11160,21 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsEnabled(EntIndex_t Var);
  * @ingroup Zone
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsEnabled(EntIndex_t Zone);
-
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsEnabled(EntIndex_t Zone);
 
 /**
- *   Determine if a zone is enabled in a specified dataset
+ *   Determine if a zone is active.
  *   This function is \ref threadsafe.
- *
- * @param DataSetID
- *   ID of the DataSet.
- *
- * @param Zone
- *   Number of the zone for which to get the zone type information
- *
- * @return
- *   TRUE, if a zone is enabled, otherwise, FALSE.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneIsEnabled(DataSetID,Zone)
- *    INTEGER*8 DataSetID
- *    INTEGER*4 Zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Check if the first zone is enabled in dataset SomeDataSetID:
- *
- * @code
- *   if (TecUtilZoneIsEnabledByDataSetID(SomeDataSetID,1))
- *   {
- *     // sure is!
- *   }
- * @endcode
- *
- * @ingroup Zone
- *
- * @since 16.3
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsEnabledByDataSetID(UniqueID_t DataSetID,
-                                                              EntIndex_t Zone);
-
-/**
- * Determine if a zone is active.
- * This function is \ref threadsafe.
  *
  * @return
  *   Returns TRUE if the zone is active, FALSE otherwise.
+ *
+ * @pre Must have one or more frames.
+ * @pre The active frame's plot plot type must be 2D or 3D.
+ *
+ * @pre <em>ZoneIsValid(dataSet, Zone)</em>
+ *   Must specify a valid zone.
+ *
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilZoneIsActive(Zone)
@@ -12406,34 +11187,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsEnabledByDataSetID(UniqueID_
  * @ingroup Zone
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsActive(EntIndex_t Zone);
-
-/**
- * Determine if a zone is active in a specific frame.
- * This function is \ref threadsafe.
- *
- * @param FrameID
- *   Unique ID of a frame which should be queried.
- * @param Zone
- *   Zone which should be inspected for its active status.
- * @return
- *   Returns TRUE if the zone is active, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneIsActiveForFrame(FrameID, Zone)
- *    INTEGER*4 FrameID
- *    INTEGER*4 Zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @since 18.3
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsActiveForFrame(UniqueID_t FrameID, EntIndex_t Zone);
+LINKTOADDON Boolean_t STDCALL TecUtilZoneIsActive(EntIndex_t Zone);
 
 /**
  * @deprecated
@@ -12443,7 +11197,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilZoneIsActiveForFrame(UniqueID_t Fr
  *
  * #internalattributes exclude_python, exclude_sdkdoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilXYMapIsActive(EntIndex_t XYMap);
+LINKTOADDON Boolean_t STDCALL TecUtilXYMapIsActive(EntIndex_t XYMap);
 
 /**
  *   Determine if an Line-map is active for specified frame.
@@ -12458,20 +11212,19 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilXYMapIsActive(EntIndex_t XYMap);
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilLineMapIsActiveForFrame(FrameID, LineMap)
- *    INTEGER*8 FrameID
+ *    INTEGER*4 FrameID
  *    INTEGER*4 LineMap
  * </FortranSyntax>
  *
  * <PythonSyntax>
  * </PythonSyntax>
- *
+ * 
  * @since 14.1
  *
  * @ingroup LineMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLineMapIsActiveForFrame(UniqueID_t FrameID,
-                                                             EntIndex_t LineMap);
+LINKTOADDON Boolean_t STDCALL TecUtilLineMapIsActiveForFrame(UniqueID_t FrameID, EntIndex_t LineMap);
 
 /**
  *   Determine if an Line-map is active.
@@ -12496,7 +11249,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLineMapIsActiveForFrame(UniqueID_t
  * @ingroup LineMap
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilLineMapIsActive(EntIndex_t LineMap);
+LINKTOADDON Boolean_t STDCALL TecUtilLineMapIsActive(EntIndex_t LineMap);
 
 /**
  * @deprecated
@@ -12653,91 +11406,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilFileGetTempDirName(TP_GIVES char** TempDirN
  * @ingroup ColorMap
  *
  */
-LINKTOADDON void STDCALL TecUtilColorMapGetBasicColorRGB(int32_t         BasicColor,
-                                                         TP_OUT uint8_t* Red,
-                                                         TP_OUT uint8_t* Green,
-                                                         TP_OUT uint8_t* Blue);
-
-/**
- * Get the RGB components of a contour color.
- *
- * @param colorMapNumber
- *   Number of the colormap of contour color to query. The value must be a
- *   valid colormap number. See TecUtilColorMapGetNumByName and
- *   TecUtilColorMapGetName.
- *
- * @param contourColorOffset
- *   Offset of contour color to query. The value must be between 0 and
- *   number of contour shades (GeneralBase.Limits.MaxNumContourLevels + 1)
- *
- * @param Red
- *   Receives red component of the color.
- *
- * @param Green
- *   Receives green component of the color.
- *
- * @param Blue
- *   Receives blue component of the color.
- *
- *
- * @pre <em>Red</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>Green</em>
- *   Pointer must be a valid address or NULL.
- *
- * @pre <em>Blue</em>
- *   Pointer must be a valid address or NULL.
- *
- *
- * <FortranSyntax>
- *    SUBROUTINE TecUtilColorMapGetContourRGB(
- *   &           colorMapNumber,
- *   &           Red,
- *   &           Green,
- *   &           Blue)
- *    INTEGER*4       colorMapNumber
- *    INTEGER*4       contourColorOffset
- *    INTEGER*4       Red
- *    INTEGER*4       Green
- *    INTEGER*4       Blue
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- *   Get the RGB components of the colormap 5.
- *
- * @code
- * LgIndex_t numColors;
- * ArgList_pa argList = TecUtilArgListAlloc();
- * TecUtilArgListAppendString(argList, SV_P1, SV_LIMITS);
- * TecUtilArgListAppendString(argList, SV_P2, SV_MAXNUMCONTOURLEVELS);
- * TecUtilArgListAppendArbParamPtr(argList, SV_IVALUE, &numColors);
- * TecUtilStyleGetLowLevelX(argList);
- * TecUtilArgListDealloc(&argList);
- *
- * numColors++; // NumContourShades is GeneralBase.Limits.MaxNumContourLevels + 1
- *
- * for (int point = 1; point <= numColors; point++)
- * {
- *   uint8_t* R, G, B;
- *   TecUtilColorMapGetContourRGB(5, point, &R, &G, &B);
- * }
- * @endcode
- *
- * @ingroup ColorMap
- *
- * @sa TecUtilColorMapGetNumByName, TecUtilColorMapGetName, TecUtilColorMapGetCount
- *
- * @since 15.2
- *
- */
-LINKTOADDON void STDCALL TecUtilColorMapGetContourRGB(int32_t colorMapNumber,
-                                                      int32_t contourColorOffset,
-                                                      TP_OUT uint8_t* Red,
-                                                      TP_OUT uint8_t* Green,
-                                                      TP_OUT uint8_t* Blue);
+LINKTOADDON void STDCALL TecUtilColorMapGetBasicColorRGB(ColorIndex_t         BasicColor,
+                                                         TP_OUT ColorIndex_t* Red,
+                                                         TP_OUT ColorIndex_t* Green,
+                                                         TP_OUT ColorIndex_t* Blue);
 
 /**
  *   Get the number of basic colors in Tecplot.
@@ -12756,7 +11428,7 @@ LINKTOADDON void STDCALL TecUtilColorMapGetContourRGB(int32_t colorMapNumber,
  *
  * @code
  *   {
- *     int32_t NumBasicColors;
+ *     LgIndex_t NumBasicColors;
  *
  *     TecUtilLockStart(AddOnID);
  *     NumBasicColors = TecUtilColorMapNumBasicColors();
@@ -12768,7 +11440,7 @@ LINKTOADDON void STDCALL TecUtilColorMapGetContourRGB(int32_t colorMapNumber,
  * @ingroup ColorMap
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilColorMapNumBasicColors(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilColorMapNumBasicColors(void);
 
 /**
  *   Queries the auto redraw state.
@@ -12797,37 +11469,7 @@ LINKTOADDON int32_t STDCALL TecUtilColorMapNumBasicColors(void);
  * @ingroup Drawing
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilAutoRedrawIsActive(void);
-
-
-/**
- * Indicates that the add-on is beginning a series of auxiliary data assignments. Each time auxiliary
- * data is modified a state change is broadcast and all state change listeners are notified. If
- * hundreds of thousands of auxiliary data are modified in sequence the notification is call
- * overhead to all state change listeners can be quite high. Surrounding the numerous calls with a
- * begin/end assignment sequence can improve efficiency by suspending the auxiliary data state
- * change broadcast until the end assign sequence.
- *
- * @since 15.2
- * @sa TecUtilAuxDataEndAssign
- * @ingroup AuxData
- */
-LINKTOADDON void STDCALL TecUtilAuxDataBeginAssign(void);
-
-
-/**
- * Indicates that the add-on is ending a series of auxiliary data assignments. Each time auxiliary
- * data is modified a state change is broadcast and all state change listeners are notified. If
- * hundreds of thousands of auxiliary data are modified in sequence the notification is call
- * overhead to all state change listeners can be quite high. Surrounding the numerous calls with a
- * begin/end assignment sequence can improve efficiency by suspending the auxiliary data state
- * change broadcast until the end assign sequence.
- *
- * @since 15.2
- * @sa TecUtilAuxDataBeginAssign
- * @ingroup AuxData
- */
-LINKTOADDON void STDCALL TecUtilAuxDataEndAssign(void);
+LINKTOADDON Boolean_t STDCALL TecUtilAutoRedrawIsActive(void);
 
 
 /**
@@ -12854,28 +11496,8 @@ LINKTOADDON void STDCALL TecUtilAuxDataEndAssign(void);
  *
  * #internalattributes exclude_alldoc
  */
-LINKTOADDON void STDCALL TecUtilAuxDataDealloc(TP_RECEIVES AuxData_pa* AuxData);
+LINKTOADDON void STDCALL TecUtilAuxDataDealloc(AuxData_pa* AuxData);
 
-/**
-* Gets a reference to the current layout's auxiliary data.
-* This function is \ref threadsafe.
-*
-* @return
-*   Reference to the current layout's auxiliary data.
-*
-* <FortranSyntax>
-*    SUBROUTINE TecUtilAuxDataLayoutGetRef(ResultPtr)
-*    POINTER (ResultPtr, Result)
-* </FortranSyntax>
-*
-* <PythonSyntax>
-* </PythonSyntax>
-*
-* @ingroup AuxData
-*
-* @since 16.1
-*/
-LINKTOADDON AuxData_pa STDCALL TecUtilAuxDataLayoutGetRef(void);
 
 /**
  * Gets a reference to the current data set's auxiliary data.
@@ -13070,7 +11692,7 @@ LINKTOADDON AuxData_pa STDCALL TecUtilAuxDataVarGetRef(EntIndex_t Var);
  *   AuxData_pa AuxDataRef = TecUtilAuxDataFrameGetRef();
  *   if (AuxDataRef != NULL)
  *     {
- *       int32_t NumItems = TecUtilAuxDataGetNumItems(AuxDataRef);
+ *       LgIndex_t NumItems = TecUtilAuxDataGetNumItems(AuxDataRef);
  *       if (NumItems != 0)
  *         {
  *           // ... do something with the 1..NumItems items ...
@@ -13085,7 +11707,7 @@ LINKTOADDON AuxData_pa STDCALL TecUtilAuxDataVarGetRef(EntIndex_t Var);
  * @ingroup AuxData
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilAuxDataGetNumItems(AuxData_pa AuxDataRef);
+LINKTOADDON LgIndex_t STDCALL TecUtilAuxDataGetNumItems(AuxData_pa AuxDataRef);
 
 /**
  * Gets the index of the named auxiliary data item if found or if not found the
@@ -13137,7 +11759,7 @@ LINKTOADDON int32_t STDCALL TecUtilAuxDataGetNumItems(AuxData_pa AuxDataRef);
  *   AuxData_pa AuxDataRef = TecUtilAuxDataFrameGetRef();
  *   if (AuxDataRef != NULL)
  *     {
- *       int32_t ItemIndex;
+ *       LgIndex_t ItemIndex;
  *       if (TecUtilAuxDataGetItemIndex(AuxDataRef,
  *                                      "MachNumber",
  *                                      &ItemIndex))
@@ -13158,9 +11780,9 @@ LINKTOADDON int32_t STDCALL TecUtilAuxDataGetNumItems(AuxData_pa AuxDataRef);
  * @ingroup AuxData
  *
  */
-LINKTOADDON Boolean_t STDCALL TecUtilAuxDataGetItemIndex(AuxData_pa      AuxDataRef,
-                                                         const char*     Name,
-                                                         TP_OUT int32_t* ItemIndex);
+LINKTOADDON Boolean_t STDCALL TecUtilAuxDataGetItemIndex(AuxData_pa        AuxDataRef,
+                                                         const char*       Name,
+                                                         TP_OUT LgIndex_t* ItemIndex);
 
 /**
  * Gets the auxiliary string data item at the specified index. The resulting
@@ -13263,7 +11885,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAuxDataGetItemIndex(AuxData_pa      AuxData
  *
  */
 LINKTOADDON void STDCALL TecUtilAuxDataGetStrItemByIndex(AuxData_pa        AuxDataRef,
-                                                         int32_t           Index,
+                                                         LgIndex_t         Index,
                                                          TP_GIVES char**   Name,
                                                          TP_GIVES char**   Value,
                                                          TP_OUT Boolean_t* Retain);
@@ -13369,7 +11991,7 @@ LINKTOADDON void STDCALL TecUtilAuxDataGetStrItemByIndex(AuxData_pa        AuxDa
  * #internalattributes exclude_fglue
  */
 LINKTOADDON void STDCALL TecUtilAuxDataGetItemByIndex(AuxData_pa            AuxDataRef,
-                                                      int32_t               Index,
+                                                      LgIndex_t             Index,
                                                       TP_GIVES char**       Name,
                                                       TP_GIVES ArbParam_t*  Value,
                                                       TP_OUT AuxDataType_e* Type,
@@ -13798,7 +12420,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAuxDataSetItem(AuxData_pa     AuxDataRef,
  *
  */
 LINKTOADDON void STDCALL TecUtilAuxDataDeleteItemByIndex(AuxData_pa AuxDataRef,
-                                                         int32_t    Index);
+                                                         LgIndex_t  Index);
 
 /**
  * Deletes the auxiliary data item by the specified name if it exists.
@@ -13887,7 +12509,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilAuxDataDeleteItemByName(AuxData_pa  AuxData
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsSharingAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetIsSharingAllowed(void);
 
 
 
@@ -13936,7 +12558,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsSharingAllowed(void);
  * @ingroup DataValue
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueIsSharingOk(EntIndex_t SourceZone,
+LINKTOADDON Boolean_t STDCALL TecUtilDataValueIsSharingOk(EntIndex_t SourceZone,
                                                           EntIndex_t DestZone,
                                                           EntIndex_t Var);
 /**
@@ -13978,7 +12600,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueIsSharingOk(EntIndex_t So
  * @ingroup DataSharing
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataConnectIsSharingOk(EntIndex_t SourceZone,
+LINKTOADDON Boolean_t STDCALL TecUtilDataConnectIsSharingOk(EntIndex_t SourceZone,
                                                             EntIndex_t DestZone);
 
 /**
@@ -14007,7 +12629,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataConnectIsSharingOk(EntIndex_t 
  *
  * @ingroup Zone
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataConnectIsSZLData(EntIndex_t Zone);
+LINKTOADDON Boolean_t STDCALL TecUtilDataConnectIsSZLData(EntIndex_t Zone);
 
 /**
  * Indicates if the variable's data range is estimated.
@@ -14037,7 +12659,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataConnectIsSZLData(EntIndex_t Zo
  *
  * @ingroup DataValue
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarRangeIsEstimated(EntIndex_t Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilVarRangeIsEstimated(EntIndex_t Zone,
                                                          EntIndex_t Var);
 /**
  * Indicates if the variable's data is managed using subzone load-on-demand.
@@ -14069,7 +12691,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarRangeIsEstimated(EntIndex_t Zon
  *
  * @ingroup DataValue
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVarIsSZLData(EntIndex_t Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilVarIsSZLData(EntIndex_t Zone,
                                                   EntIndex_t Var);
 
 /**
@@ -14291,29 +12913,13 @@ LINKTOADDON EntIndex_t STDCALL TecUtilDataConnectGetShareCount(EntIndex_t Zone);
  * #internalattributes exclude_alldoc
  */
 LINKTOADDON AppMode_e       STDCALL TecUtilTecplotGetAppMode(void);
-
-
 /**
- * Determine whether the specified feature is enabled.  Product or licensing terms
- * may selectively enable certain features in the engine.
- *
- * @param featureId
- *   A feature identifier of type FeatureMask_t, such as FEATURE_FEPOLYGON.
- *
- * @param reason
- *   A string containing the reason for why the feature is not enabled. Space for the string will
- *   be allocated for you. You must later free the string by using TecUtilStringDealloc(). NULL can
- *   be passed for this argument if the caller is not interested in the reason.
- *
- * @return
- *   TRUE if feature is enabled, FALSE otherwise.
  *
  * @ingroup Utilities
  *
  * #internalattributes exclude_alldoc
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFeatureIsEnabled(FeatureFlag_t   featureId,
-                                                               TP_GIVES char** reason);
+LINKTOADDON ProductFlavor_e STDCALL TecUtilTecplotGetProductFlavor(void);
 
 
 /**
@@ -14341,7 +12947,6 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFeatureIsEnabled(FeatureFlag_t   f
  *
  * @pre <em>LevelValues</em>
  *   Pointer must be a valid address and non-NULL.
- * @pre Must have one or more frames.
  *
  *
  * <FortranSyntax>
@@ -14375,7 +12980,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFeatureIsEnabled(FeatureFlag_t   f
  *                  NumLevels);
  *           for (LIndex = 0; LIndex < NumLevels; LIndex++)
  *             printf("  %lg\n", LevelValues[LIndex]);
- *           TecUtilArrayDealloc((void**)&LevelValues);
+ *           TecUtilArrayDealloc((void **)&LevelValues);
  *         }
  *       else
  *         printf("No levels are specified for contour group #2\n");
@@ -14388,8 +12993,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFeatureIsEnabled(FeatureFlag_t   f
  *
  * #internalattributes exclude_tcl
  */
-LINKTOADDON Boolean_t STDCALL TecUtilContourGetLevels(int32_t                 ContourGroup,
-                                                      TP_OUT int32_t*         NumLevels,
+LINKTOADDON Boolean_t STDCALL TecUtilContourGetLevels(SmInteger_t             ContourGroup,
+                                                      TP_OUT LgIndex_t*       NumLevels,
                                                       TP_ARRAY_GIVES double** LevelValues);
 
 
@@ -14402,9 +13007,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourGetLevels(int32_t                 Co
  *
  * @return
  *   TRUE if a color band is in use in the current frame for a contour group.
- *
- * @pre Must have one or more frames.
- *
  *
  * <FortranSyntax>
  *    INTEGER*4 FUNCTION TecUtilQueryColorBandsInUseForContourGroup(
@@ -14419,6 +13021,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourGetLevels(int32_t                 Co
  *
  * @code
  *   Boolean_t IsOk;
+ *   LgIndex_t NumLevels;
  *   double    *LevelValues;
  *
  *   TecUtilLockStart(AddOnID);
@@ -14431,7 +13034,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilContourGetLevels(int32_t                 Co
  *
  * @ingroup Contour
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryColorBandsInUseForContourGroup(int32_t ContourGroup);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryColorBandsInUseForContourGroup(SmInteger_t ContourGroup);
 
 
 /**
@@ -14458,7 +13061,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryColorBandsInUseForContourGrou
  * @ingroup DataSetInfo
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataSetIsLODAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecUtilDataSetIsLODAllowed(void);
 
 
 /**
@@ -14518,41 +13121,7 @@ LINKTOADDON double STDCALL TecUtilZoneGetSolutionTime(EntIndex_t Zone);
  * @ingroup Zone
  *
  */
-LINKTOADDON EntIndex_t STDCALL TecUtilZoneGetStrandID(EntIndex_t Zone);
-
-/**
- * Returns the StrandID associated with the specified dataset and zone.
- *
- * @since 2017.3
- *
- * @param dataSetID
- *   Unique ID of the dataset to be queried
- * @param zone
- *   A zone number for a currently enabled zone in the dataset
- *
- * @return
- *   StrandID for the zone. 0 indicates that the zone is not
- *   part of a strand. Transient zones will have a StrandID of
- *   1 or greater.
- *
- *
- * @pre <em>zone</em>
- *   Must specify a valid zone.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilZoneGetStrandID(dataSetID, zone)
- *    INTEGER*8       dataSetID
- *    INTEGER*4       zone
- * </FortranSyntax>
- *
- * @sa TecUtilZoneGetStrandID()
- *
- * @ingroup Zone
- *
- */
-LINKTOADDON EntIndex_t STDCALL TecUtilZoneGetStrandIDByDataSetID(UniqueID_t dataSetID,
-                                                         EntIndex_t zone);
+LINKTOADDON Strand_t STDCALL TecUtilZoneGetStrandID(EntIndex_t Zone);
 
 /**
  * Returns the number of the Parent Zone associated with the specified zone.
@@ -14595,7 +13164,7 @@ LINKTOADDON EntIndex_t STDCALL TecUtilZoneGetParentZone(EntIndex_t Zone);
  * @ingroup Zone
  *
  */
-LINKTOADDON EntIndex_t STDCALL TecUtilZoneGetFieldMap(EntIndex_t Zone);
+LINKTOADDON LgIndex_t STDCALL TecUtilZoneGetFieldMap(EntIndex_t Zone);
 
 /**
  * Returns the current solution time for the current frame.
@@ -14679,596 +13248,6 @@ LINKTOADDON double STDCALL TecUtilSolutionTimeGetMin(void);
 LINKTOADDON double STDCALL TecUtilSolutionTimeGetMax(void);
 
 /**
- * Returns the number of unique solution times in a dataset.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param dataSetID
- *   The unique ID of the dataset of interest.
- *
- * @return
- *   TRUE if able to retrieve the number of time steps, FALSE otherwise.
- *
- * @param numTimes
- *   Pointer to an EntIndex_t variable that will receive the current number of
- *   solution times for the specified frame.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetNumTimeStepsByDataSetID(
- *   &                   dataSetID,
- *   &                   numTimeSteps)
- *    INTEGER*4 dataSetID
- *    INTEGER*4 numTimeSteps
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetSolutionTimesByDataSetID().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetNumTimeStepsByDataSetID(UniqueID_t dataSetID,
-                                                                            TP_OUT EntIndex_t* numTimeSteps);
-
-/**
- * Gets the number of solution times and solution time values currently
- * defined for the specified dataset. The times array must be
- * deallocated by the addon using TecUtilArrayDealloc().
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param dataSetID
- *   The unique ID of the dataset of interest.
- *
- * @param numTimes
- *   Pointer to an EntIndex_t variable that will receive the current number of
- *   solution times for the specified dataset.  On error this will be set to zero.
- *
- * @param times
- *   Pointer to a double pointer variable that will receive the allocated
- *   double array of solution time values or NULL if there are none.
- *   On error this will be set to nullptr.
- *
- * @return
- *   FALSE if an allocation error occured otherwise TRUE.
- *
- *
- * @pre <em>numTimes</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>times</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetSolutionTimesByDataSetID(
- *   &                   dataSetID,
- *   &                   numTimes,
- *   &                   times)
- *    INTEGER*4       dataSetID
- *    INTEGER*4       numTimes
- *    REAL*8(*)       times
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetNumTimeStepsByDataSetID().
- *
- * @ingroup Time
- *
- * #internalattributes exclude_tcl
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetSolutionTimesByDataSetID(UniqueID_t dataSetID,
-                                                                             TP_OUT EntIndex_t* numTimes,
-                                                                             TP_ARRAY_GIVES double** times);
-
-/**
- * Returns the solution time at the specified time step in a dataset.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param dataSetID
- *   The unique ID of the dataset of interest.
- *
- * @param timeStep
- *   The time step for which to retrieve the solution time.
- *
- * @solutionTime
- *   Pointer to double.  This returns the solution time.
- *
- * @return
- *   TRUE if successfull.  FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetSolutionTimeAtTimeStepByDataSetID(
- *   &                   dataSetID,
- *                       timeStep,
- *                       solutionTime)
- *    INTEGER*4 dataSetID
- *    INTEGER*4 timeStep
- *    REAL*8(*) solutionTime
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetTimeStepAtSolutionTimeByDataSetID().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetSolutionTimeAtTimeStepByDataSetID(UniqueID_t dataSetID,
-                                                                                      EntIndex_t timeStep,
-                                                                                      TP_OUT double* solutionTime);
-
-/**
- * Get the time step at the specified solution time in a dataset.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param dataSetID
- *   The unique ID of the dataset of interest.
- *
- * @param solutionTime
- *   Requested solution time.
- *
- * @param  timeStep
- *   Pointer to EntIndex_t.  This returns the time step.
- *
- * @return
- *   TRUE if able to retrieve the time step otherwise FALSE.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetTimeStepAtSolutionTimeByDataSetID(
- *   &                   dataSetID,
- *                       solutionTime,
- *                       timeStep)
- *    INTEGER*4 dataSetID
- *    REAL*8 solutionTime
- *    INTEGER*4 timeStep
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetSolutionTimeAtTimeStepByDataSetID().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetTimeStepAtSolutionTimeByDataSetID(UniqueID_t  dataSetID,
-                                                                                      double      solutionTime,
-                                                                                      TP_OUT EntIndex_t* timeStep);
-
-/**
- * Returns the minimum and maximum solution times in a dataset.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param dataSetID
- *   The unique ID of the dataset of interest.
- *
- * @param min
- *   Pointer to a double variable that will receive the minimum solution time.
- *
- * @param max
- *   Pointer to a double variable that will receive the maximum solution time.
- *
- * @return
- *   TRUE if able to retrieve the min and max.  FALSE otherwise.
- *
- *
- * @pre <em>min</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>max</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetSolutionTimeMinMaxByDataSetID(
- *   &                   dataSetID,
- *   &                   min,
- *   &                   max)
- *    INTEGER*4       dataSetID
- *    REAL*8(*)       min
- *    REAL*8(*)       max
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetSolutionTimeAtTimeStepByDataSetID().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetSolutionTimeMinMaxByDataSetID(UniqueID_t dataSetID,
-                                                                                  TP_OUT double* min,
-                                                                                  TP_OUT double* max);
-
-/**
- * Returns the current solution time for the frame.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param frameID
- *   The unique ID of the frame of interest.
- *
- * @return
- *   Solution time.
- *
- * <FortranSyntax>
- *    REAL*8 FUNCTION TecUtilSolutionTimeGetCurrentForFrame(
- *   &                   frameID)
- *    INTEGER*4 frameID
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetCurrentTimeStepForFrame().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON double STDCALL TecUtilSolutionTimeGetCurrentForFrame(UniqueID_t frameID);
-
-/**
- * Get the current time step for the frame.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param frameID
- *   The unique ID of the frame of interest.
- *
- * @param timeStep
- *   Pointer to the returned current time step index.
- *
- * @return
- *   TRUE if able to retrieve the current time step.  FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetCurrentTimeStepForFrame(
- *   &                   frameID)
- *    INTEGER*4 frameID
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetCurrentForFrame().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetCurrentTimeStepForFrame(UniqueID_t frameID,
-                                                                            TP_OUT EntIndex_t* timeStep);
-
-/**
- * Get the number of unique solution times in the given frame.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param frameID
- *   The unique ID of the frame of interest.
- *
- * @param numTimeSteps
- *   Pointer to an EntIndex_t.   Returns the current timestep starting with a value of 1.
- *
- * @return
- *   TRUE if able to retrieve the number of time steps, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetNumTimeStepsForFrame(
- *   &                   frameID,
- *   &                   numTimeSteps)
- *    INTEGER*4 frameID
- *    INTEGER*4 numTimeSteps
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetSolutionTimesForFrame().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetNumTimeStepsForFrame(UniqueID_t  frameID,
-                                                                         TP_OUT EntIndex_t* numTimeSteps);
-
-/**
- * Gets the number of solution times and solution time values currently
- * defined for the specified frame. The times array must be
- * deallocated by the addon using TecUtilArrayDealloc().
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param frameID
- *   The unique ID of the frame of interest.
- *
- * @param numTimes
- *   Pointer to an EntIndex_t variable that will receive the current number of
- *   solution times for the specified dataset.
- *
- * @param times
- *   Pointer to a double pointer variable that will receive the allocated
- *   double array of solution time values or NULL if there are none.
- *
- * @return
- *   FALSE if an allocation error occured otherwise TRUE.
- *
- *
- * @pre <em>numTimes</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>times</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetSolutionTimesForFrame(
- *   &                   frameID,
- *   &                   numTimes,
- *   &                   times)
- *    INTEGER*4       frameID
- *    INTEGER*4       numTimes
- *    REAL*8(*)       times
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetNumTimeStepsForFrame().
- *
- * @ingroup Time
- *
- * #internalattributes exclude_tcl
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetSolutionTimesForFrame(UniqueID_t frameID,
-                                                                          TP_OUT EntIndex_t* numTimes,
-                                                                          TP_ARRAY_GIVES double** times);
-
-/**
- * Returns the solution time at the specified time step in a frame.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param frameID
- *   The unique ID of the frame of interest.
- *
- * @param timeStep
- *   Time step index.
- *
- * @param solutionTime
- *   Pointer to double.  Returns the solution time.
- *
- * @return
- *   TRUE if able to retrieve the solution time.  FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetSolutionTimeAtTimeStepForFrame(
- *   &                   frameID,
- *                       timeStep,
- *                       solutionTime)
- *    INTEGER*4 frameID
- *    INTEGER*4 timeStep
- *    REAL*8    solutionTime
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetTimeStepAtSolutionTimeForFrame().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetSolutionTimeAtTimeStepForFrame(UniqueID_t frameID,
-                                                                                   EntIndex_t timeStep,
-                                                                                   TP_OUT double* solutionTime);
-
-/**
- * Returns the time step for a given solution time in a frame.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param frameID
- *   The unique ID of the frame of interest.
- *
- * @param solutionTime
- *   Requested solution time.
- *
- * @param timeStep
- *   Pointer to EntIndex_t.  This returns the time step.
- *
- * @return
- *
- *   TRUE if able to retrieve the time step.  FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetTimeStepAtSolutionTimeForFrame(
- *   &                   frameID,
- *                       solutionTime,
- *                       timeStep)
- *    INTEGER*4 frameID
- *    REAL*8 solutionTime
- *    INTEGER*4 timeStep
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetSolutionTimeAtTimeStepForFrame().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetTimeStepAtSolutionTimeForFrame(UniqueID_t  frameID,
-                                                                                   double      solutionTime,
-                                                                                   TP_OUT EntIndex_t* timeStep);
-
-/**
- * Returns the minimum and maximum solution times in a frame.
- * This function is \ref threadsafe.
- *
- * @since
- *     2017.2
- *
- * @param frameID
- *   The unique ID of the frame of interest.
- *
- * @param min
- *   Pointer to an double variable that will receive the minimum solution time.
- *
- * @param max
- *   Pointer to an double variable that will receive the maximum solution time.
- *
- * @return
- *   TRUE if able to retrieve the min and max.  FALSE otherwise.
- *
- *
- * @pre <em>min</em>
- *   Pointer must be a valid address and non-NULL.
- *
- * @pre <em>max</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilSolutionTimeGetSolutionTimeMinMaxForFrame(
- *   &                   frameID,
- *   &                   min,
- *   &                   max)
- *    INTEGER*4       frameID
- *    REAL*8(*)       min
- *    REAL*8(*)       max
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilSolutionTimeGetSolutionTimeAtTimeStepForFrame().
- *
- * @ingroup Time
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilSolutionTimeGetSolutionTimeMinMaxForFrame(UniqueID_t frameID,
-                                                                               TP_OUT double* min,
-                                                                               TP_OUT double* max);
-
-/**
- * Get the data type used for elements referenced in an existing facemap.
- *
- * This function is \ref threadsafe.
- *
- * @param faceMap
- *  facemap to query.
- *
- * @since
- *     15.3
- *
- * @return
- *     The offset data type
- *
- *
- * @pre <em>VALID_REF(FaceMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup DataServices
- */
-LINKTOADDON OffsetDataType_e STDCALL TecUtilDataFaceMapGetElementRawItemType(FaceMap_pa FaceMap);
-
-
-/**
- * Get the data type used for nodes referenced in an existing facemap.
- * For example, this could be used to determine which function to call between
- * TecUtilDataFECellGetUniqueNodes().
- *
- * This function is \ref threadsafe.
- *
- * @param faceMap
- *  facemap to query.
- *
- * @since
- *     15.3
- *
- * @return
- *     The offset data type
- *
- *
- * @pre <em>VALID_REF(FaceMap)</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * @ingroup DataServices
- */
-LINKTOADDON OffsetDataType_e STDCALL TecUtilDataFaceMapGetNodeRawItemType(FaceMap_pa FaceMap);
-
-
-/**
- * Gets the number of nodes in the face map.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *     15.3
- *
- * @param FaceMap
- *     Face mapping.
- *
- * @return
- *     Number of nodes in the face map.
- *
- *
- * @pre <em>FaceMap</em>
- *   Pointer must be a valid address and non-NULL.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilDataFaceMapGetNumNodes (
- *   &          FaceMapPtr)
- *    POINTER   (FaceMapPtr, FaceMap)
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup PolyhedralData
- *
- */
-LINKTOADDON LgIndex_t STDCALL TecUtilDataFaceMapGetNumNodes(FaceMap_pa FaceMap);
-
-/**
  * Indicates how many faces comprise the specified face mapping.
  *
  * This function is \ref threadsafe.
@@ -15337,8 +13316,8 @@ LINKTOADDON LgIndex_t STDCALL TecUtilDataFaceMapGetNFaces(FaceMap_pa FaceMap);
  * @ingroup PolyhedralData
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilDataFaceMapGetNFaceNodes(FaceMap_pa FaceMap,
-                                                            LgIndex_t  Face);
+LINKTOADDON LgIndex_t STDCALL TecUtilDataFaceMapGetNFaceNodes(FaceMap_pa FaceMap,
+                                                              LgIndex_t  Face);
 
 
 /**
@@ -15382,7 +13361,7 @@ LINKTOADDON int32_t STDCALL TecUtilDataFaceMapGetNFaceNodes(FaceMap_pa FaceMap,
  */
 LINKTOADDON LgIndex_t STDCALL TecUtilDataFaceMapGetFaceNode(FaceMap_pa FaceMap,
                                                             LgIndex_t  Face,
-                                                            int32_t    NodeOffset);
+                                                            LgIndex_t  NodeOffset);
 
 
 /**
@@ -15506,8 +13485,8 @@ LINKTOADDON LgIndex_t STDCALL TecUtilDataFaceMapGetRightElem(FaceMap_pa FaceMap,
  * @ingroup PolyhedralData
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilDataFaceMapGetNBndryConns(FaceMap_pa FaceMap,
-                                                             LgIndex_t  Face);
+LINKTOADDON LgIndex_t STDCALL TecUtilDataFaceMapGetNBndryConns(FaceMap_pa FaceMap,
+                                                               LgIndex_t  Face);
 
 
 /**
@@ -15573,7 +13552,7 @@ LINKTOADDON int32_t STDCALL TecUtilDataFaceMapGetNBndryConns(FaceMap_pa FaceMap,
  */
 LINKTOADDON void STDCALL TecUtilDataFaceMapGetBndryConn(FaceMap_pa         FaceMap,
                                                         LgIndex_t          Face,
-                                                        int32_t            BndryConnOffset,
+                                                        LgIndex_t          BndryConnOffset,
                                                         TP_OUT LgIndex_t*  BndryElem,
                                                         TP_OUT EntIndex_t* BndryElemZone);
 
@@ -15845,8 +13824,8 @@ LINKTOADDON ElemToFaceMap_pa STDCALL TecUtilDataElemGetReadableRef(EntIndex_t Zo
  * @ingroup PolyhedralData
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilDataElemGetNumFaces(ElemToFaceMap_pa ElemToFaceMap,
-                                                       LgIndex_t        Elem);
+LINKTOADDON LgIndex_t STDCALL TecUtilDataElemGetNumFaces(ElemToFaceMap_pa ElemToFaceMap,
+                                                         LgIndex_t        Elem);
 
 
 /**
@@ -15935,7 +13914,7 @@ LINKTOADDON LgIndex_t STDCALL TecUtilDataElemGetFace(ElemToFaceMap_pa ElemToFace
  * @ingroup DataValue
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueIsPassive(EntIndex_t Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilDataValueIsPassive(EntIndex_t Zone,
                                                         EntIndex_t Var);
 
 /**
@@ -15967,36 +13946,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueIsPassive(EntIndex_t Zone
  * @ingroup Export
  *
  */
-LINKTOADDON int32_t     STDCALL TecUtilGetDefaultExportImageWidth(ExportFormat_e ExportFormat,
+LINKTOADDON ScreenDim_t STDCALL TecUtilGetDefaultExportImageWidth(ExportFormat_e ExportFormat,
                                                                   ExportRegion_e ExportRegion);
-
-/**
- * Returns the list of extensions (each extension separated by a newline) that
- * are valid for this export format type.  Currently only jpeg has multiple
- * valid extensions (jpg and jpeg).
- *
- * @since
- *   2018.3
- *
- * @param ExportFormat
- *   The format in which an image will be exported.
- *
- * @param extensions
- *   Allocated character array of extensions delimited by newlines.
- *   Resulting string must be freed by caller.
- *
- * @return
- *   Returns TRUE if successfully retrieved the extensions otherwise FALSE.
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Export
- *
- */
-LINKTOADDON Boolean_t STDCALL TecUtilGetExportFormatExtensions(ExportFormat_e  exportFormat,
-                                                               TP_GIVES char **extensions);
-
 
 /**
  * Determine if the vector variables have been assigned to valid variable number.
@@ -16005,8 +13956,8 @@ LINKTOADDON Boolean_t STDCALL TecUtilGetExportFormatExtensions(ExportFormat_e  e
  *   12.0.1.5625
  *
  * @return
- *   Returns TRUE if all vector variable components have been assigned to a valid variable
- *   number, FALSE otherwise.
+ *   Returns true if all vector variable components have been assigned to a valid variable
+ *   number, false otherwise.
  *
  * @pre Must have one or more frames.
  * @pre Current frame must have a data set.
@@ -16022,10 +13973,10 @@ LINKTOADDON Boolean_t STDCALL TecUtilGetExportFormatExtensions(ExportFormat_e  e
  * @ingroup Vector
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVectorCheckVariableAssignments(void);
+LINKTOADDON Boolean_t STDCALL TecUtilVectorCheckVariableAssignments(void);
 
 /**
- * Returns a list of zones associated to the specified strand Id.
+ * Returns a list of zones associated to the specifiesd strand Id.
  *
  * @param strandID
  *     Strand Id to get the related zones.
@@ -16046,7 +13997,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilVectorCheckVariableAssignments(voi
  * @since 13.0.0.14385
  * @ingroup Utilities
  */
-LINKTOADDON TP_GIVES Set_pa STDCALL TecUtilDataSetGetZonesForStrandID(EntIndex_t strandID);
+LINKTOADDON TP_GIVES Set_pa STDCALL TecUtilDataSetGetZonesForStrandID(Strand_t strandID);
 
 /**
  * Returns a list of all the existing strand Ids.
@@ -16197,11 +14148,11 @@ LINKTOADDON Boolean_t STDCALL TecUtilExtractTimesFromFileNames(StringList_pa    
  * @ingroup DataValue
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueIsLoaded(EntIndex_t Zone,
+LINKTOADDON Boolean_t STDCALL TecUtilDataValueIsLoaded(EntIndex_t Zone,
                                                        EntIndex_t Var);
 
 /**
- * Determine if streamtraces can be ploted.
+ * Determine if streamtraces can be ploted. 
  * This function is \ref threadsafe.
  *
  * @since
@@ -16220,10 +14171,10 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilDataValueIsLoaded(EntIndex_t Zone,
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryCanPlotStreamtraces(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryCanPlotStreamtraces(void);
 
 /**
- * Determine if volume streamtraces can be ploted.
+ * Determine if volume streamtraces can be ploted. 
  * This function is \ref threadsafe.
  *
  * @since
@@ -16242,65 +14193,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryCanPlotStreamtraces(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryCanPlotVolumeStreamtraces(void);
-
-/**
- * Determine if a zone can plot volume streamtraces.
- * This function is \ref threadsafe.
- *
- * @param zone
- *   The zone number to query.
- *
- * @since
- *   14.3
- *
- * @return
- *   Returns TRUE if the zone can plot volume streamtraces, FALSE otherwise.
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilQueryZoneCanPlotVolumeStreamtraces(
- *   &                   zone)
- *    INTEGER*4       zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Utilities
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryZoneCanPlotVolumeStreamtraces(EntIndex_t zone);
-
-/**
- * Determine if the zone has visible field style, such as mesh, shade, etc.
- * This function is \ref threadsafe.
- *
- * @param zone
- *   The zone number to query.
- *
- * @since
- *   15.3
- *
- * @return
- *   Returns TRUE if the zone has visible field style, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilQueryZoneHasVisibleFieldStyle(
- *   &                   zone)
- *    INTEGER*4       zone
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Utilities
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryZoneHasVisibleFieldStyle(EntIndex_t zone);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryCanPlotVolumeStreamtraces(void);
 
 /**
  * Determine if slices can be ploted.
@@ -16322,7 +14215,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryZoneHasVisibleFieldStyle(EntI
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryCanPlotSlices(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryCanPlotSlices(void);
 
 /**
  * Determine if the plot contains contour lines.
@@ -16344,7 +14237,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryCanPlotSlices(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsContourLines(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryPlotContainsContourLines(void);
 
 /**
  * Determine if contour level modification are allowed.
@@ -16366,7 +14259,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsContourLines(void
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryContourLevelModificationsAllowed(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryContourLevelModificationsAllowed(void);
 
 /**
  * Determine if points can be extracted.
@@ -16388,7 +14281,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryContourLevelModificationsAllo
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractPoints(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToExtractPoints(void);
 
 /**
  * Determine if contour lines can be extracted.
@@ -16410,7 +14303,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractPoints(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractContourLines(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToExtractContourLines(void);
 
 /**
  * Determine if isosurfaces can be extracted.
@@ -16432,7 +14325,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractContourLines(void)
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractIsoSurfaces(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToExtractIsoSurfaces(void);
 
 /**
  * Determine if current slices can be extracted.
@@ -16454,7 +14347,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractIsoSurfaces(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractSlices(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToExtractSlices(void);
 
 /**
  * Determine if stream traces can be extracted.
@@ -16476,7 +14369,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractSlices(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractStream(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToExtractStream(void);
 
 /**
  * Determine if there are active streamtraces.
@@ -16498,7 +14391,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToExtractStream(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryStreamtracesAreActive(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryStreamtracesAreActive(void);
 
 /**
  * Determine if there are picked objects to copy
@@ -16520,7 +14413,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryStreamtracesAreActive(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToCopyPickedObjects(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToCopyPickedObjects(void);
 
 /**
  * Determine if there are picked objects to paste
@@ -16542,7 +14435,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToCopyPickedObjects(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToPastePickedObjects(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToPastePickedObjects(void);
 
 /**
  * Determine if there are picked objects to clear
@@ -16564,7 +14457,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToPastePickedObjects(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToClearPickedObjects(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToClearPickedObjects(void);
 
 /**
  * Determine if there are picked objects to send to the back or bring to the front
@@ -16587,30 +14480,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToClearPickedObjects(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToPushPopPickedObjects(void);
-
-/**
- * Determine if it is ok to animate zones. It is ok to do so if the dataset is not
- * transient or it is transient and there is exactly one time step.
- * This function is \ref threadsafe.
- *
- * @since
- *   15.3
- *
- * @return
- *   returns TRUE if it is ok to animate zones otherwise FALSE
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilQueryOkToAnimateZones()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Utilities
- *
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToAnimateZones(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryOkToPushPopPickedObjects(void);
 
 /**
  * Determine if the dirty layout flag was activated
@@ -16631,7 +14501,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToAnimateZones(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryIsLayoutDirty(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryIsLayoutDirty(void);
 
 /**
  * Determine if the current layout has any style, checking if there are pages
@@ -16653,7 +14523,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryIsLayoutDirty(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryLayoutHasStyle(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryLayoutHasStyle(void);
 
 /**
  *   Queries the state of the probe callback
@@ -16686,7 +14556,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryLayoutHasStyle(void);
  * @ingroup Probe
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilProbeIsCallbackInstalled(void);
+LINKTOADDON Boolean_t STDCALL TecUtilProbeIsCallbackInstalled(void);
 
 /**
  * Determine if the plot contains surfaces in the current frame.
@@ -16711,7 +14581,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilProbeIsCallbackInstalled(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsSurfaceZones(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryPlotContainsSurfaceZones(void);
 
 /**
  * Determine if the plot contains points in the current frame.
@@ -16736,7 +14606,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsSurfaceZones(void
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsPoints(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryPlotContainsPoints(void);
 
 /**
  * Determine if the plot contains volume zones in the current frame.
@@ -16761,11 +14631,11 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsPoints(void);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsVolumeZones(void);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryPlotContainsVolumeZones(void);
 
 
 /**
- * Determine the rank of a zone.
+ * Determine the rank of a zone. 
  * 1 = I-Ordered, J-Ordered, K-Ordered or FE-Line segment
  * 2 = IJ-Ordered, JK-Ordered, IK-Ordered, FE-Triangle, FE-Quad, or FE-Polygon
  * 3 = IJK-Ordered, FE-Tetrahedral, FE-Brick, or FE-Polyhedral
@@ -16791,7 +14661,7 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryPlotContainsVolumeZones(void)
  * @ingroup Utilities
  *
  */
-LINKTOADDON int32_t STDCALL TecUtilQueryGetZoneRank(EntIndex_t Zone);
+LINKTOADDON SmInteger_t STDCALL TecUtilQueryGetZoneRank(EntIndex_t Zone);
 
 
 /**
@@ -16814,25 +14684,7 @@ LINKTOADDON int32_t STDCALL TecUtilQueryGetZoneRank(EntIndex_t Zone);
  * @ingroup Utilities
  *
  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryCanPlotIsoSurfaces(void);
-
-
-/**
- * Determine if the X1 and Y1 axes can have a dependent coordinate scaling relationship
- * This function is \ref threadsafe.
- *
- * @param FrameID
- *      Identifies which frame establishes the dependent relationship with the axes
- *
- * @since
- *   15.2
- *
- * @return
- *   TRUE if the axes can be dependent, FALSE otherwise
- *
- * @ingroup Utilities
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryIsXYDependentAllowedForFrame(UniqueID_t FrameID);
+LINKTOADDON Boolean_t STDCALL TecUtilQueryCanPlotIsoSurfaces(void);
 
 
 /**
@@ -16844,8 +14696,8 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryIsXYDependentAllowedForFrame(
  *   Examine all macro functions:
  *
  * @code
- *  int32_t count = TecUtilMacroFunctionGetCount();
- *  for (int32_t index = 1; index <= count; ++index)
+ *  LgIndex_t count = TecUtilMacroFunctionGetCount();
+ *  for (LgIndex_t index = 1; index <= count; ++index)
  *  {
  *      char *macroFunctionName = NULL;
  *      if (TecUtilMacroFunctionGetName(index, &macroFunctionName))
@@ -16859,14 +14711,14 @@ LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryIsXYDependentAllowedForFrame(
  *
  * @sa TecUtilMacroFunctionGetName, TecUtilMacroFunctionGetAcceleratorKey
  */
-LINKTOADDON int32_t STDCALL TecUtilMacroFunctionGetCount(void);
+LINKTOADDON LgIndex_t STDCALL TecUtilMacroFunctionGetCount(void);
 
 
 /**
  * Get the name of the macro function, given a 1-based index.
  *
  * @param Index
- *      1-based index of the macro function.
+ *      1-based index of the macro function. 
  *
  * @param MacroFunctionName
  *      Receives the macro function name. Result must be deallocated with TecUtilStringDealloc() when no longer needed.
@@ -16879,8 +14731,8 @@ LINKTOADDON int32_t STDCALL TecUtilMacroFunctionGetCount(void);
  *   Examine all macro functions:
  *
  * @code
- *  int32_t count = TecUtilMacroFunctionGetCount();
- *  for (int32_t index = 1; index <= count; ++index)
+ *  LgIndex_t count = TecUtilMacroFunctionGetCount();
+ *  for (LgIndex_t index = 1; index <= count; ++index)
  *  {
  *      char *macroFunctionName = NULL;
  *      if (TecUtilMacroFunctionGetName(index, &macroFunctionName))
@@ -16896,7 +14748,7 @@ LINKTOADDON int32_t STDCALL TecUtilMacroFunctionGetCount(void);
  *
  * @sa TecUtilMacroFunctionGetCount, TecUtilMacroFunctionGetAcceleratorKey
  */
-LINKTOADDON Boolean_t STDCALL TecUtilMacroFunctionGetName(int32_t         Index,
+LINKTOADDON Boolean_t STDCALL TecUtilMacroFunctionGetName(LgIndex_t       Index, 
                                                           TP_GIVES char** MacroFunctionName);
 
 /**
@@ -16929,7 +14781,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilMacroFunctionGetName(int32_t         Index,
  *
  * @sa TecUtilMacroFunctionGetCount, TecUtilMacroFunctionGetName
  */
-LINKTOADDON char STDCALL TecUtilMacroFunctionGetAcceleratorKey(int32_t Index);
+LINKTOADDON char STDCALL TecUtilMacroFunctionGetAcceleratorKey(LgIndex_t Index);
 
 /**
  * Gets the total number of colormaps.
@@ -16941,9 +14793,9 @@ LINKTOADDON char STDCALL TecUtilMacroFunctionGetAcceleratorKey(int32_t Index);
  * @return
  *   Total number of colormaps.
  *
- * @sa TecUtilColorMapGetName, TecUtilColorMapGetNumByName
+ * @sa TecUtilColorMapGetName, TecUtilColorMapGetColorMapNumber
  */
-LINKTOADDON int32_t STDCALL TecUtilColorMapGetCount(void);
+LINKTOADDON SmInteger_t STDCALL TecUtilColorMapGetCount(void);
 
 /**
  * Given a 1-based colormap number, queries the name of the colormap.
@@ -16959,9 +14811,9 @@ LINKTOADDON int32_t STDCALL TecUtilColorMapGetCount(void);
  *  Receives the name of the color map.
  *  This string must be released by the caller using TecUtilStringDealloc.
  *
- * @sa TecUtilColorMapGetCount, TecUtilColorMapGetNumByName
+ * @sa TecUtilColorMapGetCount, TecUtilColorMapGetColorMapNumber
  */
-LINKTOADDON void  STDCALL TecUtilColorMapGetName(int32_t ColorMapNumber, TP_GIVES char **ColorMapName);
+LINKTOADDON void  STDCALL TecUtilColorMapGetName(SmInteger_t ColorMapNumber, char **ColorMapName);
 
 /**
  * Given a colormap name, queries the 1-based color map number for that name.
@@ -16977,10 +14829,10 @@ LINKTOADDON void  STDCALL TecUtilColorMapGetName(int32_t ColorMapNumber, TP_GIVE
  *
  * @sa TecUtilColorMapGetCount, TecUtilColorMapGetName
  */
-LINKTOADDON int32_t STDCALL TecUtilColorMapGetNumByName(const char *ColorMapName);
+LINKTOADDON SmInteger_t TecUtilColorMapGetColorMapNumber(const char *ColorMapName);
 
 /**
- * Returns in a string the coefficients for the equations used to draw the curve
+ * Returns in a string the coefficients for the equations used to draw the curve 
  * for a selected line-mapping.
  *
  * @since
@@ -17026,7 +14878,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilCurveGetDisplayInfo(EntIndex_t      LineMap
                                                          TP_GIVES char** DisplayInfo);
 
  /**
-  * Check if a zone is a valid Fourier Transform zone in the current dataset.
+  * Check if a zone is a valid Fourier Transform zone.
   *
   * @since
   *   14.2
@@ -17036,11 +14888,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilCurveGetDisplayInfo(EntIndex_t      LineMap
   *
   * @return
   *   TRUE if the zone is a valid Fourier Transform zone, FALSE otherwise.
- *
- * @pre Must have one or more frames.
- * @pre Current frame must have a data set with at least one zone.
- *
-  *
+  *   
   * <FortranSyntax>
   *    INTEGER*4 FUNCTION TecUtilIsValidFourierTransformZone(
   *   &                   zoneNumber)
@@ -17050,264 +14898,6 @@ LINKTOADDON Boolean_t STDCALL TecUtilCurveGetDisplayInfo(EntIndex_t      LineMap
   * <PythonSyntax>
   * </PythonSyntax>
   */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFourierTransformIsValidZone(EntIndex_t zoneNum);
-
-
- /**
-  * Check if a zone is a valid Fourier Transform zone for a given dataset.
-  * This function is \ref threadsafe.
-  *
-  * @since
-  *   2017.3
-  *
-  * @param datasetID
-  *   Unique ID for the dataset
-  *
-  * @param zoneNum
-  *   1-based zone number to check
-  *
-  * @return
-  *   TRUE if the zone is a valid Fourier Transform zone, FALSE otherwise.
-  *
-  * <FortranSyntax>
-  *    INTEGER*4 FUNCTION TecUtilIsValidFourierTransformZone(
-  *   &                   zoneNumber)
-  *    INTEGER*4 zoneNumber
-  * </FortranSyntax>
-  *
-  * <PythonSyntax>
-  * </PythonSyntax>
-  */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilFourierTransformIsValidZoneByDataSetID(UniqueID_t datasetID,
-                                                                                     EntIndex_t zoneNum);
-
-/**
- * Check if Snap to Paper coordinates  is allowed for the current state of the engine.
- *
- * @since
- *   15.2
- *
- * @return
- *   TRUE if Snap to Paper coordinates is allowed, FALSE otherwise.
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilPickIsSnapToPaperAllowed()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilPickIsSnapToPaperAllowed(void);
-
-/**
-* Check if Snap to Grid coordinates  is allowed for the current state of the engine.
-*
-* @since
-*   15.2
-*
-* @return
-*   TRUE if Snap to Grid coordinates is allowed, FALSE otherwise.
-*
-* <FortranSyntax>
-*    INTEGER*4 FUNCTION TecUtilPickIsSnapToGridAllowed()
-* </FortranSyntax>
-*
-* <PythonSyntax>
-* </PythonSyntax>
-*/
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilPickIsSnapToGridAllowed(void);
-
-/**
- * Determine if it is okay to animate IJK planes.
- * It is okay to animate IJK planes if the plot type is 2D or 3D and
- * at least one active zone is an ordered volume zone.
- *
- * @since 16.1
- *
- * @return
- *  Returns TRUE if it is ok to animate IJK planes, otherwise FALSE.
- *
- * <FortranSyntax>
- *  INTEGER*4 FUNCTION TecUtilQueryOkToAnimateIJKPlanes()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Utilities
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToAnimateIJKPlanes(void);
-
-/**
- * Determine if it is ok to smooth. It is ok to smooth if the plot type is not Sketch,
- * and the following conditions are true:
- *
- *  1. There exists more than 1 enabled variable.
- *  2. If the plot type is XY Line or Polar, or the number of enabled variables is less than 3,
- *     there must be at leasat one linear zone. A linear zone is either an FE line segment zone or
- *     a 1D zone.
- *  3. If the plot type is Cartesian 3D or there are less than 4 enabled variables,
- *     then there must exist at lease one linear zone or one surface zone.
- *  4. If the plot type is XY Line or Polar, there must exist at least one active line map.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *   15.3
- *
- * @return
- *   returns TRUE if it is ok to smooth otherwise FALSE
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilQueryOkToSmooth()
- * </FortranSyntax>
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @ingroup Utilities
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryOkToSmooth(void);
-
-/**
- * Determine if a particular technology preview feature is available.
- *
- * This function is \ref threadsafe.
- *
- * @since
- *   16.1
- *
- * @return
- *   returns TRUE if the named technology preview capability was requested via the configuration file.
- *
- * Check to see if the MACRO_DEBUGGER technology preview feature was requested in the configuration file.
- *
- * @code
- *
- *   if (TecUtilQueryIsTechnologyPreviewFeatureEnabled("MACRO_DEBUGGER"))
- *   {
- *      // do something.
- *   }
- *
- *   NOTE:  The above will return TRUE if the following is in the tecplot.cfg file:
- *
- *   $!Interace TechnologyPreview = ".....,MACRO_DEBUGGER,...."
- *
- * @endcode
- *
- * @ingroup Utilities
- */
-LINKTOADDON TP_QUERY Boolean_t STDCALL TecUtilQueryIsTechnologyPreviewFeatureEnabled(const char* Feature);
-
-/*
- * @deprecated
- *   Please use TecUtilGetExportImageWidthAndHeight instead.
- *
- * Returns the height of the image to be exported based on the export width and the
- * export region
- *
- * @param width
- *   The width of the image to be exported.
- *
- * @param region
- *   The region to be exported.
- *
- * @return
- *   returns a 32-bit integer with the height.
- *
- * @since
- *   16.2
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilExportSetup TecUtilGetDefaultExportImageWidth
- *
- * @ingroup Export
- */
-LINKTOADDON int32_t TecUtilGetExportImageHeight(int32_t        width,
-                                                ExportRegion_e region);
-
-
-
-/**
- * Returns the final width and height of the image to be exported based on the export width and the
- * export region.  The height is calcualted by taking into consideration the aspect ratio of the export
- * region along with the width.  The width "may" be adjusted to account for the fact that mpeg backed
- * export formats MUST export with even width and height values.
- *
- * @param exportRegion
- *   The region to be exported.
- *
- * @param exportFormat
- *   The export format.
- *
- * @param width
- *   Pointer to the width of the image to be exported.   This supplies the
- *   original width and may be adjusted by the engine.
- *
- * @param height
- *   Pointer to the height of the image to be exported.   This is an OUT only parameter.
- *
- *
- * @since
- *   2018.3
- *
- * <PythonSyntax>
- * </PythonSyntax>
- *
- * @sa TecUtilExportSetup TecUtilGetDefaultExportImageWidth 
- *
- * @ingroup Export
- */
-LINKTOADDON void STDCALL TecUtilGetExportImageWidthAndHeight(ExportRegion_e      exportRegion,
-                                                             ExportFormat_e      exportFormat,
-                                                             TP_IN_OUT int32_t*  width,
-                                                             TP_OUT int32_t*     height);
-/**
- * Returns the type of the last recorded error message.
- * Error message types are one of:
- *   MessageBoxType_Error
- *   MessageBoxType_Warning
- *   MessageBoxType_Infomration
- *
- * @return
- *   Type of the last error message. If no error was recorded, returns MessageBoxType_Invalid.
- *
- * @since
- *  16.3
- *
- * Query the last error message type.
- * @code
- *
- * char *lastErrorMessage = TecUtilLastErrorMessage();
- * if (lastErrorMessage)
- * {
- *    MessageBoxType_e lastErrorMessageType = TecUtilLastErrorMessageType();
- *    // ... Do something with the last error message type ...
- *    TecUtilStringDealloc(&lastErrorMessage);
- *  }
- *
- * @endcode
- *
- * <FortranSyntax>
- *    INTEGER*4 FUNCTION TecUtilLastErrorMessageType()
- * </FortranSyntax>
- *
- * @sa TecUtilLastErrorMessage TecUtilLastErrorMessageClear MessageBoxType_e
- */
-LINKTOADDON MessageBoxType_e TecUtilLastErrorMessageType(void);
-
-LINKTOADDON int64_t TecUtilElapseTimeInMS(void);
-
-/*
- * No Doxygen, see DIAG.h
- */
-LINKTOADDON ArbParam_t TecUtilInternalDiagGetInfo(int32_t getWhat);
-
-/*
- * No Doxygen, Internal use only.
- */
-LINKTOADDON Boolean_t TecUtilInternalIsPrintDebugOn(void);
+LINKTOADDON Boolean_t STDCALL TecUtilFourierTransformIsValidZone(EntIndex_t zoneNum);
 
 #endif /* _TECUTIL_Q_H_ */

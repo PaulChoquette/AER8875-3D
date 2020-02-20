@@ -4,5 +4,5 @@
 /*
  * Repository revision number - auto-generated; do not edit.
  */
-#define TecplotMinorRev 99403
+#define TecplotMinorRev 54765
 #endif

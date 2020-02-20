@@ -20,11 +20,11 @@ class TecGUISpinTextField
 public:
 
     TecGUISpinTextField(
-        GUIInt_t parentDialogId,
-        GUIInt_t x,
-        GUIInt_t y,
-        GUIInt_t width,
-        GUIInt_t height,
+        LgIndex_t parentDialogId,
+        LgIndex_t x,
+        LgIndex_t y,
+        LgIndex_t width,
+        LgIndex_t height,
         TecGUITextCallback_pf valueChangedCallback,
         TecGUIVoidCallback_pf buttonUpCallback,
         TecGUIVoidCallback_pf buttonDownCallback

@@ -57,7 +57,7 @@
  */
 
 
-#if !defined TECPLOTKERNEL && !defined STD_ASSERTS  && !defined CHECKED_BUILD
+#if !defined TECPLOTKERNEL && !defined STD_ASSERTS
 #define STD_ASSERTS
 #endif
 
@@ -250,101 +250,7 @@
 #     define ASSERT_ONLY(PARAMETER) PARAMETER
 #   endif
 #else
-
-#if defined (MSWIN)
-#if defined CHECKED_BUILD
-#include <string>
-#include <vector>
-#include <algorithm>
-
-class AssertionLog
-{
-public:
-    static void initializeAssertLog(const std::string &fileName);
-    static bool isLoggingAssertions();
-    static void addAssertion(const std::string &message);
-private:
-    static void writeOutAssertion(const std::string &message);
-private:
-    static bool                     logAssertions;
-    static std::string              logFileName;
-    static std::vector<std::string> assertList;
-};
-
-/* We need to implement something like this for QT
-extern void TWinCheckedFailedLine(const char *Expr,
-                                  const char *FileName,
-                                  int LineNum);
-*/
-
-#define TASSERT(EXPR)\
-        do { if (!(EXPR)) { /*TWinCheckedFailedLine(#EXPR,__FILE__,__LINE__);*/ } } while (0)
-
-#else
-/* MFC assert.  Works in both release & debug builds */
-#define TASSERT(EXPR) ASSERT(EXPR) 
-#endif /* CHECKED_BUILD */
-#else
-#define TASSERT(EXPR) (void)((EXPR) || (TAssert(#EXPR, __FILE__, __LINE__), 0))
-#endif
-
-#   if !defined INVARIANT
-#   if defined NO_INVARIANTS
-#     define INVARIANT(EXPR)
-#   else
-#     define INVARIANT(EXPR) TASSERT(EXPR)
-#   endif
-#   endif
-
-#   if !defined REQUIRE
-#   if defined NO_PRECONDITIONS
-#     define REQUIRE(EXPR)
-#   else
-#     define REQUIRE(EXPR) TASSERT(EXPR)
-#   endif
-#   endif
-
-#   if !defined ENSURE
-#   if defined NO_POSTCONDITIONS
-#     define ENSURE(EXPR)
-#   else
-#     define ENSURE(EXPR) TASSERT(EXPR)
-#   endif
-#   endif
-
-#   if !defined CHECK
-#   if defined NO_CHECKS
-#     define CHECK(EXPR)
-#   else
-#     define CHECK(EXPR)  TASSERT(EXPR)
-#   endif
-#   endif
-
-#   if !defined VERIFY
-#   if defined NO_CHECKS
-#     define VERIFY(EXPR)  ((void)(EXPR))
-#   else
-#     if defined NDEBUG
-#       define VERIFY(EXPR) ((void)(EXPR))
-#     else
-#       define VERIFY(EXPR) TASSERT(EXPR)
-#     endif
-#   endif
-#   endif
-
-
-#   if defined NICE_NOT_IMPLEMENTED
-#     define NOT_IMPLEMENTED() NiceNotImplemented()
-#   else
-#     define NOT_IMPLEMENTED() TASSERT(!("Not Implemented"))
-#   endif
-    /*
-     * See note above for this macro.
-     */
-#   if !defined ASSERT_ONLY
-#     define ASSERT_ONLY(PARAMETER) PARAMETER
-#   endif
-
+/* CORE SOURCE CODE REMOVED */
 #endif
 
 /**
@@ -363,5 +269,8 @@ extern void TWinCheckedFailedLine(const char *Expr,
 #if !defined EQUIVALENCE
 #  define EQUIVALENCE(P,Q) ((P) == (Q))
 #endif
+
+/* CORE SOURCE CODE REMOVED */
+
 
 #endif /* TASSERT_H */

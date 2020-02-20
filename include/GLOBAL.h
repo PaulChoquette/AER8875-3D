@@ -13,12 +13,7 @@
 #ifndef _GLOBAL_H
 #define _GLOBAL_H
 
-#if !defined _MASTER_H_ && defined TECPLOTKERNEL
-#error "Must include MASTER.h before including GLOBAL.h"
-#endif
-
 #include "StandardIntegralTypes.h"
-#include <limits>
 
 #if defined EXTERN
 #undef EXTERN
@@ -68,30 +63,19 @@
  *                           MACROS                             *
  *                                                              *
  ****************************************************************/
-
-
-// std::abs and std::max in visual studio 2008 and older always returns an int.  Remove this when we drop support for VS2008
-#if defined MSWIN
-#define STDABSINT64 _abs64
-#else
-#define STDABSINT64 std::abs
-#endif
-
-
 #define ABS(X)                ((X) >= 0 ? (X) : -(X) )
 #define MAX(X,Y)              ((X) > (Y) ? (X) : (Y) )
 #define MIN(X,Y)              ((X) < (Y) ? (X) : (Y) )
 #define BESTSHOWCOLOR(X)      ((X) == White_C ? Black_C : White_C)
 #define ROUND_TO_BYTE(X)      ((BYTE)((X)+0.499))
 #define ROUNDS(X)             ((short)((X)+0.499))
-#define ROUND32(X)            ((int32_t)((X)+0.499))
 #define ROUNDL(X)             ((LgIndex_t)((X)+0.499))
 #define ROUND2(X)             ((X) >= 0 ? ((int)((X)+0.499)) : ((int)((X)-0.499)))
 #define TRUNC(X)              ((short) (X))
 #define RAD_TO_DEG(rad)       (180.*(rad)/PI)
 #define DEG_TO_RAD(deg)       (PI*(deg)/180.)
 
-# define CAPITAL(C) ((char)(('a'<=(C)&&(C)<='z') ? ((C)+('A'-'a')) : (C))) /* okay for UNICODE */
+# define CAPITAL(C) ( ('a'<=(C)&&(C)<='z') ? ((C)+('A'-'a')) : (C) ) /* okay for UNICODE */
 
 #if defined TECPLOTKERNEL && defined MSWIN
 #define ISEMPTYSTRING(S)      tecplot::IsEmptyString(S)
@@ -112,7 +96,11 @@
 #define SWITCH(Type,A,B)      do {Type T = (A); (A) = (B); (B) = T;} while (FALSE)
 #define SWITCH_DOUBLES(A,B)   SWITCH(double, (A), (B))
 #define FPRINTFOK(x)          (Boolean_t)((x) > 0)
-#define GRAPHICSARE3D(F)      (((F)->PlotType == PlotType_Cartesian3D))
+#define GRAPHICSARE3D(F)      ((F->PlotType == PlotType_Cartesian3D))
+
+/* convenience macros for implication, P -> Q, and equivalence, P <-> Q. */
+#define IMPLICATION(P,Q) (!(P) || (Q))
+#define EQUIVALENCE(P,Q) ((P) == (Q))
 
 /* suppress compiler warnings about unused parameters */
 #if defined UNUSED
@@ -173,15 +161,15 @@
 #define CONVERT_DOUBLE_TO_INT32(val) \
   ( (val) >= 1.0 \
     ? ( (val) < LARGEINT32 \
-        ? (int32_t)(val) \
-        : (int32_t)LARGEINT32 \
+        ? (Int32_t)(val) \
+        : (Int32_t)LARGEINT32 \
       ) \
     : ( (val) <= -1.0  \
-        ? ( (val) > (int32_t)-LARGEINT32 \
-            ? (int32_t)(val) \
-            : (int32_t)-LARGEINT32 \
+        ? ( (val) > (Int32_t)-LARGEINT32 \
+            ? (Int32_t)(val) \
+            : (Int32_t)-LARGEINT32 \
           ) \
-        : (int32_t)0.0 \
+        : (Int32_t)0.0 \
       ) \
   )
 
@@ -195,31 +183,16 @@
 #define CONVERT_DOUBLE_TO_INT16(val) \
   ( (val) >= 1.0 \
     ? ( (val) < LARGEINT16 \
-        ? (int16_t)(val) \
-        : (int16_t)LARGEINT16 \
+        ? (Int16_t)(val) \
+        : (Int16_t)LARGEINT16 \
       ) \
     : ( (val) <= -1.0  \
-        ? ( (val) > (int16_t)-LARGEINT16 \
-            ? (int16_t)(val) \
-            : (int16_t)-LARGEINT16 \
+        ? ( (val) > (Int16_t)-LARGEINT16 \
+            ? (Int16_t)(val) \
+            : (Int16_t)-LARGEINT16 \
           ) \
-        : (int16_t)0.0 \
+        : (Int16_t)0.0 \
       ) \
-  )
-
-/**
- * Converts a double into a 1-byte unsigned integer value
- *
- * param val
- *     double value to be converted
- */
-#define CONVERT_DOUBLE_TO_UINT8(val) \
-  ( (val) >= 1.0 \
-    ? ( (val) < 255.0 \
-        ? (uint8_t)(val) \
-        : 255 \
-      ) \
-    : 0 \
   )
 
 /**
@@ -235,8 +208,8 @@
         do { \
           /* cannot check sizeof(SrcBuffer) or sizeof(DstBuffer) because they are */ \
           /* most likely single byte pointers into unaligned blocks of data */ \
-          ((uint8_t *)(DstBuffer))[0] = ((uint8_t *)(SrcBuffer))[0]; \
-          ((uint8_t *)(DstBuffer))[1] = ((uint8_t *)(SrcBuffer))[1]; \
+          ((Byte_t *)(DstBuffer))[0] = ((Byte_t *)(SrcBuffer))[0]; \
+          ((Byte_t *)(DstBuffer))[1] = ((Byte_t *)(SrcBuffer))[1]; \
         } while (FALSE)
 
 /**
@@ -252,8 +225,8 @@
         do { \
           /* cannot check sizeof(SrcBuffer) or sizeof(DstBuffer) because they are */ \
           /* most likely single byte pointers into unaligned blocks of data */ \
-          ((uint8_t *)(DstBuffer))[0] = ((uint8_t *)(SrcBuffer))[1]; \
-          ((uint8_t *)(DstBuffer))[1] = ((uint8_t *)(SrcBuffer))[0]; \
+          ((Byte_t *)(DstBuffer))[0] = ((Byte_t *)(SrcBuffer))[1]; \
+          ((Byte_t *)(DstBuffer))[1] = ((Byte_t *)(SrcBuffer))[0]; \
         } while (FALSE)
 
 /**
@@ -269,10 +242,10 @@
         do { \
           /* cannot check sizeof(SrcBuffer) or sizeof(DstBuffer) because they are */ \
           /* most likely single byte pointers into unaligned blocks of data */ \
-          ((uint8_t *)(DstBuffer))[0] = ((uint8_t *)(SrcBuffer))[0]; \
-          ((uint8_t *)(DstBuffer))[1] = ((uint8_t *)(SrcBuffer))[1]; \
-          ((uint8_t *)(DstBuffer))[2] = ((uint8_t *)(SrcBuffer))[2]; \
-          ((uint8_t *)(DstBuffer))[3] = ((uint8_t *)(SrcBuffer))[3]; \
+          ((Byte_t *)(DstBuffer))[0] = ((Byte_t *)(SrcBuffer))[0]; \
+          ((Byte_t *)(DstBuffer))[1] = ((Byte_t *)(SrcBuffer))[1]; \
+          ((Byte_t *)(DstBuffer))[2] = ((Byte_t *)(SrcBuffer))[2]; \
+          ((Byte_t *)(DstBuffer))[3] = ((Byte_t *)(SrcBuffer))[3]; \
         } while (FALSE)
 
 /**
@@ -288,10 +261,10 @@
         do { \
           /* cannot check sizeof(SrcBuffer) or sizeof(DstBuffer) because they are */ \
           /* most likely single byte pointers into unaligned blocks of data */ \
-          ((uint8_t *)(DstBuffer))[0] = ((uint8_t *)(SrcBuffer))[3]; \
-          ((uint8_t *)(DstBuffer))[1] = ((uint8_t *)(SrcBuffer))[2]; \
-          ((uint8_t *)(DstBuffer))[2] = ((uint8_t *)(SrcBuffer))[1]; \
-          ((uint8_t *)(DstBuffer))[3] = ((uint8_t *)(SrcBuffer))[0]; \
+          ((Byte_t *)(DstBuffer))[0] = ((Byte_t *)(SrcBuffer))[3]; \
+          ((Byte_t *)(DstBuffer))[1] = ((Byte_t *)(SrcBuffer))[2]; \
+          ((Byte_t *)(DstBuffer))[2] = ((Byte_t *)(SrcBuffer))[1]; \
+          ((Byte_t *)(DstBuffer))[3] = ((Byte_t *)(SrcBuffer))[0]; \
         } while (FALSE)
 
 /**
@@ -307,14 +280,14 @@
         do { \
           /* cannot check sizeof(SrcBuffer) or sizeof(DstBuffer) because they are */ \
           /* most likely single byte pointers into unaligned blocks of data */ \
-          ((uint8_t *)(DstBuffer))[0] = ((uint8_t *)(SrcBuffer))[0]; \
-          ((uint8_t *)(DstBuffer))[1] = ((uint8_t *)(SrcBuffer))[1]; \
-          ((uint8_t *)(DstBuffer))[2] = ((uint8_t *)(SrcBuffer))[2]; \
-          ((uint8_t *)(DstBuffer))[3] = ((uint8_t *)(SrcBuffer))[3]; \
-          ((uint8_t *)(DstBuffer))[4] = ((uint8_t *)(SrcBuffer))[4]; \
-          ((uint8_t *)(DstBuffer))[5] = ((uint8_t *)(SrcBuffer))[5]; \
-          ((uint8_t *)(DstBuffer))[6] = ((uint8_t *)(SrcBuffer))[6]; \
-          ((uint8_t *)(DstBuffer))[7] = ((uint8_t *)(SrcBuffer))[7]; \
+          ((Byte_t *)(DstBuffer))[0] = ((Byte_t *)(SrcBuffer))[0]; \
+          ((Byte_t *)(DstBuffer))[1] = ((Byte_t *)(SrcBuffer))[1]; \
+          ((Byte_t *)(DstBuffer))[2] = ((Byte_t *)(SrcBuffer))[2]; \
+          ((Byte_t *)(DstBuffer))[3] = ((Byte_t *)(SrcBuffer))[3]; \
+          ((Byte_t *)(DstBuffer))[4] = ((Byte_t *)(SrcBuffer))[4]; \
+          ((Byte_t *)(DstBuffer))[5] = ((Byte_t *)(SrcBuffer))[5]; \
+          ((Byte_t *)(DstBuffer))[6] = ((Byte_t *)(SrcBuffer))[6]; \
+          ((Byte_t *)(DstBuffer))[7] = ((Byte_t *)(SrcBuffer))[7]; \
         } while (FALSE)
 
 /**
@@ -330,14 +303,14 @@
         do { \
           /* cannot check sizeof(SrcBuffer) or sizeof(DstBuffer) because they are */ \
           /* most likely single byte pointers into unaligned blocks of data */ \
-          ((uint8_t *)(DstBuffer))[0] = ((uint8_t *)(SrcBuffer))[7]; \
-          ((uint8_t *)(DstBuffer))[1] = ((uint8_t *)(SrcBuffer))[6]; \
-          ((uint8_t *)(DstBuffer))[2] = ((uint8_t *)(SrcBuffer))[5]; \
-          ((uint8_t *)(DstBuffer))[3] = ((uint8_t *)(SrcBuffer))[4]; \
-          ((uint8_t *)(DstBuffer))[4] = ((uint8_t *)(SrcBuffer))[3]; \
-          ((uint8_t *)(DstBuffer))[5] = ((uint8_t *)(SrcBuffer))[2]; \
-          ((uint8_t *)(DstBuffer))[6] = ((uint8_t *)(SrcBuffer))[1]; \
-          ((uint8_t *)(DstBuffer))[7] = ((uint8_t *)(SrcBuffer))[0]; \
+          ((Byte_t *)(DstBuffer))[0] = ((Byte_t *)(SrcBuffer))[7]; \
+          ((Byte_t *)(DstBuffer))[1] = ((Byte_t *)(SrcBuffer))[6]; \
+          ((Byte_t *)(DstBuffer))[2] = ((Byte_t *)(SrcBuffer))[5]; \
+          ((Byte_t *)(DstBuffer))[3] = ((Byte_t *)(SrcBuffer))[4]; \
+          ((Byte_t *)(DstBuffer))[4] = ((Byte_t *)(SrcBuffer))[3]; \
+          ((Byte_t *)(DstBuffer))[5] = ((Byte_t *)(SrcBuffer))[2]; \
+          ((Byte_t *)(DstBuffer))[6] = ((Byte_t *)(SrcBuffer))[1]; \
+          ((Byte_t *)(DstBuffer))[7] = ((Byte_t *)(SrcBuffer))[0]; \
         } while (FALSE)
 
 /**
@@ -348,17 +321,17 @@
  */
 #define REVERSE_2_BYTES_1_AT_A_TIME(Buffer) \
           do { \
-            uint8_t Byte0 = ((uint8_t *)(Buffer))[0]; \
+            Byte_t Byte0 = ((Byte_t *)(Buffer))[0]; \
             CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==2); \
-            ((uint8_t *)(Buffer))[0] = ((uint8_t *)(Buffer))[1]; \
-            ((uint8_t *)(Buffer))[1] = Byte0; \
+            ((Byte_t *)(Buffer))[0] = ((Byte_t *)(Buffer))[1]; \
+            ((Byte_t *)(Buffer))[1] = Byte0; \
           } while (FALSE)
 
 #define REVERSE_2_BYTES_2_AT_A_TIME(Buffer) \
           do { \
-            uint16_t data_bits = ((uint16_t *)(Buffer))[0]; \
+            UInt16_t data_bits = ((UInt16_t *)(Buffer))[0]; \
             CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==2); \
-            ((uint16_t *)(Buffer))[0] = (((data_bits)<<8) | \
+            ((UInt16_t *)(Buffer))[0] = (((data_bits)<<8) | \
                                          ((data_bits&0xff))); \
           } while (FALSE)
 
@@ -392,20 +365,20 @@
  */
 #define REVERSE_4_BYTES_1_AT_A_TIME(Buffer) \
           do { \
-            uint8_t Byte0 = ((uint8_t *)(Buffer))[0]; \
-            uint8_t Byte1 = ((uint8_t *)(Buffer))[1]; \
+            Byte_t Byte0 = ((Byte_t *)(Buffer))[0]; \
+            Byte_t Byte1 = ((Byte_t *)(Buffer))[1]; \
             CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==4); \
-            ((uint8_t *)(Buffer))[0] = ((uint8_t *)(Buffer))[3]; \
-            ((uint8_t *)(Buffer))[1] = ((uint8_t *)(Buffer))[2]; \
-            ((uint8_t *)(Buffer))[2] = Byte1; \
-            ((uint8_t *)(Buffer))[3] = Byte0; \
+            ((Byte_t *)(Buffer))[0] = ((Byte_t *)(Buffer))[3]; \
+            ((Byte_t *)(Buffer))[1] = ((Byte_t *)(Buffer))[2]; \
+            ((Byte_t *)(Buffer))[2] = Byte1; \
+            ((Byte_t *)(Buffer))[3] = Byte0; \
           } while (FALSE)
 
 #define REVERSE_4_BYTES_4_AT_A_TIME(Buffer) \
           do { \
-            uint32_t data_bits = *((uint32_t *)(Buffer)); \
+            UInt32_t data_bits = *((UInt32_t *)(Buffer)); \
             CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==4); \
-            *((uint32_t *)(Buffer)) = (((data_bits)<<24)            | \
+            *((UInt32_t *)(Buffer)) = (((data_bits)<<24)            | \
                                        ((data_bits&0x0000ff00)<<8)  | \
                                        ((data_bits&0x00ff0000)>>8)  | \
                                        ((data_bits)>>24)); \
@@ -429,48 +402,48 @@
  */
 #define REVERSE_8_BYTES_1_AT_A_TIME(Buffer) \
         do { \
-            uint8_t Byte0 = ((uint8_t *)(Buffer))[0]; \
-            uint8_t Byte1 = ((uint8_t *)(Buffer))[1]; \
-            uint8_t Byte2 = ((uint8_t *)(Buffer))[2]; \
-            uint8_t Byte3 = ((uint8_t *)(Buffer))[3]; \
+            Byte_t Byte0 = ((Byte_t *)(Buffer))[0]; \
+            Byte_t Byte1 = ((Byte_t *)(Buffer))[1]; \
+            Byte_t Byte2 = ((Byte_t *)(Buffer))[2]; \
+            Byte_t Byte3 = ((Byte_t *)(Buffer))[3]; \
             CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==8); \
-            ((uint8_t *)(Buffer))[0] = ((uint8_t *)(Buffer))[7]; \
-            ((uint8_t *)(Buffer))[1] = ((uint8_t *)(Buffer))[6]; \
-            ((uint8_t *)(Buffer))[2] = ((uint8_t *)(Buffer))[5]; \
-            ((uint8_t *)(Buffer))[3] = ((uint8_t *)(Buffer))[4]; \
-            ((uint8_t *)(Buffer))[4] = Byte3; \
-            ((uint8_t *)(Buffer))[5] = Byte2; \
-            ((uint8_t *)(Buffer))[6] = Byte1; \
-            ((uint8_t *)(Buffer))[7] = Byte0; \
+            ((Byte_t *)(Buffer))[0] = ((Byte_t *)(Buffer))[7]; \
+            ((Byte_t *)(Buffer))[1] = ((Byte_t *)(Buffer))[6]; \
+            ((Byte_t *)(Buffer))[2] = ((Byte_t *)(Buffer))[5]; \
+            ((Byte_t *)(Buffer))[3] = ((Byte_t *)(Buffer))[4]; \
+            ((Byte_t *)(Buffer))[4] = Byte3; \
+            ((Byte_t *)(Buffer))[5] = Byte2; \
+            ((Byte_t *)(Buffer))[6] = Byte1; \
+            ((Byte_t *)(Buffer))[7] = Byte0; \
         } while (FALSE)
 
 #define REVERSE_8_BYTES_2_AT_A_TIME(Buffer) \
         do { \
-          uint16_t data_bits_0 = ((uint16_t *)(Buffer))[0]; \
-          uint16_t data_bits_1 = ((uint16_t *)(Buffer))[1]; \
-          uint16_t data_bits_2 = ((uint16_t *)(Buffer))[2]; \
-          uint16_t data_bits_3 = ((uint16_t *)(Buffer))[3]; \
+          UInt16_t data_bits_0 = ((UInt16_t *)(Buffer))[0]; \
+          UInt16_t data_bits_1 = ((UInt16_t *)(Buffer))[1]; \
+          UInt16_t data_bits_2 = ((UInt16_t *)(Buffer))[2]; \
+          UInt16_t data_bits_3 = ((UInt16_t *)(Buffer))[3]; \
           CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==8); \
-          ((uint16_t *)(Buffer))[0] = (((data_bits_3)<<8) | \
+          ((UInt16_t *)(Buffer))[0] = (((data_bits_3)<<8) | \
                                        ((data_bits_3&0xff))); \
-          ((uint16_t *)(Buffer))[1] = (((data_bits_2)<<8) | \
+          ((UInt16_t *)(Buffer))[1] = (((data_bits_2)<<8) | \
                                        ((data_bits_2&0xff))); \
-          ((uint16_t *)(Buffer))[2] = (((data_bits_1)<<8) | \
+          ((UInt16_t *)(Buffer))[2] = (((data_bits_1)<<8) | \
                                        ((data_bits_1&0xff))); \
-          ((uint16_t *)(Buffer))[3] = (((data_bits_0)<<8) | \
+          ((UInt16_t *)(Buffer))[3] = (((data_bits_0)<<8) | \
                                        ((data_bits_0&0xff))); \
         } while (FALSE)
 
 #define REVERSE_8_BYTES_4_AT_A_TIME(Buffer) \
         do { \
-          uint32_t data_bits_0 = ((uint32_t *)(Buffer))[0]; \
-          uint32_t data_bits_1 = ((uint32_t *)(Buffer))[1]; \
+          UInt32_t data_bits_0 = ((UInt32_t *)(Buffer))[0]; \
+          UInt32_t data_bits_1 = ((UInt32_t *)(Buffer))[1]; \
           CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==8); \
-          ((uint32_t *)(Buffer))[0] = (((data_bits_1)<<24)           | \
+          ((UInt32_t *)(Buffer))[0] = (((data_bits_1)<<24)           | \
                                        ((data_bits_1&0x0000ff00)<<8) | \
                                        ((data_bits_1&0x00ff0000)>>8) | \
                                        ((data_bits_1)>>24)); \
-          ((uint32_t *)(Buffer))[1] = (((data_bits_0)<<24)           | \
+          ((UInt32_t *)(Buffer))[1] = (((data_bits_0)<<24)           | \
                                        ((data_bits_0&0x0000ff00)<<8) | \
                                        ((data_bits_0&0x00ff0000)>>8) | \
                                        ((data_bits_0)>>24)); \
@@ -478,9 +451,9 @@
 
 #define REVERSE_8_BYTES_8_AT_A_TIME(Buffer) \
         do { \
-          uint64_t data_bits = *((uint64_t *)(Buffer)); \
+          UInt64_t data_bits = *((UInt64_t *)(Buffer)); \
           CHECK(sizeof(*(Buffer))==1 || sizeof(*(Buffer))==8); \
-          *((uint64_t *)(Buffer)) = (((data_bits)<<56) | \
+          *((UInt64_t *)(Buffer)) = (((data_bits)<<56) | \
                                      ((data_bits&0x000000000000ff00)<<40) | \
                                      ((data_bits&0x0000000000ff0000)<<24) | \
                                      ((data_bits&0x00000000ff000000)<<8)  | \
@@ -508,19 +481,17 @@
  *                                                              *
  ****************************************************************/
 #if defined MSWIN
-#   define STDCALL __stdcall
+#  define STDCALL __stdcall
 #else
-#   define STDCALL
+#  define STDCALL
 #endif /* MSWIN */
 
 #if defined (__cplusplus)
-#   define EXTERNC extern "C"
-#   define TP_GLOBAL_NAMESPACE ::
+# define EXTERNC extern "C"
 #else
-#   define EXTERNC
-#   define TP_GLOBAL_NAMESPACE
+# define EXTERNC
 #endif /* __cplusplus */
-
+ 
 #if defined MAKEARCHIVE
     #define tpsdkbase_API
 #else
@@ -543,6 +514,7 @@
 #endif /* MSWIN */
 
 #define EXPORTFROMDLL EXPORTFROMADDON
+
 #define InitTecAddOn           InitTecAddOn113
 #define TEC_INIT_FUNCTION_NAME "InitTecAddOn113"
 
@@ -569,42 +541,22 @@
  ****************************************************************/
 #define LARGEMEMORY              ((size_t)-1)
 
-/* Note: Tecplot is conservative by one on LARGEINTs max */
+/* CORE SOURCE CODE REMOVED */
+#define LARGEINT32               2147483646
+#define LARGEINT16               32766
+#define LARGEINT8                126
 
-#define LARGEINT64               (std::numeric_limits<int64_t>::max()-1)
-#define LARGEINT32               (std::numeric_limits<int32_t>::max()-1)
-#define LARGEINT16               (std::numeric_limits<int16_t>::max()-1)
-#define LARGEINT8                (std::numeric_limits<int8_t>::max()-1)
-
-#define LARGEUINT64              (std::numeric_limits<uint64_t>::max()-1)
-#define LARGEUINT32              (std::numeric_limits<uint32_t>::max()-1)
-#define LARGEUINT16              (std::numeric_limits<uint16_t>::max()-1)
-#define LARGEUINT8               (std::numeric_limits<uint8_t>::max()-1)
+/* CORE SOURCE CODE REMOVED */
+#define LARGEUINT32              4294967294U
+#define LARGEUINT16              65534U
+#define LARGEUINT8               254U
 
 #ifdef INDEX_16_BIT
-#define MAXINDEX                 ((LgIndex_t)LARGEINT16)
+#define MAXINDEX               ((LgIndex_t)LARGEINT16)
 #else
-/*
- *
- * Here we have to be very careful.  We currently have an infrastructure that
- * sometimes uses doubles to hold onto index values (inputspec's for one,
- * return values from GetFieldValue for another).  That being the case we need
- * a "LARGEINDEX" value that can be stored in a double without losing precision
- * or having conversion issues.  Could not find a definitive answer to this problem
- * but by some investigation discovered that, at least on linux a value of
- * LARGEINT64-512 satisfies all of the criteria.   To be safe we will use
- * LARGEINT64 >> 1 (i.e. LARGEINT64/2).
- *
- * One other "quality" that must be maintained is that -MAXINDEX must evaluate
- * to a legitimate negative number.   In the past, when LgIndex_t was 32-bit we
- * just subtracted 1 from the max signed integer to use for MAXINDEX.
- *
- */
-#define MAXINDEX                 ((LgIndex_t)(LARGEINT64>>1))
+#define MAXINDEX               ((LgIndex_t)LARGEINT32)
 #endif
-
-
-#define MAXZONEMAP               ((EntIndex_t)LARGEINT32)
+#define MAXZONEMAP               MAXINDEX
 #define LARGEDOUBLE              1.0e+150
 #define SMALLDOUBLE              1.0e-150
 #define LARGESTEXPONENT          150
@@ -615,8 +567,8 @@
 #define LARGESTDOUBLEEXPONENT    308
 #define SMALLESTDOUBLEEXPONENT   -307
 #define LARGESTDOUBLE            1.0e+308
-#define LARGEFLOAT               std::numeric_limits<float>::max() /* 3.40282347E+38 */
-#define SMALLFLOAT               std::numeric_limits<float>::min() /* 1.17549435E-38 */
+#define LARGEFLOAT               3.40282347E+38
+#define SMALLFLOAT               1.17549435E-38
 #define SMALLSTDOUBLE            1.0e-307
 
 #define ETX                      3
@@ -642,8 +594,6 @@
 #define MENU_POSITION_LAST       (-1)
 #define INVALID_UNIQUE_ID        0
 
-#define NO_EMBEDDED_LPK_IMAGE_NUMBER 0
-
 #define BADSETVALUE              BAD_SET_VALUE
 #define SOLID_TRANSLUCENCY       0
 #define BAD_DISTANCE             (-1.0)
@@ -653,9 +603,6 @@
 #define VALID_STRAND_ID(StrandID) (0 <= (StrandID) && (StrandID) < MAXZONEMAP)
 #define STRAND_ID_STATIC          (-1)
 #define STRAND_ID_PENDING         (-2)
-#if defined DEFER_TRANSIENT_OPERATIONS
-#define STRAND_ID_INVALID         (-3)
-#endif
 
 /*
  * Need 3 passes for "Rest of pie" method but can only use 3 clip planes
@@ -668,6 +615,26 @@
 
 /* CORE SOURCE CODE REMOVED */
 
+
+/*
+ * NOTE: If you change TecplotBinaryFileVersion, you MUST also:
+ *
+ * 1. Update preplot:
+ *    - Change this define symbol in preplot.cpp
+ *    - Change version number in the data file format in the comments in preplot.cpp
+ *    - Change the version number of Preplot itself in preplot.cpp
+ * 2. Maintain the ability to write the old plt file format:
+ *    - Add a new entry to BinaryFileVersion_e
+ *    - Add a concrete class of the VersionWriterInterface, and update
+ *      VersionWriterAbstractFactory to return the correct instance for the previous and
+ *      new BinaryFileVersion_e
+ *    - Abstract away the difference in the two versions behind an interface (if one does
+ *      not yet exist) and create concrete implementations that can write the old and the
+ *      new versions. For a trivial example of this, see FileTypeWriterInterface and its
+ *      associated factory and concrete classes.
+ */
+#define TecplotBinaryFileVersion    112 /* NOTE: only change this when we change the binary file format */
+
 #define    MaxNumZonesOrVars           MAXZONEMAP
 #define    MaxXAxes                    5
 #define    MaxYAxes                    5
@@ -677,9 +644,6 @@
 #define    MaxCustomLabelSets          10
 #define    MaxFontMoves                20000
 #define    MaxColorMapOverrides        16
-#define    MaxPieChartWedges           16
-#define    MinCirclePolygonPoints      12
-#define    MaxCirclePolygonPoints      360
 #define    MaxValueBlankConstraints    8
 #define    MaxContourGroups            8
 #define    MaxIsoSurfaceGroups         8
@@ -688,15 +652,15 @@
 
 #define    DefaultNumContLevels      15
 
-#define    DefaultContourGroup        ((int32_t)0)
-#define    DefaultColorMapNumber      ((int32_t)0)
-#define    DefaultLegacyColorMapGroup ((int32_t)0)
-#define    BADGROUPNUMBER             ((int32_t)-1)
-#define    UNUSEDGROUPNUMBER          ((int32_t)0)
-#define    BADCOLORMAPNUMBER          ((int32_t)-1)
+#define    DefaultContourGroup        ((SmInteger_t)0)
+#define    DefaultColorMapNumber      ((SmInteger_t)0)
+#define    DefaultLegacyColorMapGroup ((SmInteger_t)0)
+#define    BADGROUPNUMBER             ((SmInteger_t)-1)
+#define    UNUSEDGROUPNUMBER          ((SmInteger_t)0)
+#define    BADCOLORMAPNUMBER          ((SmInteger_t)-1)
 
-#define VALID_ISOSURFACE_GROUP(Group) (((((int32_t)Group) >= 0) && (((int32_t)Group) < MaxIsoSurfaceGroups)))
-#define VALID_SLICE_GROUP(Group)      (((((int32_t)Group) >= 0) && (((int32_t)Group) < MaxSliceGroups)))
+#define VALID_ISOSURFACE_GROUP(Group) (((((SmInteger_t)Group) >= 0) && (((SmInteger_t)Group) < MaxIsoSurfaceGroups)))
+#define VALID_SLICE_GROUP(Group)      (((((SmInteger_t)Group) >= 0) && (((SmInteger_t)Group) < MaxSliceGroups)))
 
 #define    MAX_AUTO_COLOR_SEQUENCE_VALUES  6
 
@@ -711,7 +675,6 @@
 #define    MaxChrsZnOrVarName        128
 /* currently limited to MaxLineIndex in preplot.c */
 #define    MaxChrsAuxValueString     32000
-#define    MaxChrsColorMapName       1024
 
 #define    MaxNumViews               16
 #define    MaxBasicSizes             5
@@ -732,8 +695,8 @@
 
 #define    BadEnumValue              255
 
-#define MAX_NODES_PER_CLASSIC_FACE    4
-#define MAX_NODES_PER_CLASSIC_ELEMENT 8
+#define MAX_NODES_PER_FACE    4
+#define MAX_NODES_PER_ELEMENT 8
 
 /*
  * Floating point values are written to layouts with a certain precision.
@@ -930,41 +893,38 @@
 /* CORE SOURCE CODE REMOVED */
 
 #if defined MSWIN
-
-/* MS Visual Studio 2013 doesn't define snprintf. Later versions do. */
-#if !defined snprintf
-#define snprintf _snprintf
-#endif
-
 #define TP_FFLUSH   fflush
 #define TP_FCLOSE   fclose
 
 /* CORE SOURCE CODE REMOVED */
-#define TP_UNLINK  TP_GLOBAL_NAMESPACE remove
-#define TP_RMDIR   TP_GLOBAL_NAMESPACE _rmdir
-#define TP_STAT    TP_GLOBAL_NAMESPACE _stat
-#define TP_GETENV  TP_GLOBAL_NAMESPACE getenv
+#define TP_UNLINK   remove
+#define TP_RMDIR    _rmdir
+#define TP_FOPEN    ::fopen
+#define TP_FREOPEN  ::freopen
+#define TP_STAT     ::_stat
+#define TP_GETENV   ::getenv
 /* CORE SOURCE CODE REMOVED */
 
 #if defined _WIN64
-#define TP_FSEEK(stream,offset,whence) TP_GLOBAL_NAMESPACE _fseeki64((stream),(__int64)(offset),(whence))
-#define TP_FTELL                       TP_GLOBAL_NAMESPACE _ftelli64
+#define TP_FSEEK(stream,offset,whence) _fseeki64((stream),(__int64)(offset),(whence))
+#define TP_FTELL                       _ftelli64
 #else
-#define TP_FSEEK(stream, offset, whence) TP_GLOBAL_NAMESPACE fseek((stream), (long)(offset), (whence))
-#define TP_FTELL                         TP_GLOBAL_NAMESPACE ftell
+#define TP_FSEEK(stream, offset, whence) fseek((stream), (long)(offset), (whence))
+#define TP_FTELL                         ftell
 #endif
 
 #else
-#define FileStat_s struct _stat
-#define TP_RMDIR  TP_GLOBAL_NAMESPACE rmdir
-#define TP_UNLINK TP_GLOBAL_NAMESPACE unlink
-#define TP_FCLOSE TP_GLOBAL_NAMESPACE fclose
-#define TP_FFLUSH TP_GLOBAL_NAMESPACE fflush
-#define TP_FSEEK  TP_GLOBAL_NAMESPACE fseeko
-#define TP_FTELL  TP_GLOBAL_NAMESPACE ftello
-#define TP_STAT   TP_GLOBAL_NAMESPACE stat
-#define _stat     TP_GLOBAL_NAMESPACE stat /* ...make the UNIXX and MSWIN platforms have the same syntax to use "struct _stat" */
-#define TP_GETENV TP_GLOBAL_NAMESPACE getenv
+#define TP_RMDIR    rmdir
+#define TP_UNLINK   unlink
+#define TP_FOPEN    fopen
+#define TP_FREOPEN  freopen
+#define TP_FCLOSE   fclose
+#define TP_FFLUSH   fflush
+#define TP_FSEEK    fseeko
+#define TP_FTELL    ftello
+#define TP_STAT     stat
+#define _stat       stat /* ...make the UNIXX and MSWIN platforms have the same syntax to use "struct _stat" */
+#define TP_GETENV   getenv
 #endif
 
 /****************************************************************
@@ -975,7 +935,35 @@
 
 
 
+/* How to define UInt64_t/Int64_t is platform specific, but they are always 8-bytes */
+#if defined MSWIN
+typedef    unsigned __int64     UInt64_t;
+typedef    __int64              Int64_t;
+#else
+#if defined CRAY
+typedef    unsigned int       UInt64_t;
+typedef    int                Int64_t;
+#else
+#if defined LONGIS64
+typedef unsigned long      UInt64_t;
+typedef long               Int64_t;
+#else
+typedef unsigned long long UInt64_t;
+typedef long long          Int64_t;
+#endif
+#endif
+#endif
+
+typedef    uint32_t  UInt32_t;
+typedef    int32_t   Int32_t;
+typedef    int       LgInteger_t;
+typedef    int16_t   Int16_t;
+typedef    uint16_t  UInt16_t;
+typedef    int8_t    Int8_t;
+typedef    uint8_t   UInt8_t;
+
 typedef    LgIndex_t NodeMap_t;
+typedef    LgIndex_t ScreenDim_t;
 
 /**
  * ArbParam_t type is used for passing arbitrary integers or pointers in parameters.
@@ -993,22 +981,33 @@ typedef int ArbParam_t;
 typedef ArbParam_t UniqueID_t;
 
 /* 64 bit offset used to hold file offset and size values. */
-typedef int64_t FileOffset_t;
+typedef Int64_t FileOffset_t;
 
-typedef uint64_t MemMapOffset_t;  //deprecated.
+/**
+ * 64 bit offset for memory mapped I/O.
+ */
+typedef UInt64_t MemMapOffset_t;
 
 /*
  *  SmInteger must be at least a short....
  */
 
+typedef    unsigned char    Byte_t;
+
 /**
  * A number of color index constants are \#defined. These include Black_C, Red_C,
  * Green_C, Blue_C, Cyan_C, Yellow_C, Purple_C, White_C, Custom1_C through
  * Custom56_C, MultiColor_C, NoColor_C, MulitiColor2_C through MulitiColor8_C,
- * RGBColor_C, and InvalidColor_C.
- */
-typedef    int32_t          ColorIndex_t;
-typedef    int16_t          SubZoneIndex_t;
+ * RGBColor_C, and InvalidColor_C.  
+ */ 
+typedef    SmInteger_t      ColorIndex_t;
+
+#ifdef INDEX_16_BIT
+typedef  Int16_t          EntIndex_t;
+#else
+typedef  Int32_t          EntIndex_t;
+#endif
+typedef    Int16_t          SubZoneIndex_t;
 
 typedef    char             Boolean_t;
 typedef    char            *ZoneName_t;
@@ -1020,143 +1019,34 @@ typedef    LgIndex_t        SegPtsArray_t[MaxGeoSegments];
 typedef    double           BasicSize_t[MaxBasicSizes];
 typedef    double          *VarList_t;
 
-typedef    LgIndex_t        SetIndex_t;
+typedef    HgIndex_t        SetIndex_t;
 
 typedef    unsigned long SetDataIntegral_t;
-/* CORE SOURCE CODE REMOVED */
+#if defined TECPLOTKERNEL
+typedef    boost::atomic<SetDataIntegral_t> SetData_t;
+#else
 typedef    SetDataIntegral_t SetData_t;
-/* CORE SOURCE CODE REMOVED */
+#endif
 typedef    SetData_t* SetData_pt;
 
 /* CORE SOURCE CODE REMOVED */
 
-
-/* The following list identifies items that can be inhibited. */
-#define FEATURE_3D                               (1L << 0) // Broken.  See Note 1. below.
-#define FEATURE_3DVOLUME                         (1L << 1)
-#define FEATURE_2D                               (1L << 2) // Broken.  See Note 1. below.
-#define FEATURE_XY                               (1L << 3) // Broken.  See Note 1. below.
-#define FEATURE_DATAALTER                        (1L << 4)
-#define FEATURE_UNSTRUCTUREDDATA                 (1L << 5)
-#define FEATURE_NUMBER_OF_FRAMES_GREATER_THAN_1  (1L << 6)
-#define FEATURE_NUMBER_OF_ZONES_GREATER_THAN_1   (1L << 7)
-#define FEATURE_NUMBER_OF_FRAMES_GREATER_THAN_5  (1L << 8)
-#define FEATURE_NUMBER_OF_ZONES_GREATER_THAN_5   (1L << 9)
-#define FEATURE_NUMBER_OF_FRAMES_GREATER_THAN_10 (1L << 10)
-#define FEATURE_NUMBER_OF_ZONES_GREATER_THAN_10  (1L << 11)
-#define FEATURE_READ_NONOEM_TECPLOT_DATA         (1L << 12) /* Added 07/22/2000 */
-#define FEATURE_FOREIGN_DATALOADERS              (1L << 13) /* Added 07/22/2000 */
-#define FEATURE_DATALOADERS_EXCEPTONE            (1L << 14) /* Added 11/26/2001 */
-#define FEATURE_LOADONDEMAND                     (1L << 15) /* Added 09/13/2007 */
-#define FEATURE_MULTIPLEWORKERTHREADS            (1L << 16) /* Added 09/13/2007 */
-#define FEATURE_ISOSURFACEGROUPS                 (1L << 17) /* Added 09/21/2007 */
-#define FEATURE_SLICEGROUPS                      (1L << 18) /* Added 09/21/2007 */
-#define FEATURE_STREAMTRACEGROUPS                (1L << 19) /* Added 09/25/2007 not used yet */
-#define FEATURE_FEPOLYHEDRON                     (1L << 20) /* Added 09/25/2007 */
-#define FEATURE_FEPOLYGON                        (1L << 21) /* Added 09/25/2007 */
-#define FEATURE_SZLDATA                          (1L << 22) /* Added 03/12/2013 */
-#define FEATURE_FEMIXEDVOLUME                    (1L << 23) /* Added 03/12/2013 */
-#define FEATURE_CFDDATA                          (1L << 24) /* Added 02/25/2015 */
-#define FEATURE_DATASETSIZE                      (1L << 25) /* Added 10/26/2015 */
-#define FEATURE_RPC                              (1L << 26) /* Added 05/18/2017 for TecUtilServer.  See Note 4 */
-#define FEATURE_DATALOADERS_EXCEPT_ALLOWED       (1L << 27) /* Added 04/16/2018 for Converge.  See Note 2 */
-#define FEATURE_NUMBER_OF_PAGES_GREATER_THAN_1   (1L << 28) /* Added 04/30/2018 for Converge.*/
-#define FEATURE_BATCH_MODE                       (1L << 29) /* Added 04/30/2018 for Converge.*/
-#define FEATURE_SIMPLEZONECREATION               (1L << 30) /* Added 05/02/2018 for Converge.  See Note 3 */
-#define NUM_POSSIBLE_INHIBITED_FEATURES 31
-
 /*
- * Notes
- * 1.  Inhibiting plottypes is broken because the drop-down control in the UI cannot handle
- *     changing to an inhibited plot type.   The kernel style property throws in this case
- *     and nobody is there to catch the throw.  The ultimate solution is to do the following:
- *       a.  Change the model for the plottypes to be dynamic and only allow non-inhibited plottypes
- *       b.  Make sure there is no way that the engine can auto set to inhibited plottype without going
- *           through sv layer.
- *
- *
- * 2. FEATURE_DATALOADERS_EXCEPT_ALLOWED "allows" loading data via any of the following:
- *            - OEM encoded plt and dat files.
- *            - All foreign loaders named in the OEMAllowedLoaders string in oem.cpp.
- *
- *
- * 3. FEATURE_SIMPLEZONECREATION inhibits creation of "simple" zones regardless of whether or not a
- *    dataset exists.   Simple zones are:
- *            - rectangular
- *            - circular
- *            - spherical
- *            - simplexy
- *
- *
- * 4. Including FEATURE_RPC essentially shuts down the ability to use pytecplot in client/server mode.
- */
-
-/*
- * KnowFeaturesToInhibit must be updated whenever a new
- * item is added above.
- */
-#define KnownFeaturesToInhibit (FEATURE_3D                               |\
-                                FEATURE_3DVOLUME                         |\
-                                FEATURE_2D                               |\
-                                FEATURE_XY                               |\
-                                FEATURE_DATAALTER                        |\
-                                FEATURE_UNSTRUCTUREDDATA                 |\
-                                FEATURE_NUMBER_OF_FRAMES_GREATER_THAN_1  |\
-                                FEATURE_NUMBER_OF_ZONES_GREATER_THAN_1   |\
-                                FEATURE_NUMBER_OF_FRAMES_GREATER_THAN_5  |\
-                                FEATURE_NUMBER_OF_ZONES_GREATER_THAN_5   |\
-                                FEATURE_NUMBER_OF_FRAMES_GREATER_THAN_10 |\
-                                FEATURE_NUMBER_OF_ZONES_GREATER_THAN_10  |\
-                                FEATURE_READ_NONOEM_TECPLOT_DATA         |\
-                                FEATURE_FOREIGN_DATALOADERS              |\
-                                FEATURE_DATALOADERS_EXCEPTONE            |\
-                                FEATURE_LOADONDEMAND                     |\
-                                FEATURE_MULTIPLEWORKERTHREADS            |\
-                                FEATURE_ISOSURFACEGROUPS                 |\
-                                FEATURE_SLICEGROUPS                      |\
-                                FEATURE_STREAMTRACEGROUPS                |\
-                                FEATURE_FEPOLYHEDRON                     |\
-                                FEATURE_FEPOLYGON                        |\
-                                FEATURE_SZLDATA                          |\
-                                FEATURE_FEMIXEDVOLUME                    |\
-                                FEATURE_CFDDATA                          |\
-                                FEATURE_DATASETSIZE                      |\
-                                FEATURE_RPC                              |\
-                                FEATURE_DATALOADERS_EXCEPT_ALLOWED       |\
-                                FEATURE_NUMBER_OF_PAGES_GREATER_THAN_1   |\
-                                FEATURE_BATCH_MODE                       |\
-                                FEATURE_SIMPLEZONECREATION)
-
-#define VALID_FEATURE_INHIBIT_FLAG(feature) (((feature) & KnownFeaturesToInhibit) != 0)
-#define VALID_FEATURE_INHIBIT_MASK(mask) (((mask) & ~KnownFeaturesToInhibit)==0)
-
-
-
-/* The following are used by the OEM libs, so they need
-   to be outside of TECPLOTKERNEL;
-   uint64_t because unsigned long is of different lengths between Windows and *nix,
-   which causes problems for Python's client-server code generation. */
-typedef    uint64_t  FeatureFlag_t;
-typedef    uint64_t  FeatureMask_t;
-
-
-/*
- * The first 128 characters (US-ASCII) need one byte. The next 1,920 characters need two bytes to encode.
- * This covers the remainder of almost all Latin-derived alphabets, and also Greek, Cyrillic, Coptic, Armenian,
- * Hebrew, Arabic, Syriac and Tana alphabets, as well as Combining Diacritical Marks. Three bytes are needed for
- * characters in the rest of the Basic Multilingual Plane (which contains virtually all characters in common use).
- * Four bytes are needed for characters in the other planes of Unicode, which include less common CJK characters and
+ * The first 128 characters (US-ASCII) need one byte. The next 1,920 characters need two bytes to encode. 
+ * This covers the remainder of almost all Latin-derived alphabets, and also Greek, Cyrillic, Coptic, Armenian, 
+ * Hebrew, Arabic, Syriac and Tana alphabets, as well as Combining Diacritical Marks. Three bytes are needed for 
+ * characters in the rest of the Basic Multilingual Plane (which contains virtually all characters in common use). 
+ * Four bytes are needed for characters in the other planes of Unicode, which include less common CJK characters and 
  * various historic scripts and mathematical symbols. (http://en.wikipedia.org/wiki/UTF-8)
- * An UTF-8 character can be represented by at most 4 bytes.
  */
-#define MAX_UTF8_BYTES 4
+#define UTF8_CHARACTER_SIZE 4
 
 /*
  * This is formed by the following:
- * "\\" + MAX_UTF8_BYTES + "\0"
+ * "\\" + UTF8_CHARACTER_SIZE + "\0"
  * 1 byte + UTF8 size + 1 byte
  */
-#define SYMBOL_CHARACTER_SIZE 1 + MAX_UTF8_BYTES + 1
+#define SYMBOL_CHARACTER_SIZE 1 + UTF8_CHARACTER_SIZE + 1
 
 typedef    char             SymbolChar_t[SYMBOL_CHARACTER_SIZE];
 
@@ -1164,37 +1054,25 @@ typedef    char             SymbolChar_t[SYMBOL_CHARACTER_SIZE];
  * Face node offset used for identifying which node of a polytope face is
  * desired.
  */
-typedef int32_t FaceNodeOffset_t;
+typedef LgIndex_t FaceNodeOffset_t;
 
 /**
  * Element face offset used for identifying which face of a polytope element is
  * desired.
  */
-typedef int32_t ElemFaceOffset_t;
+typedef LgIndex_t ElemFaceOffset_t;
 
 /**
  * Face boundary item offset used for identifying which boundary item of a
  * polytope face is desired.
  */
-typedef int32_t FaceBndryItemOffset_t;
+typedef LgIndex_t FaceBndryItemOffset_t;
 
 /****************************************************************
  *                                                              *
  *                     ENUMERATED TYPEDEFS                      *
  *                                                              *
  ****************************************************************/
-
-/**
- * DrawInPerspective boolean deprecated and replace with Projection_e.
- */
-
-typedef enum
-{
-    Projection_Orthographic,
-    Projection_Perspective,
-    END_Projection_e,
-    Projection_Invalid = BadEnumValue
-} Projection_e;
 
 typedef enum
 {
@@ -1213,7 +1091,7 @@ typedef enum
     END_StringMode_e,
     StringMode_Invalid = BadEnumValue
 
-} StringMode_e; /**@internal TP_NOPYTHON*/
+} StringMode_e;
 
 typedef enum
 {
@@ -1222,15 +1100,15 @@ typedef enum
     END_SidebarSizing_e,
     SidebarSizing_Invalid = BadEnumValue
 
-} SidebarSizing_e; /**@internal TP_NOPYTHON*/
+} SidebarSizing_e;
 
 typedef enum
 {
     SidebarLocation_Left,
-    SidebarLocation_Right,  /* Not allowed at this time */ /**@internal TP_NOTAVAILABLE*/
-    SidebarLocation_Top,    /* Not allowed at this time */ /**@internal TP_NOTAVAILABLE*/
-    SidebarLocation_Bottom, /* Not allowed at this time */ /**@internal TP_NOTAVAILABLE*/
-    END_SidebarLocation_e, /**@internal TP_NOPYTHON*/
+    SidebarLocation_Right,  /* Not allowed at this time */
+    SidebarLocation_Top,    /* Not allowed at this time */
+    SidebarLocation_Bottom, /* Not allowed at this time */
+    END_SidebarLocation_e,
     SidebarLocation_Invalid = BadEnumValue
 
 } SidebarLocation_e;
@@ -1243,7 +1121,7 @@ typedef enum
     MenuItem_SubMenu,
     END_MenuItem_e,
     MenuItem_Invalid = BadEnumValue
-} MenuItem_e; /**@internal TP_NOPYTHON*/
+} MenuItem_e;
 
 typedef enum
 {
@@ -1254,7 +1132,7 @@ typedef enum
     StandardMenu_Insert,
     StandardMenu_Data,
     StandardMenu_Frame,
-    StandardMenu_Workspace, /** @deprecated: Use Options instead */
+    StandardMenu_Workspace, /* deprecated: use Options instead */
     StandardMenu_Tools,
     StandardMenu_Help,
     StandardMenu_Animate,
@@ -1262,7 +1140,7 @@ typedef enum
     StandardMenu_Scripting,
     END_StandardMenu_e,
     StandardMenu_Invalid = BadEnumValue
-} StandardMenu_e; /**@internal TP_NOPYTHON*/
+} StandardMenu_e;
 
 typedef enum
 {
@@ -1272,7 +1150,7 @@ typedef enum
     FieldProbeDialogPage_FaceNeighbors,
     END_FieldProbeDialogPage_e,
     FieldProbeDialogPage_Invalid = BadEnumValue
-} FieldProbeDialogPage_e; /**@internal TP_NOPYTHON*/
+} FieldProbeDialogPage_e;
 
 /* CORE SOURCE CODE REMOVED */
 
@@ -1295,7 +1173,7 @@ typedef enum
     UndoStateCategory_PageAction,
     END_UndoStateCategory_e,
     UndoStateCategory_Invalid = BadEnumValue
-} UndoStateCategory_e; /**@internal TP_NOPYTHON*/
+} UndoStateCategory_e;
 
 
 /*
@@ -1316,16 +1194,6 @@ typedef enum
     END_FrameCollection_e,
     FrameCollection_Invalid = BadEnumValue
 } FrameCollection_e;
-
-typedef enum
-{
-  SurfaceGenerationMethod_AllowQuads,
-  SurfaceGenerationMethod_AllTriangles,
-  SurfaceGenerationMethod_AllPolygons,
-  SurfaceGenerationMethod_Auto,
-  END_SurfaceGenerationMethod_e,
-  SurfaceGenerationMethod_Invalid = BadEnumValue
-} SurfaceGenerationMethod_e;
 
 
 
@@ -1365,11 +1233,11 @@ typedef enum
     StateChange_ZonesAdded,
     StateChange_NodeMapsAltered,
     StateChange_FrameDeleted,
-    StateChange_NewTopFrame,               /** @deprecated: Use NewActiveFrame and/or FrameOrderChange */
+    StateChange_NewTopFrame,               /* deprecated: use NewActiveFrame and/or FrameOrderChange */
     StateChange_Style,
     StateChange_DataSetReset,
     StateChange_NewLayout,
-    StateChange_CompleteReset,             /** @deprecated: no longer broadcast */
+    StateChange_CompleteReset,             /* deprecated: no longer broadcast */
     StateChange_LineMapAssignment,         /* was StateChange_XYMapAssignment */
     StateChange_ContourLevels,
     StateChange_ModalDialogLaunch,
@@ -1421,13 +1289,6 @@ typedef enum
     StateChange_MacroRecordingCanceled,
     StateChange_ZoneSolutionTimeAltered,
     StateChange_LayoutAssociation,
-    StateChange_CopyView,
-    StateChange_ColorMapDeleted,
-    StateChange_OpenLayout,
-    StateChange_MacroLoaded,
-    StateChange_PerformingUndoBegin,
-    StateChange_PerformingUndoEnd,
-    StateChange_SolutiontimeChangeBlockEnd,
     END_StateChange_e,
     StateChange_Invalid = BadEnumValue,
     /* deprecated values */
@@ -1439,23 +1300,6 @@ typedef enum
     StateChange_XYMapAddDeleteOrReorder = StateChange_LineMapAddDeleteOrReorder
 } StateChange_e;
 
-/**
-*/
-typedef enum
-{
-    AnimationType_LineMap,
-    AnimationType_Time,
-    AnimationType_Zone,
-    AnimationType_IJKBlanking,
-    AnimationType_IJKPlanes,
-    AnimationType_IsoSurfaces,
-    AnimationType_Slices,
-    AnimationType_ContourLevels,
-    AnimationType_Streamtraces,
-    END_AnimationType_e,
-    AnimationType_Invalid = BadEnumValue
-} AnimationType_e;
-
 typedef enum
 {
     StateChangeMode_v75,
@@ -1464,7 +1308,7 @@ typedef enum
     StateChangeMode_v113,
     END_StateChangeMode_e,
     StateChangeMode_Invalid = BadEnumValue
-} StateChangeMode_e; /**@internal TP_NOPYTHON*/
+} StateChangeMode_e;
 
 typedef enum
 {
@@ -1473,7 +1317,7 @@ typedef enum
     StateChangeCallbackAPI_ChangePlusClient,
     END_StateChangeCallbackAPI_e,
     StateChangeCallbackAPI_Invalid = BadEnumValue
-} StateChangeCallbackAPI_e; /**@internal TP_NOPYTHON*/
+} StateChangeCallbackAPI_e;
 
 typedef enum
 {
@@ -1482,7 +1326,21 @@ typedef enum
     AppMode_OEM,
     END_AppMode_e,
     AppMode_Invalid = BadEnumValue
-} AppMode_e; /**@internal TP_NOPYTHON*/
+} AppMode_e;
+
+typedef enum
+{
+    ProductFlavor_TecplotFocus,
+    ProductFlavor_Tecplot360,
+    ProductFlavor_TecplotRS,
+    ProductFlavor_TecplotSDK,
+    END_ProductFlavor_e,
+    ProductFlavor_Invalid = BadEnumValue,
+    ProductFlavor_Focus = ProductFlavor_TecplotFocus, /* deprecated */
+    ProductFlavor_360   = ProductFlavor_Tecplot360,   /* deprecated */
+    ProductFlavor_RS    = ProductFlavor_TecplotRS,    /* deprecated */
+    ProductFlavor_SDK   = ProductFlavor_TecplotSDK    /* deprecated */
+} ProductFlavor_e;
 
 typedef enum
 {
@@ -1491,7 +1349,7 @@ typedef enum
     LayoutPackageObject_Data,
     END_LayoutPackageObject_e,
     LayoutPackageObject_Invalid = BadEnumValue
-} LayoutPackageObject_e; /**@internal TP_NOPYTHON*/
+} LayoutPackageObject_e;
 
 typedef enum
 {
@@ -1507,7 +1365,7 @@ typedef enum
     ImageSelection_WorkspaceOnly,
     END_ImageSelection_e,
     ImageSelection_Invalid = BadEnumValue
-} ImageSelection_e;  /**@internal TP_NOPYTHON*/
+} ImageSelection_e;
 
 typedef enum
 {
@@ -1516,7 +1374,7 @@ typedef enum
     LibraryType_V7ActiveX,
     END_LibraryType_e,
     LibraryType_Invalid = BadEnumValue
-} LibraryType_e; /* <help> "Add-on types" */ /**@internal TP_NOPYTHON*/
+} LibraryType_e; /* <help> "Add-on types" */
 
 
 typedef enum
@@ -1637,13 +1495,11 @@ typedef enum
     Dialog_GeomDetails,
     Dialog_BasicColorLegend,
     Dialog_FourierTransform,
-    Dialog_RotateData,
-    Dialog_AxialDuplicate,
     END_Dialog_e,
     Dialog_Invalid = BadEnumValue,
     /* deprecated values */
     Dialog_PlotAttributes = Dialog_ZoneMapStyle
-} Dialog_e; /* <help> "Tecplot dialog types" */ /**@internal TP_NOPYTHON*/
+} Dialog_e; /* <help> "Tecplot dialog types" */
 
 typedef enum
 {
@@ -1685,7 +1541,7 @@ typedef enum
     ProcessXYMode_WriteCurvePoints, /* deprecated: use CurveInfoMode_RawData      */
     END_ProcessXYMode_e,
     ProcessXYMode_Invalid = BadEnumValue
-} ProcessXYMode_e; /** @deprecated */
+} ProcessXYMode_e;
 #endif
 
 typedef enum
@@ -1705,7 +1561,7 @@ typedef enum
     StyleBase_Config,
     END_StyleBase_e,
     StyleBase_Invalid = BadEnumValue
-} StyleBase_e; /**@internal TP_NOPYTHON*/
+} StyleBase_e;
 
 
 typedef enum
@@ -1713,12 +1569,9 @@ typedef enum
     ReadDataOption_NewData,
     ReadDataOption_AppendData,
     ReadDataOption_ReplaceData,
-#if defined ENABLE_ORPHANED_DATASETS
-    ReadDataOption_NewOrphanedData,
-#endif
     END_ReadDataOption_e,
     ReadDataOption_Invalid = BadEnumValue
-} ReadDataOption_e; /**@internal TP_NOPYTHON*/
+} ReadDataOption_e;
 
 #if defined EXPORT_DEPRECATED_INTERFACES_TO_ADK_ONLY
 /**
@@ -1732,7 +1585,7 @@ typedef enum
     NodeLabel_XAndYVarValue, /* deprecated: use LabelType_XAndYVarValue */
     END_NodeLabel_e,
     NodeLabel_Invalid = BadEnumValue
-} NodeLabel_e; /** @deprecated */
+} NodeLabel_e;
 #endif
 
 typedef enum
@@ -1758,7 +1611,7 @@ typedef enum
     SubBoundaryEditOption_AddOnly,  /* deprecated: use BorderAction_AddOnly */
     END_SubBoundaryEditOption_e,
     SubBoundaryEditOption_Invalid = BadEnumValue
-} SubBoundaryEditOption_e; /** @deprecated */
+} SubBoundaryEditOption_e;
 #endif
 
 typedef enum
@@ -1769,7 +1622,7 @@ typedef enum
     BorderAction_AddOnly,  /* SubBoundaryEditOption_AddOnly */
     END_BorderAction_e,
     BorderAction_Invalid = BadEnumValue
-} BorderAction_e; /**@internal TP_NOPYTHON*/
+} BorderAction_e;
 
 
 typedef enum
@@ -1793,7 +1646,7 @@ typedef enum
     PointerStyle_LeftRight,
     END_PointerStyle_e,
     PointerStyle_Invalid = BadEnumValue
-} PointerStyle_e; /**@internal TP_NOPYTHON*/
+} PointerStyle_e;
 
 typedef enum
 {
@@ -1820,7 +1673,7 @@ typedef enum
     CursorStyle_ClosedHand,
     END_CursorStyle_e,
     CursorStyle_Invalid = BadEnumValue
-} CursorStyle_e; /**@internal TP_NOPYTHON*/
+} CursorStyle_e;
 
 
 typedef enum
@@ -1838,7 +1691,7 @@ typedef enum
     PickSubPosition_LeftAndRight,
     END_PickSubPosition_e,
     PickSubPosition_Invalid = BadEnumValue
-} PickSubPosition_e; /**@internal TP_NOPYTHON*/
+} PickSubPosition_e;
 
 typedef enum
 {
@@ -1848,7 +1701,7 @@ typedef enum
     TecEngInitReturnCode_InternalInitializationError,
     END_TecEngInitReturnCode_e,
     TecEngInitReturnCode_Invalid = BadEnumValue
-} TecEngInitReturnCode_e; /**@internal TP_NOPYTHON*/
+} TecEngInitReturnCode_e;
 
 typedef enum
 {
@@ -1909,26 +1762,6 @@ typedef enum
     SetValue_Invalid                  = SetValueReturnCode_Invalid                   /* deprecated */
 } SetValueReturnCode_e;
 
-typedef enum
-{
-    DataAlterMode_Alter,
-    DataAlterMode_CheckSyntax,
-    END_DataAlterMode_e,
-    DataAlterMode_Invalid = BadEnumValue
-} DataAlterMode_e; /**@internal TP_NOPYTHON*/
-
-typedef enum
-{
-    DataAlterReturnCode_Ok,
-    DataAlterReturnCode_InvalidVariableName,
-    DataAlterReturnCode_InvalidVariableNumber,
-    DataAlterReturnCode_InvalidLeftSideVariable,
-    DataAlterReturnCode_InvalidReference,
-    DataAlterReturnCode_InvalidExpressionCharacter,
-    DataAlterReturnCode_Error,
-    END_DataAlterReturnCode_e,
-    DataAlterReturnCode_Invalid = BadEnumValue
-} DataAlterReturnCode_e;
 
 typedef enum
 {
@@ -1965,7 +1798,7 @@ typedef enum
     View_Fit,
     View_DataFit,
     View_AxisFit,
-    View_Scale,  /** @deprecated: Use SetMagnification */
+    View_Scale,   /* deprecated, Use SetMagnification */
     View_Center,
     View_Translate,
     View_Zoom,
@@ -2049,7 +1882,7 @@ typedef enum
     StatusInfo_PercentDone,
     END_StatusInfo_e,
     StatusInfo_Invalid = BadEnumValue
-} StatusInfo_e; /**@internal TP_NOPYTHON*/
+} StatusInfo_e;
 
 
 #if defined EXPORT_DEPRECATED_INTERFACES_TO_ADK_ONLY
@@ -2073,7 +1906,7 @@ typedef enum
     Frame_XY      = FrameMode_XY,       /* deprecated */
     Frame_Sketch  = FrameMode_Sketch,   /* deprecated */
     Frame_Invalid = FrameMode_Invalid   /* deprecated */
-} FrameMode_e; /** @deprecated */
+} FrameMode_e;
 #endif
 
 
@@ -2110,7 +1943,7 @@ typedef enum
     ContLineCreateMode_OneZonePerIndependentPolyline,
     END_ContLineCreateMode_e,
     ContLineCreateMode_Invalid = BadEnumValue
-} ContLineCreateMode_e; /**@internal TP_NOPYTHON*/
+} ContLineCreateMode_e;
 
 
 typedef enum
@@ -2165,7 +1998,7 @@ typedef enum
     PickObject_RGBLegend              = PickObjects_RGBLegend,              /* deprecated */
     PickObject_LineMapping            = PickObjects_LineMapping,            /* deprecated */
     PickObject_Invalid                = PickObjects_Invalid                 /* deprecated */
-} PickObjects_e; /**@internal TP_NOPYTHON*/
+} PickObjects_e;
 
 
 /* CORE SOURCE CODE REMOVED */
@@ -2191,7 +2024,7 @@ typedef enum
     MouseButtonClick_NoOp,
     END_MouseButtonClick_e,
     MouseButtonClick_Invalid = BadEnumValue
-} MouseButtonClick_e; /**@internal TP_NOPYTHON*/
+} MouseButtonClick_e;
 
 
 typedef enum
@@ -2223,8 +2056,9 @@ typedef enum
     MouseButtonDrag_Invalid = BadEnumValue,
     /* deprecated values */
     MouseButtonDrag_SpherRtatData  = MouseButtonDrag_SpherZRtatData,
-    MouseButtonDrag_SpherRotateVwr = MouseButtonDrag_SpherZRotateVwr
-} MouseButtonDrag_e; /**@internal TP_NOPYTHON*/
+    MouseButtonDrag_SpherRotateVwr = MouseButtonDrag_SpherZRotateVwr,
+
+} MouseButtonDrag_e;
 
 /* CORE SOURCE CODE REMOVED */
 
@@ -2239,7 +2073,7 @@ typedef enum  /* deprecated */
     AltMouseButtonMode_RevertToSelect,
     END_AltMouseButtonMode_e,
     AltMouseButtonMode_Invalid = BadEnumValue
-} AltMouseButtonMode_e; /** @deprecated*/
+} AltMouseButtonMode_e;
 
 
 typedef enum
@@ -2321,7 +2155,7 @@ typedef enum
     Mouse_User3                 = MouseButtonMode_User3,                 /* deprecated */
     Mouse_User4                 = MouseButtonMode_User4,                 /* deprecated */
     Mouse_Invalid               = MouseButtonMode_Invalid                /* deprecated */
-} MouseButtonMode_e; /**@internal TP_NOPYTHON*/
+} MouseButtonMode_e;
 
 
 typedef enum
@@ -2331,7 +2165,7 @@ typedef enum
     DetailsButtonState_ToolDetails,
     END_DetailsButtonState_e,
     DetailsButtonState_Invalid = BadEnumValue
-} DetailsButtonState_e; /**@internal TP_NOPYTHON*/
+} DetailsButtonState_e;
 
 
 typedef enum
@@ -2344,7 +2178,7 @@ typedef enum
     Event_KeyPress,
     END_Event_e,
     Event_Invalid = BadEnumValue
-} Event_e; /**@internal TP_NOPYTHON*/
+} Event_e;
 
 
 typedef enum
@@ -2364,7 +2198,7 @@ typedef enum
     ThreeDViewChangeDrawLevel_Trace,
     END_ThreeDViewChangeDrawLevel_e,
     ThreeDViewChangeDrawLevel_Invalid = BadEnumValue
-} ThreeDViewChangeDrawLevel_e; /** @deprecated: Use PlotApproximateMode.\n"*/
+} ThreeDViewChangeDrawLevel_e; /* <help> "ThreeDViewChangeDrawLevel is deprecated. Use PlotApproximateMode.\n"*/
 
 typedef enum
 {
@@ -2372,7 +2206,7 @@ typedef enum
     NonCurrentFrameRedrawLevel_Trace,
     END_NonCurrentFrameRedrawLevel_e,
     NonCurrentFrameRedrawLevel_Invalid = BadEnumValue
-} NonCurrentFrameRedrawLevel_e; /** @deprecated: Use PlotApproximateMode.\n"*/
+} NonCurrentFrameRedrawLevel_e; /* <help> "NonCurrentFrameRedrawLevel is deprecated. Use PlotApproximateMode.\n"*/
 
 
 /**
@@ -2440,7 +2274,7 @@ typedef enum
     RedrawReason_Invalid = BadEnumValue,
     RedrawReason_UserReqRedrawCurrentFrame = RedrawReason_UserReqRedrawActiveFrame,
     RedrawReason_UserReqTraceCurrentFrame = RedrawReason_UserReqTraceActiveFrame
-} RedrawReason_e; /**@internal TP_NOPYTHON */
+} RedrawReason_e;
 
 typedef enum
 {
@@ -2474,7 +2308,7 @@ typedef enum
     RotateOriginLocation_Viewer,
     END_RotateOriginLocation_e,
     RotateOriginLocation_Invalid = BadEnumValue
-} RotateOriginLocation_e; /**@internal TP_NOPYTHON*/
+} RotateOriginLocation_e;
 
 /*
  * NOTE: This is only used with the $!Reset3DOrigin command.
@@ -2516,7 +2350,7 @@ typedef enum
     Input_ElapsedTimeDouble,
     END_Input_e,
     Input_Invalid = BadEnumValue
-} Input_e; /**@internal TP_NOPYTHON*/
+} Input_e;
 
 
 
@@ -2607,14 +2441,6 @@ typedef enum
 
 typedef enum
 {
-    SZLSubzoneLoadModeForStreams_PreCheckoutAll,
-    SZLSubzoneLoadModeForStreams_CheckoutAsNeeded,
-    END_SZLSubzoneLoadModeForStreams_e,
-    SZLSubzoneLoadModeForStreams_Invalid = BadEnumValue
-} SZLSubzoneLoadModeForStreams_e; /**@internal TP_NOPYTHON*/
-
-typedef enum
-{
     ValueBlankCellMode_AllCorners,
     ValueBlankCellMode_AnyCorner,
     ValueBlankCellMode_PrimaryValue,
@@ -2637,7 +2463,7 @@ typedef enum
     ValueBlankMode_CornerRule,
     END_ValueBlankMode_e,
     ValueBlankMode_Invalid = BadEnumValue
-} ValueBlankMode_e; /** @deprecated: ValueBlankMode_e will not be supported after version 8*/
+} ValueBlankMode_e; /*<help>"DEPRECATED: ValueBlankMode_e will not be supported after version 8"*/
 
 
 typedef enum
@@ -2690,25 +2516,7 @@ typedef enum
     SphereScatterRenderQuality_High,
     END_SphereScatterRenderQuality_e,
     SphereScatterRenderQuality_Invalid = BadEnumValue
-} SphereScatterRenderQuality_e; /**@internal TP_NOPYTHON*/
-
-typedef enum
-{
-    ExtractMode_SingleZone,
-    ExtractMode_OneZonePerConnectedRegion,
-    ExtractMode_OneZonePerSourceZone,
-    END_ExtractMode_e,
-    ExtractMode_Invalid = BadEnumValue
-} ExtractMode_e;
-
-typedef enum
-{
-    Resulting1DZoneType_IOrderedIfPossible,
-    Resulting1DZoneType_FELineSegment,
-    Resulting1DZoneType_Unused,
-    END_Resulting1DZoneType_e,
-    ResultingDZoneType_Invalid = BadEnumValue
-} Resulting1DZoneType_e;
+} SphereScatterRenderQuality_e;
 
 /*
  * NOTE: FillPat_e is deprecated.  It must be retained to maintain
@@ -2723,7 +2531,7 @@ typedef enum
     Pattern_HighTranslucent,
     END_FillPat_e,
     Pattern_Invalid = BadEnumValue
-} FillPat_e; /**@deprecated: Replaced by Translucency_e*/
+} FillPat_e; /*<help>"DEPRECATED: Replaced by Translucency_e"*/
 
 
 typedef enum
@@ -2745,7 +2553,7 @@ typedef enum
     SunRaster_ByteEncoded,
     END_SunRaster_e,
     SunRaster_Invalid = BadEnumValue
-} SunRaster_e; /**@internal TP_NOPYTHON*/
+} SunRaster_e;
 
 
 typedef enum
@@ -2781,7 +2589,7 @@ typedef enum
     Quick_TextColor,
     END_QuickColorMode_e,
     Quick_Invalid = BadEnumValue
-} QuickColorMode_e; /**@internal TP_NOPYTHON*/
+} QuickColorMode_e;
 
 
 typedef enum
@@ -2838,7 +2646,7 @@ typedef enum
     GeomForm_Square,
     GeomForm_Circle,
     GeomForm_Ellipse,
-    GeomForm_LineSegs3D, /** @deprecated: Use GeomForm_LineSegs with CoordSys_Grid3D */
+    GeomForm_LineSegs3D, /* deprecated: use GeomForm_LineSegs with CoordSys_Grid3D */
     GeomForm_Image,
     END_GeomForm_e,
     GeomForm_Invalid = BadEnumValue,
@@ -2871,7 +2679,7 @@ typedef enum
     AuxDataType_String,
     END_AuxDataType_e,
     AuxDataType_Invalid = BadEnumValue
-} AuxDataType_e; /**@internal TP_NOPYTHON*/
+} AuxDataType_e;
 
 /**
  */
@@ -2883,10 +2691,10 @@ typedef enum
     AuxDataLocation_Var,
     AuxDataLocation_LineMap,
     AuxDataLocation_Page,
-    AuxDataLocation_Layout,
     END_AuxDataLocation_e,
     AuxDataLocation_Invalid = BadEnumValue
 } AuxDataLocation_e;
+
 
 /* Note: This replaces Element_e */
 typedef enum
@@ -2926,7 +2734,7 @@ typedef enum
     DataFormat_FEPoint,
     END_DataFormat_e,
     DataFormat_Invalid = BadEnumValue
-} DataFormat_e; /** @deprecated */
+} DataFormat_e;
 
 typedef enum
 {
@@ -2934,48 +2742,16 @@ typedef enum
     DataPacking_Point,
     END_DataPacking_e,
     DataPacking_Invalid = BadEnumValue
-} DataPacking_e; /**@internal TP_NOPYTHON*/
-
-/*
- *
- * Probeobjects are used for two purposes:
- *
- *   1.  Identify objects that can be probed and possibly
- *       "spared" out from probing.
- *
- *   2.  Determine the order that objects are probed.
- *       Best is to do streamtrace first and  FieldZone last.
- */
-typedef enum
-{
-    ProbeObject_None,
-    ProbeObject_Streamtrace,
-    ProbeObject_StreamtraceMarker,
-    ProbeObject_Slice,
-    ProbeObject_IsoSurface,
-    ProbeObject_FieldZone,
-    END_ProbeObject_e,
-    ProbeObject_First = ProbeObject_Streamtrace,
-    ProbeObject_Last  = ProbeObject_FieldZone,
-    ProbeObject_Invalid = BadEnumValue
-} ProbeObject_e;
+} DataPacking_e;
 
 
-/* ProbeNearest_CellCenter to be added later */
-typedef enum
-{
-    ProbeNearest_Position,
-    ProbeNearest_Node,
-    END_ProbeNearest_e,
-    ProbeNearest_Invalid = BadEnumValue
-} ProbeNearest_e;
 
 typedef enum
 {
     PD_HPGL,
     PD_HPGL2,
     PD_PS,
-    PD_LASERG, /** @deprecated */
+    PD_LASERG, /* deprecated */
     PD_EPS,
     PD_WINDOWS, /* Windows Print Driver */
     PD_WMF, /* Windows MetaFile (used from Export only) */
@@ -3040,17 +2816,17 @@ typedef enum
     ExportFormat_SGI,
     ExportFormat_SunRaster,
     ExportFormat_XWindows,
-    ExportFormat_PSImage,       /** @deprecated */
+    ExportFormat_PSImage,       /* deprecated */
     ExportFormat_HPGL,
     ExportFormat_HPGL2,
     ExportFormat_PS,
     ExportFormat_EPS,
-    ExportFormat_LaserGraphics, /** @deprecated */
+    ExportFormat_LaserGraphics, /* deprecated */
     ExportFormat_WindowsMetafile,
     ExportFormat_BMP,
     ExportFormat_PNG,
     ExportFormat_AVI,
-    ExportFormat_Custom,  /* May be used in a future version */ /**@internal TP_NOTAVAILABLE*/
+    ExportFormat_Custom,  /* May be used in a future version */
     ExportFormat_JPEG,
     ExportFormat_Flash,
     ExportFormat_X3D,
@@ -3130,7 +2906,7 @@ typedef enum
     BitDumpRegion_WorkArea,
     END_BitDumpRegion_e,
     BitDumpRegion_Invalid = BadEnumValue
-} BitDumpRegion_e; /** @deprecated */
+} BitDumpRegion_e;
 #endif
 
 typedef enum
@@ -3160,7 +2936,7 @@ typedef enum
     Paper_Custom1 = PaperSize_Custom1, /* deprecated */
     Paper_Custom2 = PaperSize_Custom2, /* deprecated */
     Paper_Invalid = PaperSize_Invalid  /* deprecated */
-} PaperSize_e; /**@internal TP_NOPYTHON*/
+} PaperSize_e;
 
 
 
@@ -3181,7 +2957,7 @@ typedef enum
     PaperUnitSpacing_OneTenthCentimeter,
     END_PaperUnitSpacing_e,
     PaperUnitSpacing_Invalid = BadEnumValue
-} PaperUnitSpacing_e; /**@internal TP_NOPYTHON*/
+} PaperUnitSpacing_e;
 
 
 typedef enum
@@ -3278,14 +3054,6 @@ typedef enum
 } TextAnchor_e;
 
 
-typedef enum
-{
-    TextType_Regular,
-    TextType_LaTeX,
-    END_TextType_e,
-    TextType_Invalid = BadEnumValue
-} TextType_e;
-
 
 typedef enum
 {
@@ -3311,8 +3079,6 @@ typedef enum
     GeomShape_Sphere,
     GeomShape_Octahedron,
     GeomShape_Point,
-    GeomShape_PieChart,
-    GeomShape_LineArt,
     END_GeomShape_e,
     GeomShape_Invalid = BadEnumValue
 } GeomShape_e;
@@ -3346,7 +3112,7 @@ typedef enum
     LineForm_ParaSpline,
     END_LineForm_e,
     LineForm_Invalid = BadEnumValue
-} LineForm_e; /** @deprecated */
+} LineForm_e;
 
 
 typedef enum
@@ -3370,7 +3136,7 @@ typedef enum
     Script_Sub,
     END_Script_e,
     Script_Invalid = BadEnumValue
-} Script_e; /**@internal TP_NOPYTHON*/
+} Script_e;
 
 
 typedef enum
@@ -3387,10 +3153,6 @@ typedef enum
     Font_Courier,
     Font_CourierBold,
     Font_Extended,
-    Font_HelveticaItalic,
-    Font_HelveticaItalicBold,
-    Font_CourierItalic,
-    Font_CourierItalicBold,
     END_Font_e,
     Font_Invalid = BadEnumValue
 } Font_e;
@@ -3455,7 +3217,6 @@ typedef enum
     DistributionRegion_Rake,
     DistributionRegion_SurfacesOfActiveZones,
     DistributionRegion_SurfacesOfSelectedObjects,
-    DistributionRegion_SurfacesOfSuppliedZones,
     END_DistributionRegion_e,
     DistributionRegion_Invalid = BadEnumValue
 } DistributionRegion_e;
@@ -3479,24 +3240,9 @@ typedef enum
     ValueLocation_Invalid = BadEnumValue
 } ValueLocation_e;
 
-
 typedef enum
 {
-    OffsetDataType_32Bit,
-    OffsetDataType_64Bit,
-    END_OffsetDataType_e,
-    OffsetDataType_Invalid = BadEnumValue
-} OffsetDataType_e;
-
-/*
- * Convenience macro to help avoid using if-else if-CHECK(FALSE)'s (and one less test) for code that today
- * can only handle 32 and 64 bit offset types.
- */
-#define VALID_32OR64BIT_OFFSET_TYPE(t) ((t) == OffsetDataType_32Bit || (t) == OffsetDataType_64Bit)
-
-typedef enum
-{
-    FieldDataType_Reserved, /* never use */ /**@internal TP_NOTAVAILABLE*/
+    FieldDataType_Reserved, /* never use */
     FieldDataType_Float,
     FieldDataType_Double,
     FieldDataType_Int32,
@@ -3504,8 +3250,8 @@ typedef enum
     FieldDataType_Byte,
     FieldDataType_Bit,
     END_FieldDataType_e,
-    FieldDataType_IJKFunction,   /* Not used yet */ /**@internal TP_NOTAVAILABLE*/
-    FieldDataType_Int64, /* Not used yet */ /**@internal TP_NOTAVAILABLE*/
+    FieldDataType_IJKFunction,   /* Not used yet */
+    FieldDataType_Int64, /* Not used yet */
 #if defined EXPORT_DEPRECATED_INTERFACES_TO_ADK_ONLY
     FieldDataType_LongInt = FieldDataType_Int32,
     FieldDataType_ShortInt = FieldDataType_Int16,
@@ -3528,7 +3274,7 @@ typedef enum
     Mesh_HiddenLine, /* deprecated: use MeshType_HiddenLine */
     END_MeshPlotType_e,
     Mesh_Invalid = BadEnumValue
-} MeshPlotType_e; /** @deprecated */
+} MeshPlotType_e;
 #endif
 
 typedef enum
@@ -3557,7 +3303,7 @@ typedef enum
     Contour_CornerCell,  /* deprecated: use ContourType_PrimaryValue */
     END_ContourPlotType_e,
     Contour_Invalid = BadEnumValue
-} ContourPlotType_e; /** @deprecated */
+} ContourPlotType_e;
 #endif
 
 
@@ -3600,7 +3346,7 @@ typedef enum
     Vector_HeadOnly,    /* deprecated: use VectorType_HeadOnly    */
     END_VectorPlotType_e,
     Vector_Invalid = BadEnumValue
-} VectorPlotType_e; /** @deprecated */
+} VectorPlotType_e;
 #endif
 
 
@@ -3629,7 +3375,7 @@ typedef enum
     Shade_ColoredGouraud,
     END_ShadePlotType_e,
     Shade_Invalid = BadEnumValue
-} ShadePlotType_e; /** @deprecated */
+} ShadePlotType_e;
 
 /*
  * NOTE: LightingEffect_None is deprecated.  It must remain
@@ -3640,7 +3386,7 @@ typedef enum
 {
     LightingEffect_Paneled,
     LightingEffect_Gouraud,
-    LightingEffect_None, /** @deprecated */
+    LightingEffect_None,
     END_LightingEffect_e,
     LightingEffect_Invalid = BadEnumValue
 } LightingEffect_e;
@@ -3683,7 +3429,7 @@ typedef enum
  *
  *
  * NOTE: IJKPlanes_e is still used internally in tecplot (and in the TecUtil layer).
- *       it has been relegated to communicating which planes of an IJK zone are in
+ *       it has been relagated to communicating which planes of an IJK zone are in
  *       use.
  *
  */
@@ -3694,10 +3440,10 @@ typedef enum
     IJKPlanes_J,
     IJKPlanes_K,
     IJKPlanes_Face,  /* used on the panel heap */
-    IJKPlanes_IJ,    /** @deprecated */
-    IJKPlanes_JK,    /** @deprecated */
-    IJKPlanes_IK,    /** @deprecated */
-    IJKPlanes_IJK,   /** @deprecated */
+    IJKPlanes_IJ,    /* deprecated */
+    IJKPlanes_JK,    /* deprecated */
+    IJKPlanes_IK,    /* deprecated */
+    IJKPlanes_IJK,   /* deprecated */
     IJKPlanes_Volume,
     IJKPlanes_Unused,
     END_IJKPlanes_e,
@@ -3753,17 +3499,23 @@ typedef enum
 
 typedef enum
 {
-    SliceSurface_XPlanes,
-    SliceSurface_YPlanes,
-    SliceSurface_ZPlanes,
+    SliceSurface_XVar,
+    SliceSurface_YVar,
+    SliceSurface_ZVar,
     SliceSurface_IPlanes,
     SliceSurface_JPlanes,
     SliceSurface_KPlanes,
-    SliceSurface_CVar, /* Internal use only. */
+    SliceSurface_CVar,
     SliceSurface_Arbitrary,
     END_SliceSurface_e,
+    #if defined EXPORT_DEPRECATED_INTERFACES_TO_ADK_ONLY
+    SliceSurface_XPlanes = SliceSurface_XVar, /* deprecated */
+    SliceSurface_YPlanes = SliceSurface_YVar, /* deprecated */
+    SliceSurface_ZPlanes = SliceSurface_ZVar, /* deprecated */
+    #endif
     SliceSurface_Invalid = BadEnumValue
-} SliceSurface_e; /**@internal TP_NOPYTHON*/ /* pytecplot defines this separately with CVar removed. */
+} SliceSurface_e;
+
 
 typedef enum
 {
@@ -3805,7 +3557,7 @@ typedef enum
     Boundary_Both, /* deprecated: use BoundaryType_Both */
     END_BoundPlotType_e,
     Boundary_Invalid = BadEnumValue
-} BoundPlotType_e; /** @deprecated */
+} BoundPlotType_e;
 #endif
 
 typedef enum
@@ -3889,6 +3641,8 @@ typedef enum
     ColorMap_Invalid      = ContourColorMap_Invalid       /* deprecated */
 } ContourColorMap_e;
 
+
+
 typedef enum
 {
     ErrorBar_Up,
@@ -3922,10 +3676,10 @@ typedef enum
     MessageBoxType_Error,
     MessageBoxType_Warning,
     MessageBoxType_Information,
-    MessageBoxType_Question,   /* Ok, Cancel buttons */ /**@internal TP_NOPYTHON*/
-    MessageBoxType_YesNo, /**@internal TP_NOPYTHON*/
-    MessageBoxType_YesNoCancel, /**@internal TP_NOPYTHON*/
-    MessageBoxType_WarningOkCancel, /**@internal TP_NOPYTHON*/
+    MessageBoxType_Question,   /* Ok, Cancel buttons */
+    MessageBoxType_YesNo,
+    MessageBoxType_YesNoCancel,
+    MessageBoxType_WarningOkCancel,
     END_MessageBoxType_e,
     MessageBoxType_Invalid = BadEnumValue,
     /* deprecated values */
@@ -3948,7 +3702,7 @@ typedef enum
     MessageBoxReply_Ok,
     END_MessageBoxReply_e,
     MessageBoxReply_Invalid = BadEnumValue
-} MessageBoxReply_e; /**@internal TP_NOPYTHON*/
+} MessageBoxReply_e;
 
 typedef enum
 {
@@ -3977,7 +3731,7 @@ typedef enum
     BackingStoreMode_PeriodicUpdate,
     END_BackingStoreMode_e,
     BackingStoreMode_Invalid = BadEnumValue
-} BackingStoreMode_e; /**@internal TP_NOPYTHON*/
+} BackingStoreMode_e;
 
 
 typedef enum
@@ -3997,7 +3751,7 @@ typedef enum
     AxisTitlePosition_Right,
     END_AxisTitlePosition_e,
     AxisTitlePosition_Invalid = BadEnumValue
-} AxisTitlePosition_e; /** @deprecated */
+} AxisTitlePosition_e;
 
 typedef enum
 {
@@ -4035,30 +3789,21 @@ typedef enum
 
 typedef enum
 {
-    LegendShow_Always,
-    LegendShow_Never,
+    LegendShow_Yes,
+    LegendShow_No,
     LegendShow_Auto,
     END_LegendShow_e,
-    LegendShow_Invalid = BadEnumValue,
-
-    /* deprecated values */
-    LegendShow_Yes = LegendShow_Always,  /* @deprecated */
-    LegendShow_No  = LegendShow_Never    /* @deprecated */
+    LegendShow_Invalid = BadEnumValue
 } LegendShow_e;
 
 typedef enum
 {
     LineMapSort_None,
-    LineMapSort_ByIndependentVar,
-    LineMapSort_ByDependentVar,
-    LineMapSort_BySpecificVar,
+    LineMapSort_IndependentVar,
+    LineMapSort_DependentVar,
+    LineMapSort_SpecificVar,
     END_LineMapSort_e,
-    LineMapSort_Invalid = BadEnumValue,
-
-    /* deprecated values */
-    LineMapSort_IndependentVar = LineMapSort_ByIndependentVar, /* @deprecated */
-    LineMapSort_DependentVar   = LineMapSort_ByDependentVar,   /* @deprecated */
-    LineMapSort_SpecificVar    = LineMapSort_BySpecificVar,    /* @deprecated */
+    LineMapSort_Invalid = BadEnumValue
 } LineMapSort_e;
 
 typedef enum
@@ -4106,7 +3851,7 @@ typedef enum
     LaunchDialogMode_ModalAsync,
     END_LaunchDialogMode_e,
     LaunchDialogMode_Invalid = BadEnumValue
-} LaunchDialogMode_e; /**@internal TP_NOPYTHON*/
+} LaunchDialogMode_e;
 
 typedef enum
 {
@@ -4117,19 +3862,17 @@ typedef enum
     SelectFileOption_SelectDirectory,
     END_SelectFileOption_e,
     SelectFileOption_Invalid = BadEnumValue
-} SelectFileOption_e; /**@internal TP_NOPYTHON*/
+} SelectFileOption_e;
 
 typedef enum
 {
     BinaryFileVersion_Tecplot2006,
     BinaryFileVersion_Tecplot2008,
     BinaryFileVersion_Tecplot2009,
-    BinaryFileVersion_Tecplot2019,
-    BinaryFileVersion_Current = BinaryFileVersion_Tecplot2019, /* Current should always point to latest version */
+    BinaryFileVersion_Current,
     END_BinaryFileVersion_e,
     BinaryFileVersion_Invalid = BadEnumValue
-} BinaryFileVersion_e; /**@internal TP_NOPYTHON*/
-
+} BinaryFileVersion_e;
 
 /*   CURRENTLY NOT USED .... */
 typedef enum
@@ -4139,7 +3882,7 @@ typedef enum
     ViewActionDrawMode_DrawFull,
     END_ViewActionDrawMode_e,
     ViewActionDrawMode_Invalid = BadEnumValue
-} ViewActionDrawMode_e; /**@internal TP_NOTAVAILABLE*/
+} ViewActionDrawMode_e;
 
 typedef enum
 {
@@ -4178,8 +3921,6 @@ typedef enum
     FrameAction_MoveToBottomByName,
     FrameAction_MoveToBottomByNumber,
     FrameAction_SetNumberByNumber,
-    FrameAction_DeleteByNumber,
-    FrameAction_Reset,
     END_FrameAction_e,
     FrameAction_Invalid = BadEnumValue,
     FrameAction_Pop = FrameAction_PopByNumber,
@@ -4194,7 +3935,7 @@ typedef enum
     DoubleBufferAction_Swap,
     END_DoubleBufferAction_e,
     DoubleBufferAction_Invalid = BadEnumValue
-} DoubleBufferAction_e; /**@internal TP_NOPYTHON*/
+} DoubleBufferAction_e;
 
 /*
  * PickAction_CheckToAdd had the side effects of popping a frame that was selected
@@ -4223,7 +3964,7 @@ typedef enum
     PickAction_AddAtPosition,
     END_PickAction_e,
     PickAction_Invalid = BadEnumValue
-} PickAction_e; /**@internal TP_NOPYTHON*/
+} PickAction_e;
 
 typedef enum
 {
@@ -4292,73 +4033,6 @@ typedef enum
     RGBMode_Invalid = BadEnumValue
 } RGBMode_e;
 
-
-/*
- *  Transient Operation Modes:
- *
- *  SingleSolutionTime: 
- *     Create zones immediately from the existing state in 360
- *
- *  AllSolutionTimes: 
- *      Create zones immediately for the existing state plus sweeping through all time steps
- *
- *  AllSolutionTimesDeferred: 
- *      Create zones only as needed when a new solution time is visited.  An example would be
- *      slice extraction.
- *
- *  AllSolutionTimesDeferredAccumulated: (Future)
- *      Like AllSolutionTimesDeferred however new zones are not created as each time step is visited but
- *      instead a specific set of zones are modified.   An example would be using CFDA to 
- *      integrate over time and adding one more datapoint to an existing 1D zone each time
- *      a new timestep is visited.
- */
-
-typedef enum
-{
-    TransientOperationMode_SingleSolutionTime,
-    TransientOperationMode_AllSolutionTimes,
-    TransientOperationMode_AllSolutionTimesDeferred,
-    END_TransientOperationMode_e,
-    TransientOperationMode_Invalid = BadEnumValue
-} TransientOperationMode_e;
-
-
-/*
- *  ExtractionStrandIDAssignment rules:
- *  
- *  OneStrandPerGroup         = All zones extracted from a single slice group get the same strand id (for all time)
- *
- *  OneStrandPerSubExtraction = All zones extracted from a single slice group get "slotted" strand id's (for all time)
- *
- *  Auto = 
- *      if Extracting over all solution times:
- *          if ExtractMode is ExtractMode_SingleZone                 ->   OneStrandPerSubExtraction
- *          if ExtractMode is ExtractMode_OneZonePerConnectedRegion  ->   OneStrandPerGroup
- *
- *      if Extracting for a single solution time                     ->   OneStrandPerSubExtraction
- *                              
- *
- *  "Slotted" means the following:
- *      if ExtractMode is ExtractMode_SingleZone                 ->  Use pre-assigned strand id's for each expected slice position.
- *      if ExtractMode is ExtractMode_OneZonePerConnectedRegion: ->  Use sequenced strand ids starting with a base strand id for 
- *                                                                   each group and incrementing with each zone that is extracted 
- *                                                                   for all connected regions.
- *
- *  In some cases using OneStrandPerSubExtraction with ExtractMode_OneZonePerConnectedRegion "may" actually align connected regions within
- *  the same strand id.
- *
- */
-typedef enum
-{
-    ExtractionStrandIDAssignment_DoNotAssignStrandIDs,
-    ExtractionStrandIDAssignment_Auto,
-    ExtractionStrandIDAssignment_OneStrandPerGroup,
-    ExtractionStrandIDAssignment_OneStrandPerSubExtraction,
-    END_ExtractionStrandIDAssignment_e,
-    ExtractionStrandIDAssignment_Invalid = BadEnumValue
-} ExtractionStrandIDAssignment_e;
-
-
 typedef enum
 {
     TecUtilErr_None,
@@ -4380,7 +4054,7 @@ typedef enum /* Custom exporter error message */
     ExportCustReturnCode_NotAFieldDataExporter,
     END_ExportCustReturnCode_e,
     ExportCustReturnCode_Invalid = BadEnumValue
-} ExportCustReturnCode_e; /**@internal TP_NOPYTHON*/
+} ExportCustReturnCode_e;
 
 /**
  * COB/Zone types.
@@ -4396,7 +4070,7 @@ typedef enum
     CZType_StreamtraceArrowheadCOB,
     END_CZType_e,
     CZType_Invalid = BadEnumValue
-} CZType_e; /**@internal TP_NOPYTHON*/
+} CZType_e;
 
 /**
  */
@@ -4433,7 +4107,7 @@ typedef enum
     Stipple_None,
     END_Stipple_e,
     Stipple_Invalid = BadEnumValue
-} Stipple_e; /**@internal TP_NOPYTHON*/
+} Stipple_e;
 
 typedef enum
 {
@@ -4450,7 +4124,7 @@ typedef enum
     ConditionAwakeReason_TimedOut,
     END_ConditionAwakeReason_e,
     ConditionAwakeReason_Invalid = BadEnumValue
-} ConditionAwakeReason_e; /**@internal TP_NOPYTHON*/
+} ConditionAwakeReason_e;
 
 typedef enum
 {
@@ -4459,7 +4133,7 @@ typedef enum
     ProbeStatus_Exited,
     END_ProbeStatus_e,
     ProbeStatus_Invalid = BadEnumValue
-} ProbeStatus_e; /**@internal TP_NOPYTHON*/
+} ProbeStatus_e;
 
 typedef enum
 {
@@ -4495,17 +4169,7 @@ typedef enum
     LoaderCallbackVersion_V3,   /* Modern, without Append parameter (for loaders that want to use DataLoadStart/End and automatic appending) */
     END_LoaderCallbackVersion_e,
     LoaderCallbackVersion_Invalid = BadEnumValue
-} LoaderCallbackVersion_e; /**@internal TP_NOPYTHON*/
-
-/* Used by TecUtilImportAddLoaderX */
-typedef enum
-{
-    LoaderAdvancedOptions_NotAvailable,
-    LoaderAdvancedOptions_Allow,
-    LoaderAdvancedOptions_ForceLaunch,
-    END_LoaderAdvancedOptions_e,
-    LoaderAdvancedOptions_Invalid = BadEnumValue
-} LoaderAdvancedOptions_e; /**@internal TP_NOPYTHON*/
+} LoaderCallbackVersion_e;
 
 /* Used by TecUtilPickAddAtPositionX */
 typedef enum
@@ -4513,10 +4177,9 @@ typedef enum
     PickCollectMode_ExclusiveSelect,
     PickCollectMode_InvertingAdd,
     PickCollectMode_AlwaysAdd,
-    PickCollectMode_HomogeneousAdd,
     END_PickCollectMode_e,
     PickCollectMode_Invalid = BadEnumValue
-} PickCollectMode_e; /**@internal TP_NOPYTHON*/
+} PickCollectMode_e;
 
 typedef enum
 {
@@ -4525,24 +4188,6 @@ typedef enum
     END_BoundingBoxMode_e,
     BoundingBoxMode_Invalid = BadEnumValue
 } BoundingBoxMode_e;
-
-typedef enum
-{
-    ImageRenderingStrategy_Auto,
-    ImageRenderingStrategy_OpenGL,
-    ImageRenderingStrategy_Mesa,
-    END_ImageRenderingStrategy_e,
-    ImageRenderingStrategy_Invalid = BadEnumValue
-} ImageRenderingStrategy_e; /**@internal TP_NOPYTHON*/
-
-typedef enum
-{
-    PreTranslateData_Auto,
-    PreTranslateData_On,
-    PreTranslateData_Off,
-    END_PreTranslateData_e,
-    PreTranslateData_Invalid = BadEnumValue
-} PreTranslateData_e; /**@internal TP_NOPYTHON*/
 
 /****************************************************************
  *                                                              *
@@ -4561,16 +4206,16 @@ typedef void*(STDCALL *ThreadFunction_pf)(ArbParam_t ThreadData);
 
 typedef struct Condition_s* Condition_pa;
 
-typedef struct JobControl_s* JobControl_pa;
+typedef struct _JobControl_s* JobControl_pa;
 
 typedef void (STDCALL *ThreadPoolJob_pf)(ArbParam_t JobData);
 
 /* CORE SOURCE CODE REMOVED */
 
-typedef struct StringList_s* StringList_pa;
-typedef struct Menu_s*       Menu_pa;
+typedef struct _StringList_s *StringList_pa;
+typedef struct _Menu_s       *Menu_pa;
 /* CORE SOURCE CODE REMOVED */
-typedef struct LineSegmentProbeResult_s* LineSegProbeResult_pa;
+typedef struct _LineSegmentProbeResult_s *LineSegProbeResult_pa;
 
 typedef enum
 {
@@ -4603,45 +4248,22 @@ typedef enum
 
 /* CORE SOURCE CODE REMOVED */
 
-/**
- */
-typedef enum
-{
-    ElementOrientation_Standard,  /* Element has standard Tecplot ordering.   */
-    ElementOrientation_Reversed,  /* Element is opposite Tecplot's ordering.  */
-    ElementOrientation_Arbitrary, /* Element does not effect its neighbors   */
-                                  /* and therefore stands alone as an island. */
-                                  /* Since it stands alone it is assumed to   */
-                                  /* have standard orientation when used.     */
-    END_ElementOrientation_e,
-    ElementOrientation_Invalid = BadEnumValue
-} ElementOrientation_e;
-
-
 typedef struct Set_s* Set_pa;
 
-struct XY_s
-{
-    double X;
-    double Y;
-};
-
-typedef struct
+struct XYZ_s
 {
     double X;
     double Y;
     double Z;
-} XYZ_s;
+};
 
 /* CORE SOURCE CODE REMOVED */
 
-typedef struct AddOnList_s* AddOn_pa;
+typedef struct _AddOnList_a *AddOn_pa;
 
 typedef struct NodeMap_s* NodeMap_pa;
 
 /* CORE SOURCE CODE REMOVED */
-
-typedef struct DataElementState_s* ElementOrientation_pa;
 
 
 #define INVALID_INDEX (-1)
@@ -4666,14 +4288,6 @@ typedef struct ElemToFaceMap_s* ElemToFaceMap_pa;
  */
 typedef struct NodeToElemMap_s* NodeToElemMap_pa;
 
-enum RecordingLangauge_e
-{
-    RecordingLanguage_TecplotMacro,
-    RecordingLanguage_Python,
-    END_RecordingLangauge_e,
-    RecordingLanguage_Invalid = BadEnumValue
-}; /**@internal TP_NOPYTHON*/
-
 /* CORE SOURCE CODE REMOVED */
 
 
@@ -4681,7 +4295,7 @@ typedef struct FieldData_s* FieldData_pa;
 
 /**
  */
-typedef struct AuxData_s* AuxData_pa;
+typedef struct _AuxData_s  *AuxData_pa;
 
 
 /**
@@ -4807,10 +4421,9 @@ typedef enum
 {
     MarchingCubeAlgorithm_Classic,
     MarchingCubeAlgorithm_ClassicPlus,
-    MarchingCubeAlgorithm_MC33,
     END_MarchingCubeAlgorithm_e,
     MarchingCubeAlgorithm_Invalid = BadEnumValue
-} MarchingCubeAlgorithm_e; /**@internal TP_NOPYTHON*/
+} MarchingCubeAlgorithm_e;
 
 /* CORE SOURCE CODE REMOVED */
 
@@ -4834,7 +4447,6 @@ typedef enum
     ArgListArgType_Set,
     ArgListArgType_String,
     ArgListArgType_StringList,
-    ArgListArgType_StringPtr,
     END_ArgListArgType_e,
     ArgListArgType_Invalid = BadEnumValue
 } ArgListArgType_e;
@@ -4850,16 +4462,11 @@ typedef enum
     StateModernizationLevel_2013Focus,
     StateModernizationLevel_2014,
     StateModernizationLevel_2014Focus,
-    StateModernizationLevel_2016R1,
-    StateModernizationLevel_2016R1Focus,
-    StateModernizationLevel_2018R3,
-    StateModernizationLevel_2018R3Focus,
     END_StateModernizationLevel_e,
     StateModernizationLevel_Invalid = BadEnumValue
-} StateModernizationLevel_e; /**@internal TP_NOPYTHON*/
+} StateModernizationLevel_e;
 
 /* CORE SOURCE CODE REMOVED */
-
 /* - NO DOXYGEN COMMENT GENERATION -
  * Page creation callback is responsible for creating a RenderHandler for the page and
  * calling @ref TecEngPageCreateNew(ArbParam_t RenderHandle)
@@ -4929,19 +4536,12 @@ typedef void (STDCALL *PageNewCurrentCallback_pf)(ArbParam_t PageClientData,
  *
  * @param Width
  *  Width of the offscreen image.
- *
- * @param Height
+ * 
+ * @param Height 
  *  Height of the offscreen image.
- *
+ * 
  * @param ExportRegion
  *   The region to be exported. This argument should be passed to TecEngRenderOffscreenImage.
- *
- * @param imageRenderingStrategy
- *   Indicates what strategy is to be used for rendering the image. The two options are:
- *   ImageRenderingStrategy_OpenGL and ImageRenderingStrategy_Mesa. If directed to use
- *   OpenGL the Engine will call the standard OpenGL APIs. If directed to use Mesa the
- *   Engine will call mangled OpenGL APIs implemented for OSMesa. To date, only Linux
- *   supports the Mesa option.
  *
  * @param RegistrationClientData
  *   Data associated with the registration of this function.   This will always return
@@ -4955,12 +4555,11 @@ typedef void (STDCALL *PageNewCurrentCallback_pf)(ArbParam_t PageClientData,
  *   11.2-0-054
  * @sa TecEngRenderOffscreenImage
  */
-typedef Boolean_t (STDCALL *OffscreenImageCreateCallback_pf)(int32_t                  Width,
-                                                             int32_t                  Height,
-                                                             ExportRegion_e           ExportRegion,
-                                                             ImageRenderingStrategy_e imageRenderingStrategy,
-                                                             ArbParam_t               RegistrationClientData,
-                                                             TP_OUT ArbParam_t*       ImageHandle);
+typedef Boolean_t (STDCALL *OffscreenImageCreateCallback_pf)(ScreenDim_t        Width,
+                                                             ScreenDim_t        Height,
+                                                             ExportRegion_e     ExportRegion,
+                                                             ArbParam_t         RegistrationClientData,
+                                                             TP_OUT ArbParam_t* ImageHandle);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Callback responsible for destruction of an offscreen image.
@@ -5014,23 +4613,11 @@ typedef void (STDCALL *OffscreenImageDestroyCallback_pf)(ArbParam_t ImageHandle,
  *     11.2-0-054
  */
 typedef Boolean_t (STDCALL *OffscreenImageGetRGBRowCallback_pf)(ArbParam_t           ImageHandle,
-                                                                int32_t              Row,
+                                                                ScreenDim_t          Row,
                                                                 ArbParam_t           RegistrationClientData,
-                                                                TP_ARRAY_OUT uint8_t* RedArray,
-                                                                TP_ARRAY_OUT uint8_t* GreenArray,
-                                                                TP_ARRAY_OUT uint8_t* BlueArray);
-
-/* - NO DOXYGEN COMMENT GENERATION -
-* Callback responsible for clearing offscreen image cache.
-*
-* @param RegistrationClientData
-*   Data associated with the registration of this function.   This will always return
-*   the value supplied in the original registration of this function.
-*
-* @since
-*   2018.3
-*/
-typedef void (STDCALL *OffscreenImageClearCacheCallback_pf)(ArbParam_t RegistrationClientData);
+                                                                TP_ARRAY_OUT Byte_t* RedArray,
+                                                                TP_ARRAY_OUT Byte_t* GreenArray,
+                                                                TP_ARRAY_OUT Byte_t* BlueArray);
 
 #if defined MSWIN
 /* - NO DOXYGEN COMMENT GENERATION -
@@ -5146,10 +4733,10 @@ typedef Boolean_t (STDCALL *RenderQueryCallback_pf)(ArbParam_t PageClientData,
  *
  * @sa TecEngRenderDestSizeRegisterCallback
  */
-typedef void (STDCALL *RenderDestSizeCallback_pf)(ArbParam_t      PageClientData,
-                                                  ArbParam_t      RegistrationClientData,
-                                                  TP_OUT int32_t* Width,
-                                                  TP_OUT int32_t* Height);
+typedef void (STDCALL *RenderDestSizeCallback_pf)(ArbParam_t        PageClientData,
+                                                  ArbParam_t        RegistrationClientData,
+                                                  TP_OUT LgIndex_t* Width,
+                                                  TP_OUT LgIndex_t* Height);
 
 /* - NO DOXYGEN COMMENT GENERATION -
  * Callback responsible for swapping the front and back buffers for the current
@@ -5279,7 +4866,7 @@ typedef void (STDCALL *BaseCursorStyleCallback_pf)(CursorStyle_e CursorStyle,
  *
  * @sa TecEngSelectRegionRegisterCallback
  */
-typedef void (STDCALL *SelectRegionCallback_pf)(double X1, double Y1, double X2, double Y2,
+typedef void (STDCALL *SelectRegionCallback_pf)(double X1, double Y1, double X2, double Y2, 
                                                 Boolean_t     collectingObjects,
                                                 ArbParam_t    RegistrationClientData);
 
@@ -5301,7 +4888,7 @@ typedef void (STDCALL *SelectRegionCallback_pf)(double X1, double Y1, double X2,
 typedef void (STDCALL *ProcessBusyEventsCallback_pf)(ArbParam_t RegistrationClientData);
 
 /* - NO DOXYGEN COMMENT GENERATION -
- * This callback function will be called every time the engine returns from the last call to a
+ * This callback function will be called every time the engine returns from the last call to a 
  * TecUtil/TecEng/TecApp. Tecplot SDK Integration Manager will react to this callback by scheduling
  * a zero-timeout timer for the detection of the idle state.
  *
@@ -5416,9 +5003,9 @@ typedef void (STDCALL *ScreenSizeCallback_pf)(ArbParam_t  RegistrationClientData
  * @sa TecEngDialogGetSimpleTextRegisterCallback
  * @sa TecUtilDialogGetSimpleText
  */
-typedef Boolean_t(STDCALL *DialogGetSimpleTextCallback_pf)(const char* instructions,
-                                                           char**      valuePtr,
-                                                           Boolean_t   presetInputValue,
+typedef Boolean_t(STDCALL *DialogGetSimpleTextCallback_pf)(char const* instructions, 
+                                                           char**      valuePtr, 
+                                                           Boolean_t   presetInputValue, 
                                                            ArbParam_t  registrationClientData);
 
 
@@ -5446,42 +5033,6 @@ typedef MessageBoxReply_e(STDCALL *DialogMessageBoxCallback_pf)(const char*     
                                                                 ArbParam_t       RegistrationClientData);
 
 /* - NO DOXYGEN COMMENT GENERATION -
- * Callback responsible for displaying a file selection dialog and returning the
- * user's response.
- *
- * @since
- *   15.2
- *
- * @param dialogOption
- *   Choose one of:
- *    SelectFileOption_ReadSingleFile,
- *    SelectFileOption_ReadMultiFile,
- *    SelectFileOption_AllowMultiFileRead,
- *    SelectFileOption_WriteFile,
- *    SelectFileOption_SelectDirectory,
- * @param dialogTitle
- *   Dialog title
- * @param defaultFName
- *   default filename.  can be NULL.
- * @param defaultFilter
- *   default filter.   Ex: "my data files (*.abc)" or just "*.abc"
- * @param returnedFileName
- *   selected filename from the user is returned in this parameter.  This will
- *   be freed by the engine and thus must be allocated using TecUtilStringAlloc.
- * @return
- *   TRUE if "Open" is selected, FALSE if "Cancel" or "X"
- *
- *
- * @sa TecEngDialogSelectFileRegisterCallback
- */
-typedef Boolean_t (STDCALL *DialogSelectFileCallback_pf)(SelectFileOption_e DialogOption,
-                                                         const char*        DialogTitle,
-                                                         const char*        DefaultFName,
-                                                         const char*        DefaultFilter,
-                                                         TP_GIVES char**    ReturnedFileName,
-                                                         ArbParam_t         RegistrationClientData);
-
-/* - NO DOXYGEN COMMENT GENERATION -
  * Callback responsible for displaying a status line
  *
  * @since
@@ -5499,7 +5050,7 @@ typedef void (STDCALL *StatusLineCallback_pf)(const char* StatusString,
                                               ArbParam_t  RegistrationClientData);
 
 /* - NO DOXYGEN COMMENT GENERATION -
- * Callback used to display coordinates in a status line, this is intended
+ * Callback used to display coordinates in a status line, this is intended 
  * to be used for internal Integration manager to engine communication only.
  *
  * @since
@@ -5622,7 +5173,7 @@ typedef Boolean_t (STDCALL *AddOnTimerCallback_pf)(ArbParam_t ClientData);
  */
 typedef Boolean_t (STDCALL *TimerCallback_pf)(AddOnTimerCallback_pf  TimerCallback,
                                               ArbParam_t             ClientData,
-                                              uint32_t               Interval,
+                                              UInt32_t               Interval,
                                               ArbParam_t             RegistrationClientData);
 
 /* - NO DOXYGEN COMMENT GENERATION -
@@ -5633,15 +5184,12 @@ typedef Boolean_t (STDCALL *TimerCallback_pf)(AddOnTimerCallback_pf  TimerCallba
  *
  * @param layoutName
  *   The name of the MRU layout that was successfully opened or saved.
- * @param operationSucceeded
- *   True if reading or writing layout file succeeded.
  * @param RegistrationClientData
  *   Client data that was registered with the callback.
  *
  * @sa TecEngMRULayoutFilenameRegisterCallback
  */
 typedef void (STDCALL *MRULayoutFilenameCallback_pf)(const char* layoutName,
-                                                     Boolean_t operationSucceeded,
                                                      ArbParam_t  RegistrationClientData);
 
 /* - NO DOXYGEN COMMENT GENERATION -
@@ -5659,11 +5207,11 @@ typedef void (STDCALL *MRULayoutFilenameCallback_pf)(const char* layoutName,
  *
  * @sa TecEngOpenGLVersionStringRegisterCallback
  */
-typedef const char* (STDCALL *OpenGLVersionStringCallback_pf)(ArbParam_t  RegistrationClientData);
+typedef char const* (STDCALL *OpenGLVersionStringCallback_pf)(ArbParam_t  RegistrationClientData);
 
 /**
  * This function is called when the user activates a menu item
- * added via TecUtilMenuInsertToggle.
+ * added via TecUtilMenuInsertOption or TecUtilMenuInsertToggle.
  *
  * @param RegistrationClientData
  *   Arbitrary client data.
@@ -5782,33 +5330,6 @@ typedef Boolean_t (STDCALL *DrawEventCallback_pf)(RedrawReason_e RedrawReason,
 
 
 /**
-* This callback signature is used to perform actions before writting layouts.
-*
-* @since
-*   15.3
-*
-* @param PageList
-*   List of pages to be written in the layout.
-*
-* @param ClientData
-*   Client data that was registered with the callback.
-*
-* @return
-*   TRUE if successfull, FALSE otherwise.
-*
-* <FortranSyntax>
-*    INTEGER*4 FUNCTION *WriteLayoutPreWriteCallback(
-*   &                     ClientDataPtr)
-*    POINTER   (ClientDataPtr,DummyClientData)
-* </FortranSyntax>
-*
-* @sa TecUtilEventAddPreWriteLayoutCallback(
-*/
-typedef Boolean_t (STDCALL *WriteLayoutPreWriteCallback_pf)(Set_pa PageList,
-                                                            ArbParam_t ClientData);
-
-
-/**
  * Compares two strings from a list string. Note that either string may be NULL
  * as StringLists allow for NULL elements.
  *
@@ -5919,7 +5440,7 @@ typedef void (STDCALL *FieldValueSetFunction_pf)(FieldData_pa FD,
  *     MyVariableClientData_s *MyClientData = (MyVariableClientData_s *)TecUtilDataValueGetClientData(FieldData);
  *
  *     // open the data file
- *     FILE *MyDataFile = tecplot::filesystem::fileOpen(MyClientData->DataFileName, "rb");
+ *     FILE *MyDataFile = fopen(MyClientData->DataFileName, "rb");
  *     Boolean_t IsOk = (MyDataFile != NULL);
  *
  *     // seek to the place in the file where the variable data is located
@@ -6073,7 +5594,7 @@ typedef void (STDCALL *LoadOnDemandVarCleanup_pf)(FieldData_pa FieldData);
  *             (MyNodeMapClientData_s *)TecUtilDataNodeGetClientData(NodeMap);
  *
  *     // open the data file
- *     FILE *MyDataFile = tecplot::filesystem::fileOpen(MyClientData->DataFileName, "rb");
+ *     FILE *MyDataFile = fopen(MyClientData->DataFileName, "rb");
  *     Boolean_t IsOk = (MyDataFile != NULL);
  *
  *     // seek to the place in the file where the node map data is located
@@ -6216,7 +5737,7 @@ typedef void (STDCALL *LoadOnDemandNodeMapCleanup_pf)(NodeMap_pa NodeMap);
  *             (MyFaceNeighborClientData_s*)TecUtilDataFaceNbrGetClientData(FaceNeighbor);
  *
  *     // open the data file
- *     FILE *MyDataFile = tecplot::filesystem::fileOpen(MyClientData->DataFileName, "rb");
+ *     FILE *MyDataFile = fopen(MyClientData->DataFileName, "rb");
  *     Boolean_t IsOk = (MyDataFile != NULL);
  *
  *     // seek to the place in the file where the face neighbor data is located
@@ -6359,7 +5880,7 @@ typedef void (STDCALL *LoadOnDemandFaceNeighborCleanup_pf)(FaceNeighbor_pa FaceN
  *             (MyFaceMapClientData_s *)TecUtilDataFaceMapGetClientData(FaceMap);
  *
  *     // open the data file
- *     FILE *MyDataFile = tecplot::filesystem::fileOpen(MyClientData->DataFileName, "rb");
+ *     FILE *MyDataFile = fopen(MyClientData->DataFileName, "rb");
  *     Boolean_t IsOk = (MyDataFile != NULL);
  *
  *     // seek to the place in the file where the face map data is located
@@ -7124,8 +6645,8 @@ typedef Boolean_t (STDCALL * LineSegProbeCallback_pf)(LgIndex_t         WhichEnd
  * @return
  *     TRUE if the left-hand-side value is less than the right-hand-side value, FALSE otherwise.
  */
-typedef Boolean_t (STDCALL *UInt32ItemComparator_pf)(const uint32_t* LeftItemRef,
-                                                     const uint32_t* RightItemRef,
+typedef Boolean_t (STDCALL *UInt32ItemComparator_pf)(const UInt32_t* LeftItemRef,
+                                                     const UInt32_t* RightItemRef,
                                                      ArbParam_t      ClientData);
 
 /**
@@ -7139,53 +6660,9 @@ typedef Boolean_t (STDCALL *UInt32ItemComparator_pf)(const uint32_t* LeftItemRef
  * @return
  *     TRUE if the left-hand-side value is less than the right-hand-side value, FALSE otherwise.
  */
-typedef Boolean_t (STDCALL *UInt64ItemComparator_pf)(const uint64_t* LeftItemRef,
-                                                     const uint64_t* RightItemRef,
+typedef Boolean_t (STDCALL *UInt64ItemComparator_pf)(const UInt64_t* LeftItemRef,
+                                                     const UInt64_t* RightItemRef,
                                                      ArbParam_t      ClientData);
-
-/**
- * Abort function pointer called on a failed TUAssert()
- * @param error_message
- *      Formatted, multi-line error message.
- * @sa TecUtilRegisterAbort
- **/
-typedef void (*TUAbort_pf)(const char* error_message);
-
-
-/**
- * This callback is used for letting a client decide how to match variables
- * when appending a dataset.
- *
- * @return
- *   A StringList_pa containing the resulting list of variable names. If the
- *   list is NULL, an error occurred.
- *
- * @param existingVariables
- *   A list containing the variable names that currently exist in the dataset.
- *
- * @param incomingVariableLists
- *   An array of StringList_pa that contain the variable names in the incoming
- *   datasets.
- *
- * @param numIncomingVariableLists
- *   The number lists referenced in the incomingVariables parameter.
- *
- * @param clientData
- *   The client data that was passed into when registering the callback.
- *
- * @note
- *   The caller of this function is the owner of the existingVariables and
- *   incomingVariableLists parameters and is responsible for their deallocation.
- *
- * <FortranSyntax>
- * INTEGER*4 FUNCTION MatchVariablesCallback()
- * </FortranSyntax>
- */
-typedef StringList_pa (STDCALL * MatchVariablesCallback_pf)(StringList_pa         existingVariables,
-                                                            StringList_pa const * incomingVariableLists,
-                                                            LgIndex_t             numIncomingVariableLists,
-                                                            ArbParam_t            clientData);
-
 
 /* CORE SOURCE CODE REMOVED */
 #define FOURIER_TRANSFORM_FREQUENCY_VAR_OFFSET          0
@@ -7193,19 +6670,15 @@ typedef StringList_pa (STDCALL * MatchVariablesCallback_pf)(StringList_pa       
 #define FOURIER_TRANSFORM_PHASE_VAR_OFFSET              2
 #define FOURIER_TRANSFORM_NUM_RESULT_VARS_PER_TRANSFORM 3
 
-typedef struct ViewState_s* SavedView_pa;
-typedef struct ViewState_s* ViewState_pa;
-
-typedef struct ProbeInfo_s* ProbeInfo_pa;
+struct _ViewState_a;
+typedef struct _ViewState_a *SavedView_pa, *ViewState_pa;
 
 /* define Tecplot support email address in one place */
-static const char* const tecplotSupportEmailAddress = "support@tecplot.com";
+static char const* const tecplotSupportEmailAddress = "support@tecplot.com";
 
 /* implementation independent ID's for text and geometry */
 #define TECUTILBADID 0 /* long */
-/* allows for text dialogs to retrieve defaults from the engine after reading config file */
-#define TECUTIL_DEFAULT_TEXT_ID -1
-typedef ArbParam_t     TextID_t;
-typedef ArbParam_t     GeomID_t;
+typedef ArbParam_t     Text_ID;
+typedef ArbParam_t     Geom_ID;
 
 #endif /* _GLOBAL_H */

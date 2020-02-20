@@ -23,3 +23,10 @@
 
 #define TECGUIFUNCTIONEND \
     }
+
+class QMainWindow;
+
+namespace tecplot { namespace tecgui {
+    tecgui_API QMainWindow* findMainWindow();
+}}
+

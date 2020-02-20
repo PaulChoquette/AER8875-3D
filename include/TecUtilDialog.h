@@ -1,11 +1,11 @@
-#include "TecUtil.h"
+#include "TECADDON.h"
 #include "tp360addonuiaction_Exports.h"
 
 #if defined LINKTOADDON
   #undef LINKTOADDON
 #endif
 
-#define LINKTOADDON EXTERNC tp360addonuiaction_API
+#define LINKTOADDON extern "C" tp360addonuiaction_API
 
 /**
  * Launch a dialog to prompt the user for a file name.
@@ -312,7 +312,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDialogGetFileNames(SelectFileOption_e      
  * @code
  * StringList_pa  ReturnFiles       = NULL;
  * int            ReturnFilterIndex = 0;
- * Boolean_t      Result            = TRUE;
+ * bool           Result            = TRUE;
  * ArgList_pa     argList           = TecUtilArgListAlloc();
  *
  * TecUtilArgListAppendInt(argList, SV_FILESELECTDIALOGTYPE, SelectFileOption);
@@ -498,7 +498,7 @@ LINKTOADDON Boolean_t STDCALL TecUtilDialogGetFolderNameX(ArgList_pa ArgList);
  *
  * @param TextField1Label
  *   Character string displayed to the left of the first variable's selection
- *   menu. Must not be NULL
+ *   menu. May be NULL
  *
  * @param TextField2Label
  *   Character string displayed to the left of the second variable's selection

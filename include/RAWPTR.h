@@ -28,11 +28,10 @@ extern "C"
      */
     typedef struct _RawNodePtr_s
     {
-        NodeMap_pa       nodeMap;
-        OffsetDataType_e nodemapDataType;
-        int32_t*         rawNodeMapPtr;  // Use int32_t to avoid casting for 32-bit.
-        LgIndex_t        cellCount;
-        int32_t          nodesPerCell;
+        NodeMap_pa    nodeMap;
+        NodeMap_t    *rawNodeMapPtr;
+        LgIndex_t     cellCount;
+        LgIndex_t     nodesPerCell;
     } RawNodePtr_t;
 
     /**
@@ -65,10 +64,10 @@ extern "C"
   ((RawValuePtr).RawDataPtr != NULL \
      ? (double)(((RawValuePtr).FieldDataType == FieldDataType_Float ? ((float *)(RawValuePtr).RawDataPtr)[(Index) - 1] : \
                 ((RawValuePtr).FieldDataType == FieldDataType_Double ? ((double *)(RawValuePtr).RawDataPtr)[(Index) - 1] : \
-                ((RawValuePtr).FieldDataType == FieldDataType_LongInt ? ((int32_t *)(RawValuePtr).RawDataPtr)[(Index) - 1] : \
+                ((RawValuePtr).FieldDataType == FieldDataType_LongInt ? ((LgIndex_t *)(RawValuePtr).RawDataPtr)[(Index) - 1] : \
                 ((RawValuePtr).FieldDataType == FieldDataType_ShortInt ? ((short *)(RawValuePtr).RawDataPtr)[(Index) - 1] : \
-                ((RawValuePtr).FieldDataType == FieldDataType_Byte ? ((uint8_t *)(RawValuePtr).RawDataPtr)[(Index) - 1] : \
-                ((((uint8_t *)(RawValuePtr).RawDataPtr)[((Index) - 1) / 8] >> (((Index) - 1) % 8)) & (uint8_t)0x1))))))) \
+                ((RawValuePtr).FieldDataType == FieldDataType_Byte ? ((Byte_t *)(RawValuePtr).RawDataPtr)[(Index) - 1] : \
+                ((((Byte_t *)(RawValuePtr).RawDataPtr)[((Index) - 1) / 8] >> (((Index) - 1) % 8)) & (Byte_t)0x1))))))) \
      : (RawValuePtr).GetFieldValue((RawValuePtr).FieldData, (Index) - 1))
 
     /**
@@ -99,22 +98,22 @@ extern "C"
               ((double *)((RawValuePtr).RawDataPtr))[(Index) - 1] = (Value); \
               break; \
             case FieldDataType_LongInt: \
-              ((int32_t *)((RawValuePtr).RawDataPtr))[(Index) - 1] = (int32_t)(Value); \
+              ((LgIndex_t *)((RawValuePtr).RawDataPtr))[(Index) - 1] = (LgIndex_t)(Value); \
               break; \
             case FieldDataType_ShortInt: \
               ((short *)((RawValuePtr).RawDataPtr))[(Index) - 1] = (short)(Value); \
               break; \
             case FieldDataType_Byte: \
-              ((uint8_t *)((RawValuePtr).RawDataPtr))[(Index) - 1] = (uint8_t)(Value); \
+              ((Byte_t *)((RawValuePtr).RawDataPtr))[(Index) - 1] = (Byte_t)(Value); \
               break; \
             case FieldDataType_Bit: \
       { \
         LgIndex_t ByteOffset = ((Index) - 1) / 8; \
-        uint8_t    BitMask    = (uint8_t)(01 << (((Index) - 1)%8)); \
+        Byte_t    BitMask    = (Byte_t)(01 << (((Index) - 1)%8)); \
         if (Value < 1.0) \
-          ((uint8_t *)((RawValuePtr).RawDataPtr))[ByteOffset] &= ~BitMask; \
+          ((Byte_t *)((RawValuePtr).RawDataPtr))[ByteOffset] &= ~BitMask; \
         else  \
-          ((uint8_t *)((RawValuePtr).RawDataPtr))[ByteOffset] |= BitMask; \
+          ((Byte_t *)((RawValuePtr).RawDataPtr))[ByteOffset] |= BitMask; \
       } \
       break; \
             default: \
@@ -131,9 +130,7 @@ extern "C"
      */
 #define RawNodePtrGetNode_MACRO(rawNodePtr, cell, corner) \
   ((rawNodePtr).rawNodeMapPtr != NULL \
-     ? (rawNodePtr.nodemapDataType == OffsetDataType_32Bit  \
-        ? ((rawNodePtr).rawNodeMapPtr[((LgIndex_t)(cell) - 1) * (rawNodePtr).nodesPerCell + (corner) - 1] + 1) \
-        : (((int64_t*)((rawNodePtr).rawNodeMapPtr))[((LgIndex_t)(cell) - 1) * (rawNodePtr).nodesPerCell + (corner) - 1] + 1)) \
+     ? ((rawNodePtr).rawNodeMapPtr[((HgIndex_t)(cell) - 1) * (rawNodePtr).nodesPerCell + (corner) - 1] + 1) \
      : TecUtilDataNodeGetByRef((rawNodePtr).nodeMap, (cell), (corner)))
 
     /**
@@ -146,18 +143,12 @@ extern "C"
   do \
   { \
     if ((rawNodePtr).rawNodeMapPtr != NULL) \
-    { \
-        if (rawNodePtr.nodemapDataType == OffsetDataType_32Bit) \
-            (rawNodePtr).rawNodeMapPtr[((LgIndex_t)(cell) - 1) * (rawNodePtr).nodesPerCell + (corner) - 1] = (int32_t)(node) - 1; \
-        else \
-        { \
-            int64_t* rawNodeMapPtr64 = (int64_t*)((rawNodePtr).rawNodeMapPtr); \
-            rawNodeMapPtr64[((LgIndex_t)(cell) - 1) * (rawNodePtr).nodesPerCell + (corner) - 1] = (node) - 1; \
-        } \
-    } \
+        (rawNodePtr).rawNodeMapPtr[((HgIndex_t)(cell) - 1) * (rawNodePtr).nodesPerCell + (corner) - 1] = (node) - 1; \
     else \
         TecUtilDataNodeSetByRef((rawNodePtr).nodeMap, (cell), (corner), (node)); \
   } while(0)
+
+
 
     /**
      * Macros are used for release mode while functions are used for debug mode
@@ -287,7 +278,7 @@ extern "C"
      */
     extern NodeMap_t RawNodePtrGetNode_FUNC(RawNodePtr_t  RawNodePtr,
                                             LgIndex_t     Cell,
-                                            int32_t       Corner);
+                                            LgIndex_t     Corner);
 
     /**
      * Gets the number of nodes needed for each cell of the raw node map pointer
@@ -299,7 +290,7 @@ extern "C"
      * @return
      *     Number of nodes needed for each cell.
      */
-    extern int32_t RawNodePtrGetNodesPerCell_FUNC(RawNodePtr_t RawNodePtr);
+    extern LgIndex_t RawNodePtrGetNodesPerCell_FUNC(RawNodePtr_t RawNodePtr);
 
     /**
      * Assigns the node to the raw node pointer item at the specified index.
@@ -315,7 +306,7 @@ extern "C"
      */
     extern void RawNodePtrSetNode_FUNC(RawNodePtr_t  RawNodePtr,
                                        LgIndex_t     Cell,
-                                       int32_t       Corner,
+                                       LgIndex_t     Corner,
                                        NodeMap_t     Node);
 #endif /* USE_MACROS_FOR_FUNCTIONS */
 

@@ -21,9 +21,9 @@ public:
      * Modal dialog constructor.
      */
     TecGUIDialog(
-        GUIInt_t              parentDialogID,
-        GUIInt_t              width,
-        GUIInt_t              height,
+        LgIndex_t              parentDialogID,
+        LgIndex_t              width,
+        LgIndex_t              height,
         const char*            title,
         TecGUIVoidCallback_pf  initCallback,
         TecGUIVoidCallback_pf  okButtonCallback,
@@ -35,9 +35,9 @@ public:
      * Modeless dialog constructor.
      */
     TecGUIDialog(
-        GUIInt_t              parentDialogID,
-        GUIInt_t              width,
-        GUIInt_t              height,
+        LgIndex_t              parentDialogID,
+        LgIndex_t              width,
+        LgIndex_t              height,
         const char*            title,
         TecGUIVoidCallback_pf  initCallback,
         TecGUIVoidCallback_pf  closeButtonCallback,
@@ -62,9 +62,6 @@ public:
 
     void requestDialogDrop();
     void requestDialogLaunch();
-    void addButtonToButtonBox(QString const&         buttonText,
-                              bool                   isDefault,
-                              TecGUIVoidCallback_pf  buttonCallback);
 
 private slots:
     void dialogButtonBoxClicked (QAbstractButton * button);

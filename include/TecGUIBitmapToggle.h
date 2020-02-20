@@ -10,18 +10,18 @@ class TecGUIBitmapToggle
 
 public:
     TecGUIBitmapToggle(
-        GUIInt_t              parentId,
-        GUIInt_t              x,
-        GUIInt_t              y,
-        GUIInt_t              buttonWidth,
-        GUIInt_t              buttonHeight,
-        GUIInt_t              bitmapWidth,
-        GUIInt_t              bitmapHeight,
+        LgIndex_t              parentId,
+        LgIndex_t              x,
+        LgIndex_t              y,
+        LgIndex_t              buttonWidth,
+        LgIndex_t              buttonHeight,
+        LgIndex_t              bitmapWidth,
+        LgIndex_t              bitmapHeight,
         char const*                     bitmapData,
         bool                            useTransparentColor,
-        GUIInt_t              transparentR,
-        GUIInt_t              transparentG,
-        GUIInt_t              transparentB,
+        LgIndex_t              transparentR,
+        LgIndex_t              transparentG,
+        LgIndex_t              transparentB,
         TecGUIIntCallback_pf  buttonCallback);
 
     virtual ~TecGUIBitmapToggle();

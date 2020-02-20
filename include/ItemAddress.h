@@ -1,9 +1,7 @@
 #pragma once
 
-#include "CodeContract.h"
-#include "StandardIntegralTypes.h"
+#include "RawArray.h"
 
-namespace tecplot {
 
 /**
  * Calculates the size of the identifier in bits.
@@ -11,336 +9,304 @@ namespace tecplot {
 #define SIZE_IN_BITS(identifier) (sizeof(identifier)*8)
 
 /**
- * Macro to verify that a item's partition has not exceeded the allowable number of bits
- * required to be represented by a tecplot::ItemAddress partition.
+ * Invalid subzone index value. Since we are using unsigned integers we sacrifice the last item.
  */
-#define VALID_ITEM_ADDRESS_PARTITION(itemAddressPartition) \
-    ((itemAddressPartition) != tecplot::ItemAddress::INVALID_PARTITION && \
-     (SIZE_IN_BITS(tecplot::ItemAddress::Partition_t) == tecplot::ItemAddress::PartitionBitSize || \
-      (SIZE_IN_BITS(tecplot::ItemAddress::Partition_t) > tecplot::ItemAddress::PartitionBitSize && \
-       uint64_t(itemAddressPartition) >> tecplot::ItemAddress::PartitionBitSize == uint64_t(0))))
+#define INVALID_ITEM_ADDRESS_SZINDEX \
+    static_cast<tecplot::ItemAddress::SzIndex_t>((UInt64_t(2) << (tecplot::ItemAddress::SzIndexBitSize - UInt64_t(1))) - UInt64_t(1))
 
 /**
- * Macro to verify that a item's subzone offset has not exceeded the allowable number of bits
- * required to be represented by a tecplot::ItemAddress subzone offset.
+ * Maximum value for a item address subzone index. The maximum value is one less than the invalid
+ * index.
  */
-#define VALID_ITEM_ADDRESS_SUBZONE_OFFSET(itemAddressSubzoneOffset) \
-    ((itemAddressSubzoneOffset) != tecplot::ItemAddress::INVALID_SUBZONE_OFFSET && \
-     (SIZE_IN_BITS(tecplot::ItemAddress::SubzoneOffset_t) == tecplot::ItemAddress::SubzoneOffsetBitSize || \
-      (SIZE_IN_BITS(tecplot::ItemAddress::SubzoneOffset_t) > tecplot::ItemAddress::SubzoneOffsetBitSize && \
-       uint64_t(itemAddressSubzoneOffset) >> tecplot::ItemAddress::SubzoneOffsetBitSize == uint64_t(0))))
+#define MAX_ITEM_ADDRESS_SZINDEX \
+    (INVALID_ITEM_ADDRESS_SZINDEX - static_cast<tecplot::ItemAddress::SzIndex_t>(1))
 
 /**
- * Macro to verify that a subzone offset has not exceeded the allowable number of bits
- * required to be represented by a tecplot::ItemAddress item.
+ * Maximum value for a item address offset. Unlike the maximum subzone index which is one less than
+ * the invalid value, we don't have that flexibility with offsets because we need all 8 bits to
+ * represent the offsets so there is no invalid offset.
  */
-#define VALID_ITEM_ADDRESS_ITEM_OFFSET(itemAddressItemOffset) \
-    ((itemAddressItemOffset) != tecplot::ItemAddress::INVALID_ITEM_OFFSET && \
-     (SIZE_IN_BITS(tecplot::ItemAddress::ItemOffset_t) == tecplot::ItemAddress::ItemOffsetBitSize || \
-      (SIZE_IN_BITS(tecplot::ItemAddress::ItemOffset_t) > tecplot::ItemAddress::ItemOffsetBitSize && \
-       uint64_t(itemAddressItemOffset) >> tecplot::ItemAddress::ItemOffsetBitSize == uint64_t(0))))
+#define MAX_ITEM_ADDRESS_OFFSET \
+    static_cast<tecplot::ItemAddress::Offset_t>((UInt64_t(2) << (tecplot::ItemAddress::OffsetBitSize - UInt64_t(1))) - UInt64_t(1))
+
+/**
+ * Macro to verify that a item's subzone index has not exceeded the allowable number of bits
+ * required to be represented by a tecplot::ItemAddress subzone index.
+ */
+#define VALID_ITEM_ADDRESS_SZINDEX(itemAddressSzIndex) \
+    (itemAddressSzIndex != INVALID_ITEM_ADDRESS_SZINDEX && \
+     (SIZE_IN_BITS(tecplot::ItemAddress::SzIndex_t) == tecplot::ItemAddress::SzIndexBitSize || \
+      (SIZE_IN_BITS(tecplot::ItemAddress::SzIndex_t) > tecplot::ItemAddress::SzIndexBitSize && \
+       UInt64_t(itemAddressSzIndex) >> tecplot::ItemAddress::SzIndexBitSize == UInt64_t(0))))
+
+/**
+ * Macro to verify that a subzone item offset has not exceeded the allowable number of bits
+ * required to be represented by a tecplot::ItemAddress offset.
+ */
+#define VALID_ITEM_ADDRESS_OFFSET(itemAddressOffset) \
+    (SIZE_IN_BITS(tecplot::ItemAddress::Offset_t) == tecplot::ItemAddress::OffsetBitSize || \
+     (SIZE_IN_BITS(tecplot::ItemAddress::Offset_t) > tecplot::ItemAddress::OffsetBitSize && \
+      UInt64_t(itemAddressOffset) >> tecplot::ItemAddress::OffsetBitSize == UInt64_t(0)))
 
 /**
  * Macro to verify that an item address is valid.
  */
 #define VALID_UNIFORM_ITEM_ADDRESS(itemAddress) \
-    ((itemAddress).addressType() == tecplot::ItemAddress::UniformAddressType)
-#define VALID_SZL_ITEM_ADDRESS(itemAddress) \
-    ((itemAddress).addressType() == tecplot::ItemAddress::SzlAddressType && \
-     VALID_ITEM_ADDRESS_PARTITION((itemAddress).partition()) && \
-     VALID_ITEM_ADDRESS_SUBZONE_OFFSET((itemAddress).subzoneOffset()) && \
-     VALID_ITEM_ADDRESS_ITEM_OFFSET((itemAddress).itemOffset()))
+    (itemAddress.addressType() == tecplot::ItemAddress::UniformType)
+#define VALID_SINGLE_ITEM_ADDRESS(itemAddress) \
+    (itemAddress.addressType() == tecplot::ItemAddress::SingleItemType && \
+     VALID_ITEM_ADDRESS_SZINDEX((itemAddress).szIndex()) && \
+     VALID_ITEM_ADDRESS_OFFSET((itemAddress).offset()))
+#define VALID_IJK_ITEM_ADDRESS(itemAddress) \
+    (itemAddress.addressType() == tecplot::ItemAddress::IJKItemType && \
+     VALID_ITEM_ADDRESS_SZINDEX((itemAddress).szIndex()) && \
+     VALID_ITEM_ADDRESS_OFFSET((itemAddress).ijkOffset().i) && \
+     VALID_ITEM_ADDRESS_OFFSET((itemAddress).ijkOffset().j) && \
+     VALID_ITEM_ADDRESS_OFFSET((itemAddress).ijkOffset().k))
 #define VALID_ITEM_ADDRESS(itemAddress) \
     (VALID_UNIFORM_ITEM_ADDRESS(itemAddress) || \
-     VALID_SZL_ITEM_ADDRESS(itemAddress))
-#define VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(subzoneAddress) \
-    (VALID_ITEM_ADDRESS_PARTITION((subzoneAddress).partition()) && \
-     VALID_ITEM_ADDRESS_SUBZONE_OFFSET((subzoneAddress).subzoneOffset()))
+     VALID_SINGLE_ITEM_ADDRESS(itemAddress) || \
+     VALID_IJK_ITEM_ADDRESS(itemAddress))
 
+namespace tecplot {
 
 /**
- * An item address that support partition/subzoneOffset/item and uniform addressing. The class
- * represents the address of an item (cell, node or face) within a subzone using a partition and
- * subzone offset, or uniform addressing of a classic block of data. The copy performance of the
- * class is nearly identical to a word of the same size.
+ * An item address that support subzone/offset, subzone/[ijk]Offset and uniform addressing. The
+ * class represents the address of an item (cell, node or face) within a subzone using a subzone
+ * index and an offset, i, j, and K offset, or uniform addressing of a classic block of data. The
+ * copy performance of the class is nearly identical to a word of the same size.
+ *
+ * @note
+ *     Do no create large arrays of this data structure without careful consideration as the number
+ *     of bits required to index a subzone item is only 40 bits (32 for the index and 8 for the
+ *     offset) thereby wasting 24 bits for each item in a 64 bit word aligned array. Instead store
+ *     the items and offsets in two separate arrays reducing the amount of unused bits.
  */
 class ItemAddress
 {
 public:
     /**
-     * Type of the partition containing the subzone. All partition values must fit within the number
-     * of bits specified by PartitionBitSize.
+     * Type of an index of the subzone containing the item (cell, node, or face). All index values
+     * must fit within the number of bits specified by SzIndexBitSize.
      */
-    typedef uint32_t Partition_t;
+    typedef UInt32_t SzIndex_t;
 
     /**
-     * For counting all subzones over all partitions, which could get over 4.29 billion subzones at
-     * some point.
+     * Type of an offset within the subzone containing the item (cell, node, or face). All offset
+     * values must fit within the number of bits specified by OffsetBitSize.
      */
-    typedef uint64_t SubzoneIndex_t;
+    typedef UInt16_t Offset_t;
 
     /**
-     * Type of the subzone containing the cell, node, or face item. All subzone offset values must
-     * fit within the number of bits specified by SubzoneOffsetBitSize.
+     * Type of an IJK offset within the subzone containing the item (cell, or node). Each component
+     * must fit within the number of bits specified by OffsetBitSize.
      */
-    typedef uint32_t SubzoneOffset_t;
+    struct IJK
+    {
+        IJK(Offset_t i, Offset_t j, Offset_t k)
+            : i(i)
+            , j(j)
+            , k(k)
+        {
+            REQUIRE(VALID_ITEM_ADDRESS_OFFSET(i));
+            REQUIRE(VALID_ITEM_ADDRESS_OFFSET(j));
+            REQUIRE(VALID_ITEM_ADDRESS_OFFSET(k));
+        }
 
-    /**
-     * Type of the cell, node, or face item within the subzone. All item values must fit within the
-     * number of bits specified by ItemOffsetBitSize.
-     */
-    typedef uint16_t ItemOffset_t;
+        Offset_t i;
+        Offset_t j;
+        Offset_t k;
+    };
 
     /**
      * The type used to hold a uniform address of an item. This allows non-SZL addressing to be
      * held by an ItemAddress for that existing algorithms in Tecplot work with both forms of data.
-     * The uniform offset address is passed with a int64_t because it needs to hold uniform node
+     * The uniform offset address is passed with a Int64_t because it needs to hold uniform node
      * value addresses which are NumElements*PtsPerElement in size which is 2B*8.
      */
-    typedef int64_t UniformOffset_t;
+    typedef Int64_t UniformOffset_t;
+
+    /**
+     * Number of bits needed to represent the index of the subzone.
+     */
+    static UInt32_t const SzIndexBitSize = 32U;
+
+    /**
+     * Number of bits needed to represent the offset or i, j, or k offset within the subzone.
+     */
+    static UInt32_t const OffsetBitSize = 8U;
 
     /**
      * Number of bits needed to represent the integer identifying the addressing scheme used by
      * ItemAddress.
      */
-    static uint32_t const AddressTypeBitSize = 1U;
+    static UInt32_t const AddressTypeBitSize = 2U;
 
     /**
-     * Number of bits needed to represent the partition.
-     */
-    static uint32_t const PartitionBitSize = 23U;
-
-    /**
-     * Number of bits needed to represent the subzone offset.
-     */
-    static uint32_t const SubzoneOffsetBitSize = 32U;
-
-    /**
-     * Number of bits needed to represent the item within the subzone.
-     */
-    static uint32_t const ItemOffsetBitSize = 8U;
-
-    /**
-     * Number of bits needed to represent a uniform offset that doesn't use partition/subzone/item
-     * (aka non-uniform) addressing. The uniform offset address is held with a 48 bits because it
+     * Number of bits needed to represent a uniform offset that doesn't use subzone/offset
+     * (aka non-uniform) addressing. The uniform offset address is held with a 40 bits because it
      * needs to hold uniform node value addresses which are NumElements*PtsPerElement in size which
      * is 2B*8.
      */
-    static uint32_t const UniformOffsetBitSize = 63U;
+    static UInt32_t const UniformOffsetBitSize = 40U;
 
-    static uint32_t const SzlAddressType     = 0U;
-    static uint32_t const UniformAddressType = 1U;
-
-    /**
-     * Invalid partition value. Since we are using unsigned integers we sacrifice the last item.
-     */
-    static Partition_t const INVALID_PARTITION =
-        static_cast<Partition_t>((uint64_t(1) << PartitionBitSize) - uint64_t(1));
+    static UInt32_t const UniformType    = 0U;
+    static UInt32_t const IJKItemType    = 1U;
+    static UInt32_t const SingleItemType = 2U;
 
     /**
-     * To construct a valid ItemAddress when we neither know nor care what partition we're in.
+     * Fills a raw array of subzone item addresses from a subzone index and a consecutive sequence
+     * of offsets within that subzone between 0 and numOffsets-1.
+     * @param szIndex
+     *     The index of the subzone containing the item (cell, node, or face). All index values
+     *     must fit within the number of bits specified by SzIndexBitSize.
+     * @param numOffsets
+     *     The number number of offsets to create.
+     * @param itemAddresses
+     *     Raw array filled with the resulting item addresses for the subzone, one for each
+     *     consecutive offset between 0 and numOffsets-1.
+     * @pre VALID_ITEM_ADDRESS_SZINDEX(szIndex)
+     * @pre numOffsets == 0 || VALID_ITEM_ADDRESS_OFFSET(numOffsets-1)
      */
-    static Partition_t const UNKNOWN_PARTITION = 0;
-
-    /**
-     * Maximum value for a item address partition. The maximum value is one less than the invalid index.
-     */
-    static Partition_t const MAX_PARTITION =
-        INVALID_PARTITION - static_cast<Partition_t>(1);
-
-    /**
-     * Invalid subzone offset value. Since we are using unsigned integers we sacrifice the last item.
-     */
-    static SubzoneOffset_t const INVALID_SUBZONE_OFFSET =
-        static_cast<SubzoneOffset_t>((uint64_t(1) << SubzoneOffsetBitSize) - uint64_t(1));
-
-    /**
-     * Maximum value for a item address subzone offset. The maximum value is one less than the invalid index.
-     */
-    static SubzoneOffset_t const MAX_SUBZONE_OFFSET =
-        INVALID_SUBZONE_OFFSET - static_cast<SubzoneOffset_t>(1);
-
-    /**
-     * Invalid item offset value. Unlike the invalid partition or subzone offset which is one less
-     * than the maximum value that can be represented by the bits, we don't have that flexibility
-     * with item offsets because we need all 8 bits to represent 256 offsets so technically there is
-     * no invalid 8 bit item offset however since the value is passed around as an ItemOffset_t
-     * which is wider than 8 bits we can declare an invalid item, it just can be used to test an 8
-     * bit item offset.
-     */
-    static ItemOffset_t const INVALID_ITEM_OFFSET =
-        static_cast<ItemOffset_t>((uint64_t(1) << ItemOffsetBitSize));
-
-    /**
-     * Maximum value for a item address item. See INVALID_ITEM_OFFSET note.
-     */
-    static ItemOffset_t const MAX_ITEM_OFFSET =
-        INVALID_ITEM_OFFSET - static_cast<ItemOffset_t>(1);
-
-    /**
-     */
-    class SubzoneAddress
-    {
-    public:
-        /**
-         * Constructs an uninitialized subzone address. This is intentional so that a subzone
-         * address has similar performance to a 64 bit word.
-         * IMPORTANT:
-         *     For performance reasons the member variables are not initialized when constructing using
-         *     the default constructor, much in the way a 64 bit word is not initialized. This is
-         *     particularly important when allocating large arrays of subzone addresses where the
-         *     number of items being added to the array is not known upfront. In these cases the
-         *     Linux/Windows memory allocator will not commit actual RAM until the memory is touched
-         *     so we don't want to initialize items that may never be used.
-         */
-        inline SubzoneAddress()
-        {
-            INVARIANT(SIZE_IN_BITS(*this) == 64U);
-        }
-
-        inline SubzoneAddress(
-            Partition_t     partition,
-            SubzoneOffset_t subzoneOffset)
-            : m_partition(partition)
-            , m_subzoneOffset(subzoneOffset)
-        {
-            INVARIANT(SIZE_IN_BITS(*this) == 64U);
-            REQUIRE(VALID_ITEM_ADDRESS_PARTITION(m_partition));
-            REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_OFFSET(m_subzoneOffset));
-        }
-
-        inline Partition_t partition() const
-        {
-            REQUIRE(VALID_ITEM_ADDRESS_PARTITION(m_partition));
-            REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_OFFSET(m_subzoneOffset));
-            return m_partition;
-        }
-
-        inline SubzoneOffset_t subzoneOffset() const
-        {
-            REQUIRE(VALID_ITEM_ADDRESS_PARTITION(m_partition));
-            REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_OFFSET(m_subzoneOffset));
-            return m_subzoneOffset;
-        }
-
-        inline bool operator==(SubzoneAddress const& other) const
-        {
-            REQUIRE(VALID_ITEM_ADDRESS_PARTITION(m_partition));
-            REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_OFFSET(m_subzoneOffset));
-            return m_partition == other.m_partition && m_subzoneOffset == other.m_subzoneOffset;
-        }
-
-    private:
-        Partition_t     m_partition;
-        SubzoneOffset_t m_subzoneOffset;
-    };
-
-    /**
-     * Constructs an uninitialized item address. This is intentional so that an item address has
-     * similar performance to a 64 bit word.
-     * IMPORTANT:
-     *     For performance reasons the member variables are not initialized when constructing using
-     *     the default constructor, much in the way a 64 bit word is not initialized. This is
-     *     particularly important when allocating large arrays of item addresses where the number of
-     *     items being added to the array is not known upfront. In these cases the Linux/Windows
-     *     memory allocator will not commit actual RAM until the memory is touched so we don't want
-     *     to initialize items that may never be used.
-     */
-    inline ItemAddress()
+    static void fromSubzoneOffsets(
+        ItemAddress::SzIndex_t          szIndex,
+        ItemAddress::Offset_t           numOffsets,
+        tecplot::RawArray<ItemAddress>& itemAddresses)
     {
         INVARIANT(validInvariants());
+        REQUIRE(numOffsets == 0 || VALID_ITEM_ADDRESS_OFFSET(numOffsets-1));
+
+        itemAddresses.reserve(numOffsets);
+        itemAddresses.setSize(numOffsets);
+        if (numOffsets != 0)
+        {
+            /* initialize each member as fast as possible using direct access */
+            ItemAddress* itemAddressesArray = &itemAddresses[0];
+            for (ItemAddress::Offset_t offset = 0; offset < numOffsets; ++offset)
+            {
+                itemAddressesArray[offset].m.addressType                 = SingleItemType;
+                itemAddressesArray[offset].m.szSingleItemAddress.szIndex = szIndex;
+                itemAddressesArray[offset].m.szSingleItemAddress.offset  = offset;
+            }
+        }
     }
 
     /**
-     * Constructs an item address from a partition/subzone/item.
-     * @param partition
-     *     The partition containing the subzone. All partition values must fit within the number of
-     *     bits specified by PartitionBitSize.
-     * @param subzoneOffset
-     *     The offset of the subzone containing the cell, node, or face item. All subzone offset
-     *     values must fit within the number of bits specified by SubzoneOffsetBitSize.
-     * @param itemOffset
-     *     The cell, node, or face item within the subzone. All item values must fit within the
-     *     number of bits specified by ItemOffsetBitSize.
-     * @pre VALID_ITEM_ADDRESS_PARTITION(partition)
-     * @pre VALID_ITEM_ADDRESS_SUBZONE_OFFSET(subzoneOffset)
-     * @pre VALID_ITEM_ADDRESS_ITEM_OFFSET(itemOffset)
+     * Fills a raw array of item addresses fro an array of uniform offsets.
      */
-    inline ItemAddress(
-        Partition_t     partition,
-        SubzoneOffset_t subzoneOffset,
-        ItemOffset_t    itemOffset)
+    template <typename T>
+    static void fromUniformOffsets(
+        T*                              uniformOffsets,
+        size_t                          numUniformOffsets,
+        tecplot::RawArray<ItemAddress>& itemAddresses)
     {
         INVARIANT(validInvariants());
-        REQUIRE(VALID_ITEM_ADDRESS_PARTITION(partition));
-        REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_OFFSET(subzoneOffset));
-        REQUIRE(VALID_ITEM_ADDRESS_ITEM_OFFSET(itemOffset));
+        REQUIRE(VALID_REF(uniformOffsets));
 
-        /*
-         * IMPORTANT:
-         *     If the bit fields do not consume all 64 bits we would be forced to first
-         *     initialize the entire 64 bit word to zero so that the equality test, see
-         *     operator== will succeed: i.e.:
-         *         _.rawBits = 0;
-         */
-        CHECK(AddressTypeBitSize + UniformOffsetBitSize == SIZE_IN_BITS(ItemAddress));
-        CHECK(AddressTypeBitSize + PartitionBitSize + SubzoneOffsetBitSize + ItemOffsetBitSize == SIZE_IN_BITS(ItemAddress));
-
-        m.addressType                  = SzlAddressType;
-        m.szlItemAddress.partition     = partition;
-        m.szlItemAddress.subzoneOffset = subzoneOffset;
-        m.szlItemAddress.itemOffset    = itemOffset;
+        /* initialize each member as fast as possible using direct access */
+        itemAddresses.reserve(numUniformOffsets);
+        itemAddresses.setSize(numUniformOffsets);
+        if (numUniformOffsets != 0)
+        {
+            ItemAddress* itemAddressesArray = &itemAddresses[0];
+            for (size_t uOffset = 0; uOffset < numUniformOffsets; ++uOffset)
+            {
+                itemAddressesArray[uOffset].m.addressType           = UniformType;
+                itemAddressesArray[uOffset].m.uniformAddress.offset =
+                    static_cast<UniformOffset_t>(uniformOffsets[uOffset]);
+            }
+        }
     }
 
     /**
-     * Constructs an item address from a subzone address and an node, cell, or face within the subzone.
-     * @param subzoneAddress
-     *     subzone address in which the item is located
-     * @param itemOffset
-     *     item offset of the node, cell or face within the subzone
+     * Constructs an item address with an invalid value.
      */
-    inline ItemAddress(
-        SubzoneAddress subzoneAddress,
-        ItemOffset_t   itemOffset)
+    ItemAddress()
     {
         INVARIANT(validInvariants());
-        REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(subzoneAddress));
-        REQUIRE(VALID_ITEM_ADDRESS_ITEM_OFFSET(itemOffset));
 
-        /*
-         * IMPORTANT:
-         *     If the bit fields do not consume all 64 bits we would be forced to first
-         *     initialize the entire 64 bit word to zero so that the equality test, see
-         *     operator== will succeed: i.e.:
-         *         m.rawBits = 0;
-         */
-        CHECK(AddressTypeBitSize + UniformOffsetBitSize == SIZE_IN_BITS(ItemAddress));
-        CHECK(AddressTypeBitSize + PartitionBitSize + SubzoneOffsetBitSize + ItemOffsetBitSize == SIZE_IN_BITS(ItemAddress));
+        m.rawBits = 0; // IMPORTANT: See note in constructor above.
 
-        m.addressType                  = SzlAddressType;
-        m.szlItemAddress.partition     = subzoneAddress.partition();
-        m.szlItemAddress.subzoneOffset = subzoneAddress.subzoneOffset();
-        m.szlItemAddress.itemOffset    = itemOffset;
+        m.addressType                 = SingleItemType;
+        m.szSingleItemAddress.szIndex = INVALID_ITEM_ADDRESS_SZINDEX;
+        m.szSingleItemAddress.offset  = 0;
     }
 
     /**
-     * Constructs a item address from a uniform offset.
+     * Constructs a subzone item address from an subzone index and offset within that subzone.
+     * @param szIndex
+     *     The index of the subzone containing the item (cell, node, or face). All index values
+     *     must fit within the number of bits specified by SzIndexBitSize.
+     * @param offset
+     *     The offset within the subzone containing the item (cell, node, or face). All offset
+     *     values must fit within the number of bits specified by OffsetBitSize.
+     * @pre VALID_ITEM_ADDRESS_SZINDEX(szIndex)
+     * @pre VALID_ITEM_ADDRESS_OFFSET(offset)
      */
-    inline explicit ItemAddress(UniformOffset_t uniformOffset)
+    ItemAddress(
+        SzIndex_t szIndex,
+        Offset_t  offset)
+    {
+        INVARIANT(validInvariants());
+        REQUIRE(VALID_ITEM_ADDRESS_SZINDEX(szIndex));
+        REQUIRE(VALID_ITEM_ADDRESS_OFFSET(offset));
+
+        m.rawBits = 0; // IMPORTANT: See note in constructor above.
+
+        m.addressType                 = SingleItemType;
+        m.szSingleItemAddress.szIndex = szIndex;
+        m.szSingleItemAddress.offset  = offset;
+    }
+
+    /**
+     * Constructs a subzone item address from an subzone index and a local IJK offset within that
+     * subzone.
+     * @param szIndex
+     *     The index of the subzone containing the item (cell, node, or face). All index values
+     *     must fit within the number of bits specified by SzIndexBitSize.
+     * @param offset
+     *     The local IJK offset within the subzone containing the item (cell, node, or face). All
+     *     offset values must fit within the number of bits specified by OffsetBitSize.
+     * @pre VALID_ITEM_ADDRESS_SZINDEX(szIndex)
+     * @pre VALID_ITEM_ADDRESS_OFFSET(offset)
+     */
+    ItemAddress(
+        SzIndex_t               szIndex,
+        ItemAddress::IJK const& offset)
+    {
+        INVARIANT(validInvariants());
+        REQUIRE(VALID_ITEM_ADDRESS_SZINDEX(szIndex));
+        REQUIRE(VALID_ITEM_ADDRESS_OFFSET(offset.i));
+        REQUIRE(VALID_ITEM_ADDRESS_OFFSET(offset.j));
+        REQUIRE(VALID_ITEM_ADDRESS_OFFSET(offset.k));
+
+        m.rawBits = 0; // IMPORTANT: See note in constructor above.
+
+        m.addressType              = IJKItemType;
+        m.szIJKItemAddress.szIndex = szIndex;
+        m.szIJKItemAddress.iOffset = offset.i;
+        m.szIJKItemAddress.jOffset = offset.j;
+        m.szIJKItemAddress.kOffset = offset.k;
+    }
+
+    /**
+     * Constructs a subzone item address from a uniform offset.
+     */
+    explicit ItemAddress(UniformOffset_t uniformOffset)
     {
         INVARIANT(validInvariants());
 
         /*
          * IMPORTANT:
-         *     If the bit fields do not consume all 64 bits we would be forced to first
-         *     initialize the entire 64 bit word to zero so that the equality test, see
-         *     operator== will succeed: i.e.:
-         *         m.rawBits = 0;
+         *     First clear the entire structure prior to assigning the members. Since we want fast
+         *     bitwise comparisons, see operator==, using the 64 bit m.rawBits member variable we
+         *     need to make sure the entire word is cleared because assignment to the smaller bit
+         *     fields will not clear it out for us leaving garbage thereby causing our bitwise
+         *     equality test to fail when it should not have.
          */
-        CHECK(AddressTypeBitSize + UniformOffsetBitSize == SIZE_IN_BITS(ItemAddress));
-        CHECK(AddressTypeBitSize + PartitionBitSize + SubzoneOffsetBitSize + ItemOffsetBitSize == SIZE_IN_BITS(ItemAddress));
+        m.rawBits = 0;
 
-        m.addressType           = UniformAddressType;
+        m.addressType           = UniformType;
         m.uniformAddress.offset = uniformOffset;
     }
 
@@ -348,113 +314,89 @@ public:
      * @return
      *     true if the item address is using uniform addressing, false otherwise
      */
-    inline bool isUniform() const
+    bool isUniform() const
     {
-        ENSURE(m.addressType == SzlAddressType || m.addressType == UniformAddressType);
-        return m.addressType == UniformAddressType;
+        return (m.addressType == UniformType);
+    }
+
+    /**
+     * @return
+     *     true if the item address is using IJK-item addressing, false otherwise
+     */
+    bool isIJK() const
+    {
+        return (m.addressType == IJKItemType);
     }
 
     /**
      * @return
      *     true if the item address is using single-item addressing, false otherwise
      */
-    inline bool isSzlItem() const
+    bool isSingleItem() const
     {
-        ENSURE(m.addressType == SzlAddressType || m.addressType == UniformAddressType);
-        return m.addressType == SzlAddressType;
+        return (m.addressType == SingleItemType);
     }
 
     /**
      * @return
      *     The type of addressing of the item address
      */
-    inline uint32_t addressType() const
+    UInt32_t addressType() const
     {
-        ENSURE(m.addressType == SzlAddressType || m.addressType == UniformAddressType);
-        return m.addressType;
+        return (m.addressType);
     }
 
     /**
      * @return
-     *     The subzone address of this item address.
+     *     index of the subzone containing the item (cell, node, or face)
      */
-    inline SubzoneAddress subzoneAddress() const
+    SzIndex_t szIndex() const
     {
-        REQUIRE(m.addressType == SzlAddressType);
-        return SubzoneAddress(m.szlItemAddress.partition, m.szlItemAddress.subzoneOffset);
+        REQUIRE(!isUniform());
+        SzIndex_t result;
+        if (m.addressType == SingleItemType)
+            result = m.szSingleItemAddress.szIndex;
+        else
+            result = m.szIJKItemAddress.szIndex;
+        ENSURE(VALID_ITEM_ADDRESS_SZINDEX(result));
+        return result;
     }
 
     /**
      * @return
-     *     partition in which the item address is located
+     *     offset within the subzone containing the item (cell, node, or face)
      */
-    inline Partition_t partition() const
+    Offset_t offset() const
     {
-        REQUIRE(m.addressType == SzlAddressType);
-        ENSURE(VALID_ITEM_ADDRESS_PARTITION(m.szlItemAddress.partition));
-        return m.szlItemAddress.partition;
+        REQUIRE(m.addressType == SingleItemType);
+        ENSURE(VALID_ITEM_ADDRESS_OFFSET(m.szSingleItemAddress.offset));
+        return m.szSingleItemAddress.offset;
     }
 
     /**
      * @return
-     *     subzone in which the item address is located
+     *     ordered IJK offset within the subzone containing the item (cell, node, or face)
      */
-    inline SubzoneOffset_t subzoneOffset() const
+    ItemAddress::IJK ijkOffset() const
     {
-        REQUIRE(m.addressType == SzlAddressType);
-        ENSURE(VALID_ITEM_ADDRESS_SUBZONE_OFFSET(m.szlItemAddress.subzoneOffset));
-        return m.szlItemAddress.subzoneOffset;
-    }
-
-    /**
-     * @return
-     *     node, cell, or face within the subzone
-     */
-    inline ItemOffset_t itemOffset() const
-    {
-        REQUIRE(m.addressType == SzlAddressType);
-        ENSURE(VALID_ITEM_ADDRESS_ITEM_OFFSET(m.szlItemAddress.itemOffset));
-        return m.szlItemAddress.itemOffset;
+        REQUIRE(m.addressType == IJKItemType);
+        ENSURE(VALID_ITEM_ADDRESS_OFFSET(m.szIJKItemAddress.iOffset));
+        ENSURE(VALID_ITEM_ADDRESS_OFFSET(m.szIJKItemAddress.jOffset));
+        ENSURE(VALID_ITEM_ADDRESS_OFFSET(m.szIJKItemAddress.kOffset));
+        return ItemAddress::IJK(
+                   m.szIJKItemAddress.iOffset,
+                   m.szIJKItemAddress.jOffset,
+                   m.szIJKItemAddress.kOffset);
     }
 
     /**
      * @return
      *     uniform offset of the item (cell, node, or face)
      */
-    inline UniformOffset_t uniformOffset() const
+    UniformOffset_t uniformOffset() const
     {
         REQUIRE(isUniform());
         return m.uniformAddress.offset;
-    }
-
-    /**
-     * @return
-     *     Item address raw bit pattern. Note that this is not the same as a uniform offset. In
-     *     addition it is important to note that the raw bit pattern varies between compilers and
-     *     should not be stored in a file for later use. The raw bits are exposed primarily so that
-     *     an item addresses can be temporarily stored in a 64 bit field
-     */
-    inline uint64_t toRawBits() const
-    {
-        return m.rawBits;
-    }
-
-    /**
-     * @param
-     *     Raw bits of an item address.
-     * @return
-     *     An item address constructed from the raw bits of another item address. Note that this is
-     *     not the same as a uniform offset. In addition it is important to note that the raw bit
-     *     pattern varies between compilers and should not be stored in a file for later use. The
-     *     raw bits are exposed primarily so that an item addresses can be temporarily stored in a
-     *     64 bit field.
-     */
-    static ItemAddress fromRawBits(uint64_t rawBits)
-    {
-        ItemAddress result;
-        result.m.rawBits = rawBits;
-        ENSURE(VALID_ITEM_ADDRESS(result));
-        return result;
     }
 
     /**
@@ -462,9 +404,8 @@ public:
      * @return
      *     true if the two items have bitwise equality
      */
-    inline bool operator==(ItemAddress const& other) const
+    bool operator==(ItemAddress const& other) const
     {
-        REQUIRE(VALID_ITEM_ADDRESS(other));
         return m.rawBits == other.m.rawBits;
     }
 
@@ -473,12 +414,8 @@ private:
     static bool validInvariants()
     {
         return (SIZE_IN_BITS(ItemAddress) <= 64U && // ...otherwise consider passing ItemAddress' by reference instead of by value
-                SIZE_IN_BITS(Partition_t)     >= PartitionBitSize     &&
-                SIZE_IN_BITS(SubzoneOffset_t) >= SubzoneOffsetBitSize &&
-                SIZE_IN_BITS(ItemOffset_t)    >  ItemOffsetBitSize    && // ...unlike the other bit fields we need all 8 bits so ItemOffset_t must be larger for correct loop termination
-                SIZE_IN_BITS(UniformOffset_t) >= UniformOffsetBitSize &&
-                AddressTypeBitSize + UniformOffsetBitSize == SIZE_IN_BITS(ItemAddress) &&
-                AddressTypeBitSize + PartitionBitSize + SubzoneOffsetBitSize + ItemOffsetBitSize == SIZE_IN_BITS(ItemAddress));
+                AddressTypeBitSize + UniformOffsetBitSize <= SIZE_IN_BITS(ItemAddress) &&
+                AddressTypeBitSize + SzIndexBitSize + 3 * OffsetBitSize <= SIZE_IN_BITS(ItemAddress));
     }
     #endif
 
@@ -489,39 +426,48 @@ private:
      *     and because we must preserve the sign bit required by uniform addresses in Tecplot (e.g.
      *     we use -1 and -2 as flags in cell and node numbering), we have to make them all members
      *     of the UniformAddress_s structure signed 64 bit integers. The same is true for the
-     *     SzlItemAddress_s structure except all the members must be 64 bit unsigned values.
+     *     SzSingleItemAddress_s structure except all the members must be 64 bit unsigned values.
      *     Basically, a structure containing bit fields must either all be signed or unsigned to
      *     work. If this were not the case we would have to abandon bit fields altogether and
      *     perform the bit twiddling ourselves. After all the grief of supposedly portable bit
      *     fields I'm tempted to abandon them anyway.
      */
 
-    struct SzlItemAddress_s
+    struct SzSingleItemAddress_s
     {
         // IMPORTANT: see note above for explanation of type choices for bit fields.
-        uint64_t addressType:AddressTypeBitSize;
-        uint64_t partition:PartitionBitSize;
-        uint64_t subzoneOffset:SubzoneOffsetBitSize;
-        uint64_t itemOffset:ItemOffsetBitSize;
+        UInt64_t addressType:AddressTypeBitSize;
+        UInt64_t offset:OffsetBitSize;
+        UInt64_t szIndex:SzIndexBitSize;
+    };
+
+    struct SzIJKItemAddress_s
+    {
+        // IMPORTANT: see note above for explanation of type choices for bit fields.
+        UInt64_t addressType:AddressTypeBitSize;
+        UInt64_t iOffset:OffsetBitSize;
+        UInt64_t jOffset:OffsetBitSize;
+        UInt64_t kOffset:OffsetBitSize;
+        UInt64_t szIndex:SzIndexBitSize;
     };
 
     struct UniformAddress_s
     {
         // IMPORTANT: see note above for explanation of type choices for bit fields.
-        int64_t addressType:AddressTypeBitSize;
-        int64_t offset:UniformOffsetBitSize;
+        Int64_t addressType:AddressTypeBitSize;
+        Int64_t offset:UniformOffsetBitSize;
     };
 
     union
     {
         // IMPORTANT: see note above for explanation of type choices for bit fields.
-        uint64_t         addressType:AddressTypeBitSize;
-        SzlItemAddress_s szlItemAddress;
-        UniformAddress_s uniformAddress;
-        uint64_t         rawBits; // ...used for bitwise equality
+        UInt64_t              addressType:AddressTypeBitSize;
+        SzSingleItemAddress_s szSingleItemAddress;
+        SzIJKItemAddress_s    szIJKItemAddress;
+        UniformAddress_s      uniformAddress;
+        UInt64_t              rawBits; // ...used for bitwise equality
     } m;
 };
-
 
 /*
  * Binary infix comparison operators for ItemAddress. ItemAddress supplies a bitwise unary
@@ -529,33 +475,45 @@ private:
  * two operators.
  */
 
+ inline bool operator<(
+     ItemAddress::IJK const& lhs,
+     ItemAddress::IJK const& rhs)
+ {
+    if (lhs.k != rhs.k)
+        return lhs.k < rhs.k;
+    else if (lhs.j != rhs.j)
+        return lhs.j < rhs.j;
+    else
+        return lhs.i < rhs.i;
+ }
+
 inline bool operator<(
     ItemAddress const& lhs,
     ItemAddress const& rhs)
 {
-    REQUIRE(VALID_ITEM_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS(rhs));
-
-    uint32_t const lhsType = lhs.addressType();
-    uint32_t const rhsType = rhs.addressType();
+    UInt32_t const lhsType = lhs.addressType();
+    UInt32_t const rhsType = rhs.addressType();
     if (lhsType != rhsType)
     {
         return lhsType < rhsType;
     }
-    else if (lhsType == tecplot::ItemAddress::UniformAddressType)
+    else if (lhsType == tecplot::ItemAddress::UniformType)
     {
         return lhs.uniformOffset() < rhs.uniformOffset();
     }
-    else if (lhs.partition() == rhs.partition())
+    else
     {
-        if (lhs.subzoneOffset() == rhs.subzoneOffset())
-            return lhs.itemOffset() < rhs.itemOffset();
+        if (lhs.szIndex() == rhs.szIndex())
+        {
+            if (lhsType == tecplot::ItemAddress::SingleItemType)
+                return lhs.offset() < rhs.offset();
+            else
+                return lhs.ijkOffset() < rhs.ijkOffset();
+        }
         else
-            return lhs.subzoneOffset() < rhs.subzoneOffset();
-    }
-    else
-    {
-        return lhs.partition() < rhs.partition();
+        {
+            return lhs.szIndex() < rhs.szIndex();
+        }
     }
 }
 
@@ -563,8 +521,6 @@ inline bool operator!=(
     ItemAddress const& lhs,
     ItemAddress const& rhs)
 {
-    REQUIRE(VALID_ITEM_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS(rhs));
     return !(lhs == rhs);
 }
 
@@ -572,8 +528,6 @@ inline bool operator<=(
     ItemAddress const& lhs,
     ItemAddress const& rhs)
 {
-    REQUIRE(VALID_ITEM_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS(rhs));
     return lhs < rhs || lhs == rhs;
 }
 
@@ -581,8 +535,6 @@ inline bool operator>(
     ItemAddress const& lhs,
     ItemAddress const& rhs)
 {
-    REQUIRE(VALID_ITEM_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS(rhs));
     return !(lhs < rhs) && !(lhs == rhs);
 }
 
@@ -590,57 +542,6 @@ inline bool operator>=(
     ItemAddress const& lhs,
     ItemAddress const& rhs)
 {
-    REQUIRE(VALID_ITEM_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS(rhs));
-    return !(lhs < rhs);
-}
-
-inline bool operator<(
-    ItemAddress::SubzoneAddress const& lhs,
-    ItemAddress::SubzoneAddress const& rhs)
-{
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(rhs));
-
-    if (lhs.partition() == rhs.partition())
-        return lhs.subzoneOffset() < rhs.subzoneOffset();
-    else
-        return lhs.partition() < rhs.partition();
-}
-
-inline bool operator!=(
-    ItemAddress::SubzoneAddress const& lhs,
-    ItemAddress::SubzoneAddress const& rhs)
-{
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(rhs));
-    return !(lhs == rhs);
-}
-
-inline bool operator<=(
-    ItemAddress::SubzoneAddress const& lhs,
-    ItemAddress::SubzoneAddress const& rhs)
-{
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(rhs));
-    return lhs < rhs || lhs == rhs;
-}
-
-inline bool operator>(
-    ItemAddress::SubzoneAddress const& lhs,
-    ItemAddress::SubzoneAddress const& rhs)
-{
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(rhs));
-    return !(lhs < rhs) && !(lhs == rhs);
-}
-
-inline bool operator>=(
-    ItemAddress::SubzoneAddress const& lhs,
-    ItemAddress::SubzoneAddress const& rhs)
-{
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(lhs));
-    REQUIRE(VALID_ITEM_ADDRESS_SUBZONE_ADDRESS(rhs));
     return !(lhs < rhs);
 }
 
