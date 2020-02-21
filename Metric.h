@@ -2,33 +2,33 @@
 #define METRIC_H
 
 #include <iostream>
-
-class Metric_c
+#include "Connect.h"
+class Solver_c;
+class Metric_c : public Connect_c
 {
 public:
+
 	// ================================================= INITIALIZATION ====================================================
 	// (Mettre les variables a initialiser ici)
 
-	// Integrer :
-
-	// 1D Array of Integrer :
-
-	// 2D Array of Integrer :
-
-	// 3D Array of Integrer :
-
-	// Double :
-
-	// 1D Array of Double :
-
-	// 2D Array of Double :
-
-	// 3D Array of Double :
-
-
+	// :
+	double SumNormLocalZone;
+	double SumNormAllZones;
+	// :
+	double** Face2Area;
+	double** Elem2Vol;
+	// :
+	double*** Face2Norm;
+	double*** Elem2Center;
+	double*** Face2ElemCenter;
+	double*** Elem2DeltaS_xyz;
 	// =========================================== FUNCTION MEMBERS ============================================
-	void exemple(int input);
-
+	void Compute(Solver_c& solve, Reader_c& read);
+	void Norm_Area(Solver_c& solve, Reader_c& read);
+	void SumNorm(Solver_c& solve, Reader_c& read, int choix);
+	void Volume(Solver_c& solve, Reader_c& read);
+	void Elem2DeltaS(Solver_c& solve);
+	void Face2Center(Solver_c& solve, Reader_c& read);
 };
 
-#endif 
+#endif

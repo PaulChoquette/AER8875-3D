@@ -2,13 +2,14 @@
 #define SOLVER_H
 
 #include <iostream>
+#include "Metric.h"
 
-class Solver_c
+class Solver_c: public Metric_c
 {
 public:
 	// ================================================= INITIALIZATION ====================================================
 	// (Mettre les variables a initialiser ici)
-
+	double cfl;
 	// Integrer :
 
 	// 1D Array of Integrer :
@@ -27,8 +28,8 @@ public:
 
 
 	// =========================================== FUNCTION MEMBERS ============================================
-	void exemple(int input);
+	void SolverExemple();
 
 };
 
-#endif 
+#endif

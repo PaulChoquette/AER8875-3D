@@ -1,8 +1,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <string> 
-#include "Reader.h" 
+#include <string>
+#include "Reader.h"
 #include "main.h"
 using namespace std;
 
@@ -12,10 +12,10 @@ void Reader_c::read_file(string filename) {
 	ndime = 0; nelem = 0; npoint = 0; nhalo = 0;
 
 	//Initialize information reading counters;
-	elem = 0; point = 0; line = ""; bc = 0;
+	elem = 0; point = 0; line = ""; bc = 0; nbc = 0;
 
 	//Open the file and continue if file is succesfully opened
-	if (OpenFile(filename)) 
+	if (OpenFile(filename))
 	{
 		//Read file line by line
 		while (getline(file, line))
@@ -47,10 +47,10 @@ void Reader_c::read_file(string filename) {
 			}
 
 			//If elem2node definition line has been defined
-			if (nelemlinen) 
+			if (nelemlinen)
 			{
 				//Check if line defines the element
-				if (linen > nelemlinen&& linen <= nelemlinen + nelem) 
+				if (linen > nelemlinen&& linen <= nelemlinen + nelem)
 				{
 					Fill_E2N_VTK(cline);
 					continue;
@@ -64,7 +64,7 @@ void Reader_c::read_file(string filename) {
 				npoint = Readcnst(line,"NPOIN= ");
 
 				//Define coordinate matrix if number of points has been defined
-				if (npoint) 
+				if (npoint)
 				{
 					npointlinen = linen;
 					coord = new double* [npoint];
@@ -77,7 +77,7 @@ void Reader_c::read_file(string filename) {
 			}
 
 			//If number of point definition line has been found
-			if (npointlinen) 
+			if (npointlinen)
 			{
 				if (linen > npointlinen&& linen <= npointlinen + npoint) {
 					Fill_coord(cline);
@@ -90,7 +90,7 @@ void Reader_c::read_file(string filename) {
 				if (nbc != 0) {
 					bclinen = linen;
 					BoundIndex = new int[nbc + 1];
-					BoundIndex[0] = nelem + 1;
+					BoundIndex[0] = nelem;
 					bc_elem2node = new int** [nbc];
 					bc_elem2vtk = new int* [nbc];
 					bc_nelemv = new int[nbc];
@@ -134,10 +134,10 @@ void Reader_c::read_file(string filename) {
 						for (int ielem = 0; ielem < nelem; ielem++)
 						{
 							elem2vtk[ielem] = elem2vtk_nh[ielem];
-							elem2node[ielem] = new int[vtklookup[elem2vtk[ielem]][1]];
+							elem2node[ielem] = new int[vtklookup[ndime-2][elem2vtk[ielem]][1]];
 
-							for (int inode = 0; inode < vtklookup[elem2vtk[ielem]][1]; inode++)
-							{		
+							for (int inode = 0; inode < vtklookup[ndime-2][elem2vtk[ielem]][1]; inode++)
+							{
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 							}
 						}
@@ -148,10 +148,10 @@ void Reader_c::read_file(string filename) {
 							for (int ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
 							{
 								elem2vtk[nelem + imelem] = bc_elem2vtk[ibc][ibcen];
-								elem2node[nelem + imelem] = new int[vtklookup[elem2vtk[nelem + imelem]][1]];
+								elem2node[nelem + imelem] = new int[vtklookup[ndime-2][elem2vtk[nelem + imelem]][1]];
 
-								for (int j = 0; j < vtklookup[elem2vtk[nelem + imelem]][1]; j++)
-								{									
+								for (int j = 0; j < vtklookup[ndime-2][elem2vtk[nelem + imelem]][1]; j++)
+								{
 									elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
 								}
 								imelem++;
@@ -209,6 +209,9 @@ int Reader_c::Readcnst(const string& line, const string& tofind)
 		cnstch = line.substr(cnstpos, line.length() - cnstpos);
 		cnst = stoul(cnstch);
 	}
+	else {
+		return 0;
+	}
 	return cnst;
 }
 
@@ -220,15 +223,15 @@ void Reader_c::Fill_E2N_VTK(const char* cline) {
 	{
 		cline = end;
 
-		//Where j is the integer counter. 0 is the vtk index and the rest is the 
+		//Where j is the integer counter. 0 is the vtk index and the rest is the
 		if (j == 0) {
 			elem2vtk_nh[elem] = c;
-			elem2node_nh[elem] = new int [vtklookup[c][1]];
+			elem2node_nh[elem] = new int [vtklookup[ndime-2][c][1]];
 		}
 
-		else if(j > 0 && j <= vtklookup[elem2vtk_nh[elem]][1])
+		else if(j > 0 && j <= vtklookup[ndime-2][elem2vtk_nh[elem]][1])
 		{
-			elem2node_nh[elem][j - 1] = c + 1;
+			elem2node_nh[elem][j - 1] = c;
 		}
 
 		else {
@@ -251,15 +254,15 @@ void Reader_c::Fill_BC_E2N_VTK(const char* cline, int bc) {
 	{
 		cline = end;
 
-		//Where j is the integer counter. 0 is the vtk index and the rest is the 
+		//Where j is the integer counter. 0 is the vtk index and the rest is the
 		if (j == 0) {
 			bc_elem2vtk[bc][bc_e2n_counter] = c;
-			bc_elem2node[bc][bc_e2n_counter] = new int[vtklookup[c][1]];
+			bc_elem2node[bc][bc_e2n_counter] = new int[vtklookup[ndime-2][c][1]];
 		}
 
-		else if (j > 0 && j <= vtklookup[bc_elem2vtk[bc][bc_e2n_counter]][1])
+		else if (j > 0 && j <= vtklookup[ndime-2][bc_elem2vtk[bc][bc_e2n_counter]][1])
 		{
-			bc_elem2node[bc][bc_e2n_counter][j - 1] = c + 1;
+			bc_elem2node[bc][bc_e2n_counter][j - 1] = c;
 		}
 
 		else {
@@ -288,3 +291,36 @@ double** Reader_c::Fill_coord(const char* cline) {
 	point++;
 
 	return coord;
+}
+
+void Reader_c::check()
+{
+	cout << "-------Parametres de la simulation--------\n";
+	cout << "ndime : ";cout << ndime;cout << "\n";
+	cout << "nelem : ";cout << nelem;cout << "\n";
+	cout << "npoint : ";cout << npoint;cout << "\n";
+	cout << "nhalo : ";cout << nhalo;cout << "\n";
+	cout << "elem : ";cout << elem;cout << "\n";
+	cout << "point : ";cout << point;cout << "\n";
+	cout << "line : ";cout << line;cout << "\n";
+	cout << "bc : ";cout << bc;cout << "\n";
+	cout << "\nElem2Node :\n";
+	for(int i=0; i<elem;i++)
+	{
+		for(int j=0; j<vtklookup[1][elem2vtk[i]][1]; j++)
+		{
+			cout << elem2node[i][j]; cout << " ; ";
+		}
+		cout << "\n";
+	}
+	cout << "\ncoord :\n";
+	for(int i=0; i<npoint; i++)
+	{
+		cout << coord[i][0]; cout << " ; "; cout << coord[i][1]; cout << " ; "; cout << coord[i][2]; cout << "\n";
+	}
+	cout << "\nelem2vtk :\n";
+	for(int i=0; i<nelem; i++)
+	{
+		cout << elem2vtk[i];cout << "\n";
+	}
+}
