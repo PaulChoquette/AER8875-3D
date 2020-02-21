@@ -54,9 +54,13 @@ class solver : public supposed_metric_n_connec {    // TBD wheter public or priv
     void TimeStepRkM();         // Runge-Kutta Multistage time integration
     void TimeStepRkH();         // Runge-Kutta Hybride time integration
     void ComputeFluxO1();       // Calcul des flux (Roe) ordre 1
+	void ComputeFluxO1Conv() ;  // Calcul flux convectifs Ordre 1
     void ComputeFluxO2();       // Calcul des flux (Roe) ordre 2
     void InitMPI();             // Declare necessary structures for MPI
     //void computeGradiants();  // [May not be needed, depending on choosen implem]
     void ComputeResidu();       // Calcul des résidu
     double CheckConvergence();  // Somme des résidus
+	double P2E(double);         // Calcul pression vers Energie
+	double E2P(double);         // Calcul  Energie vers pression
+	
 };

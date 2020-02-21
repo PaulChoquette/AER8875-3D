@@ -240,36 +240,38 @@ void solver::ExchangeGradiants() {
 
 // euler explicit time integration
 void solver::TimeStepEul() {
-    double c;           //local sound speed
+    double c, eTempo,invrho;           //local sound speed
     double sumLambda;   // see blasek, sum of spectral radiuses
     double dTi_sans_V;         //dTi local time step
     for (int ielem=0;ielem<nelem;++ielem) {
         c = sqrt(1.4*p[ielem]/rho[ielem]);
         sumLambda = (fabs(u[ielem])+c)*elem2spectral[ielem][0]+(fabs(v[ielem])+c)*elem2spectral[ielem][1]+(fabs(w[ielem])+c)*elem2spectral[ielem][2];
         dTi_sans_V = cfl/sumLambda;
-        rho[ielem] -= (residu_c[ielem][0]+residu_d[ielem][0])*dTi_sans_V;        // CAREFULL WITH SIGN OF DISSIPATIVE FLUX
-        dTi_sans_V = dTi_sans_V/rho[ielem];
-        u[ielem] -= (residu_c[ielem][1]-residu_d[ielem][1])*dTi_sans_V;
-        v[ielem] -= (residu_c[ielem][2]-residu_d[ielem][2])*dTi_sans_V;
-        w[ielem] -= (residu_c[ielem][3]-residu_d[ielem][3])*dTi_sans_V;
-        p[ielem] -= (residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V;
+		invrho=1/rho[ielem];
+        rho[ielem] -= ((residu_c[ielem][0]+residu_d[ielem][0])*dTi_sans_V);        // CAREFULL WITH SIGN OF DISSIPATIVE FLUX
+        u[ielem] -= ((residu_c[ielem][1]-residu_d[ielem][1])*dTi_sans_V)*invrho;
+        v[ielem] -= ((residu_c[ielem][2]-residu_d[ielem][2])*dTi_sans_V)*invrho;
+        w[ielem] -= ((residu_c[ielem][3]-residu_d[ielem][3])*dTi_sans_V)*invrho;
+		
+		eTempo = P2E(p[ielem])-(residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V;
+        p[ielem] = E2P(eTempo);
     }
 }
 
 // Runge-Kutta Multistage time integration
 void solver::TimeStepRkM() {
     int OIndx = Order-1;
-    double c;           //local sound speed
+    double c,invrho,eTempo;           //local sound speed
     double sumLambda;   // see blasek, sum of spectral radiuses
     double dTi_sans_V;         //dTi local time step
     
     // update W_0 with initial results
     for (int ielem=0;ielem<nelem;++ielem) {
         W_0[ielem][0] = rho[ielem];
-        W_0[ielem][1] = u[ielem];
-        W_0[ielem][2] = v[ielem];
-        W_0[ielem][3] = w[ielem];
-        W_0[ielem][4] = p[ielem]; 
+        W_0[ielem][1] = rho[ielem]*u[ielem];
+        W_0[ielem][2] = rho[ielem]*v[ielem];
+        W_0[ielem][3] = rho[ielem]*w[ielem];
+        W_0[ielem][4] = P2E(p[ielem]);         //To edit
     }
 
     for (int k=0;k<RK_step;++k) {
@@ -278,11 +280,13 @@ void solver::TimeStepRkM() {
             sumLambda = (fabs(u[ielem])+c)*elem2spectral[ielem][0]+(fabs(v[ielem])+c)*elem2spectral[ielem][1]+(fabs(w[ielem])+c)*elem2spectral[ielem][2];
             dTi_sans_V = cfl/sumLambda;
             rho[ielem] = W_0[ielem][0] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][0]-residu_d[ielem][0]);
-            dTi_sans_V = dTi_sans_V/rho[ielem];
-            u[ielem] = W_0[ielem][1] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d[ielem][1]);
-            v[ielem] = W_0[ielem][2] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d[ielem][2]);
-            w[ielem] = W_0[ielem][3] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d[ielem][3]);
-            p[ielem] = W_0[ielem][4] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d[ielem][4]);
+			invrho=1/rho[ielem];
+            u[ielem] = (W_0[ielem][1] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d[ielem][1]))*invrho;
+            v[ielem] = (W_0[ielem][2] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d[ielem][2]))*invrho;
+            w[ielem] = (W_0[ielem][3] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d[ielem][3]))*invrho;
+			
+			eTempo= (W_0[ielem][4] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d[ielem][4]))*invrho;
+            p[ielem] = E2P(eTempo);    // to edit
         }
         // update residu
         if (k!=RK_step) {
@@ -294,9 +298,11 @@ void solver::TimeStepRkM() {
     }
 }
 
+
+
 // Runge-Kutta Hybrid time integration
 void solver::TimeStepRkH() {
-    double c;           //local sound speed
+    double c, eTempo, invrho;           //local sound speed
     double sumLambda;   // see blasek, sum of spectral radiuses
     double dTi_sans_V;  //dTi local time step
     // update W_0 with initial results
@@ -318,7 +324,6 @@ void solver::TimeStepRkH() {
             }
         }
         else if((k==2)||(k==4)) {
-            // TO EDIT : update residu_d!
             for (int ielem=0;ielem<nelem;++ielem) {
                 for (int jres=0;jres<5;++jres) {
                     residu_d_hyb[ielem][jres] = RKH_coef[RK_step][1][k]*residu_d[ielem][jres]+(1-RKH_coef[RK_step][1][k])*residu_d_hyb[ielem][jres];
@@ -330,22 +335,114 @@ void solver::TimeStepRkH() {
             c = sqrt(1.4*p[ielem]/rho[ielem]);
             sumLambda = (fabs(u[ielem])+c)*elem2spectral[ielem][0]+(fabs(v[ielem])+c)*elem2spectral[ielem][1]+(fabs(w[ielem])+c)*elem2spectral[ielem][2];
             dTi_sans_V = cfl/sumLambda;
-            rho[ielem] = W_0[ielem][0] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][0]-residu_d[ielem][0]);
-            dTi_sans_V = dTi_sans_V/rho[ielem];
-            u[ielem] = W_0[ielem][1] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d_hyb[ielem][1]);
-            v[ielem] = W_0[ielem][2] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d_hyb[ielem][2]);
-            w[ielem] = W_0[ielem][3] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d_hyb[ielem][3]);
-            p[ielem] = W_0[ielem][4] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d_hyb[ielem][4]);
+            rho[ielem] = W_0[ielem][0] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][0]-residu_d_hyb[ielem][0]);
+			invrho=1/rho[ielem];
+            u[ielem] = (W_0[ielem][1] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d_hyb[ielem][1]))*invrho;
+            v[ielem] = (W_0[ielem][2] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d_hyb[ielem][2]))*invrho;
+            w[ielem] = (W_0[ielem][3] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d_hyb[ielem][3]))*invrho;
+			
+			eTempo= (W_0[ielem][4] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d_hyb[ielem][4]))*invrho;
+            p[ielem] = E2P(eTempo);    // to edit
         }
         // update residu
         if (k!=RK_step) {
             ExchangePrimitive();
             UpdateBound();
-            if (Order==1){ComputeFluxO1();}else {ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
+			if (k==1 || k==3) {
+				if (Order==1){ComputeFluxO1();}else {ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
+			}
+			else {
+				if (Order==1){ComputeFluxO1Conv();}else {ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
+			}
             ComputeResidu();
         }
     }
 }
+void solver::ComputeFluxO1Conv() {
+	for (int iface = 0; iface < nface; iface++) {    
+			int ielemL, ielemR;
+			double dp, du, dv, dV, drho,dw;
+			double rhoL, rhoR, VL, VR, UL, UR,WR,WL, uL, uR, vL, vR,wR,wL, pL, pR, cL, cR, HL, HR, nx, ny, nz;
+			double rhoAvg, uAvg, vAvg,wAvg, pAvg, Vavg, Havg, Uavg;
+			double Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
+
+			ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche 
+			ielemR = face2elem[iface][1] - 1;		// numero de l'element droit
+
+			rhoL = rho[ielemL];
+			rhoR = rho[ielemR];
+			drho = rhoR - rhoL;
+
+			//Calcul des vitesses à droite et à gauche de chaque élément
+			uL = u[ielemL];    //A changer pour la bonne variable
+			vL = v[ielemL];
+			wL = w[ielemL];
+			uR = u[ielemR];
+			vR = v[ielemR];
+			wR = w[ielemR];
+			du = uR - uL;
+			dv = vR - vL;
+			dw = wR - wL; 
+
+			//Calcul des normales
+			nx = face2norm[iface][0];  
+			ny = face2norm[iface][1];
+			nz = face2norm[iface][2];
+				
+
+			UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
+			UR = sqrt(uR * uR + vR * vR + wR*wR);
+
+
+			VL = nx * uL + ny * vL + nz*wL;     //ajouter w?
+			VR = nx * uR + ny * vR + nz*wR;
+
+			dV = VR - VL;
+				
+
+
+			pL = p[ielemL];
+			pR = p[ielemR];
+			dp = pR - pL;
+
+
+			//Calcul des moyennes des variables 
+			rhoAvg = 0.5 * (rhoL + rhoR);
+			uAvg = 0.5 * (uL + uR);
+			vAvg = 0.5 * (vL + vR);
+			wAvg = 0.5 * (wL + wR);
+			pAvg = 0.5 * (pL + pR);
+			Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
+			Uavg = sqrt(uAvg * uAvg + vAvg * vAvg + wAvg * wAvg);  //ajouter w?
+
+			HL = 0.5 * UL * UL + pL / rhoL / (gamma - 1) + pL / rhoL;
+			HR = 0.5 * UR * UR + pR / rhoR / (gamma - 1) + pR / rhoR;
+			Havg = 0.5 * (HL + HR);
+
+
+			//Calcul du flux conservatif
+			Fcmass = rhoAvg * Vavg;
+			Fcmom1 = rhoAvg * Vavg * uAvg + pAvg * nx;
+			Fcmom2 = rhoAvg * Vavg * vAvg + pAvg * ny;
+			Fcmom3 = rhoAvg * Vavg * wAvg + pAvg * nz;
+			Fcenergy = rhoAvg * Vavg * Havg;
+			
+			// Flux dans les bonnes variables
+			flux_c[iface][0] = Fcmass;   //rho
+			flux_c[iface][1] = Fcmom1;   //u
+			flux_c[iface][2] = Fcmom2;   //v
+			flux_c[iface][3] = Fcmom3;   //w
+			flux_c[iface][4] = Fcenergy;   //p
+			
+
+
+			
+		}
+	}
+
+
+
+
 
 // Roe fluxes, order 1 [REMEMBER TO SPLIT CONVECTIVE AND DIFFUSIVE FLUXES]
 void solver::ComputeFluxO1() {
@@ -522,3 +619,22 @@ double solver::CheckConvergence() {
     }
     return sqrt(residuSum);
 }
+
+double solver::P2E(double p ) {
+	
+	
+	
+	
+	
+	
+	}
+	
+double solver::E2P(double e) {
+	
+	
+	
+	
+	
+	
+	}
+	
