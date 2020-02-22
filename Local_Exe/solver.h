@@ -29,6 +29,7 @@ class solver : public supposed_metric_n_connec {    // TBD wheter public or priv
     double** residu_d_hyb;      //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** W_0;               //copy of initial state for RK
     double** primitivesSendBuffer;  //Buffer for Tx
+    double ***gradient;             // Array containing gradiant [ielem][dimention][conservative]
     double inf_speed,inf_speed_x,inf_speed_y,inf_speed_z;   // speed norm at infinity
     double RKM_coef[6][2][5] =     // RKM 5 coeffs [Stages][order-1][step]
     {   {{0,0,0,0,0                 },{0,0,0,0,0}},                     //Order 0 ; Filler
@@ -45,6 +46,7 @@ class solver : public supposed_metric_n_connec {    // TBD wheter public or priv
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0.2742,0.2069,0.5020,0.5142,1.0},{1.0,0.0,0.56,0.0,0.44}}};   //Only order 5 in blasek
 
+
     //Private methods
     void Initialisation();      // Initialise field to infinity
     void UpdateBound();         // Update boundary conditions
@@ -53,14 +55,16 @@ class solver : public supposed_metric_n_connec {    // TBD wheter public or priv
     void TimeStepEul();         // Euler explicit time integration
     void TimeStepRkM();         // Runge-Kutta Multistage time integration
     void TimeStepRkH();         // Runge-Kutta Hybride time integration
+    void ComputeGrandientsNLimit();// Computes gradiants WITH limitors INCLUDED
     void ComputeFluxO1();       // Calcul des flux (Roe) ordre 1
 	void ComputeFluxO1Conv() ;  // Calcul flux convectifs Ordre 1
     void ComputeFluxO2();       // Calcul des flux (Roe) ordre 2
+    void ComputeFluxO2Conv() ;  // Calcul flux convectifs Ordre 2
     void InitMPI();             // Declare necessary structures for MPI
     //void computeGradiants();  // [May not be needed, depending on choosen implem]
     void ComputeResidu();       // Calcul des résidu
     double CheckConvergence();  // Somme des résidus
-	double P2E(double);         // Calcul pression vers Energie
-	double E2P(double);         // Calcul  Energie vers pression
+	double P2E(double,double,double,double,double);         // Calcul pression vers Energie
+	double E2P(double,double,double,double,double);         // Calcul  Energie vers pression
 	
 };

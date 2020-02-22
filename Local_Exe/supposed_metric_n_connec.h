@@ -30,7 +30,7 @@ class supposed_metric_n_connec {
     int**   local2ZoneLocal;    //local element number TO other zone's local index
     // from Metric
     double**     face2norm;
-    double**    cent2face;
+    double***    cent2face;
     double*     face2area;
     double*     elem2vol;
     double**    elem2spectral;

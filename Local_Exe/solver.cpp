@@ -13,6 +13,13 @@ solver::solver() {
     inf_speed_y = inf_speed*sin(AoA);
     inf_speed_z = 0;
     Initialisation();
+    gradient = new double**[nelem];
+    for (int ielem=0;ielem<nelem;++ielem) {
+        gradient[ielem] = new double*[3];
+        for (int idim=0;idim<3;++idim) {
+            gradient[ielem][idim] = new double[5];
+        }
+    }
 }
 
 // destructor
@@ -39,7 +46,15 @@ solver::~solver() {
     delete[] residu_d;
     delete[] W_0;
     delete[] residu_d_hyb;
-
+    
+    
+    for (int ielem=0;ielem<nelem;++ielem) {
+        for (int idim=0;idim<3;++idim) {
+            delete[] gradient[ielem][idim];
+        }
+        delete[] gradient[ielem];
+    }
+    delete[] gradient;
 
     // Delete MPI-related variables
     for (int izone=0;izone<World.ntgt;++izone) {
@@ -182,7 +197,6 @@ void solver::UpdateBound() {
                     w[ig] = w[ir]+face2norm[iface][2]*(p[ir]-1.0)*l_r0c0;
                 }
             }
-
         }
     }
 }
@@ -191,8 +205,6 @@ void solver::UpdateBound() {
 void solver::InitMPI() {
     int* zone2nbelem;   //number of element / zone boundary
     int ntgt;           //Number of zones to talk to
-
-
     World.Init(Registre_file);    // Initialise MPI
 
     //Build zone2nbelem; number of element / zone boundary
@@ -207,7 +219,6 @@ void solver::InitMPI() {
     for (int izone=0;izone<World.ntgt;++izone) {
         primitivesSendBuffer[izone] = new double[zone2nbelem[izone]];
     }
-
     // Handshake order in which boundary elements will be sent between zones
     //World.ExchangeCellOrder();    // TO EDIT
 
@@ -252,9 +263,8 @@ void solver::TimeStepEul() {
         u[ielem] -= ((residu_c[ielem][1]-residu_d[ielem][1])*dTi_sans_V)*invrho;
         v[ielem] -= ((residu_c[ielem][2]-residu_d[ielem][2])*dTi_sans_V)*invrho;
         w[ielem] -= ((residu_c[ielem][3]-residu_d[ielem][3])*dTi_sans_V)*invrho;
-		
-		eTempo = P2E(p[ielem])-(residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V;
-        p[ielem] = E2P(eTempo);
+		eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem])-(residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V;
+        p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 }
 
@@ -271,7 +281,7 @@ void solver::TimeStepRkM() {
         W_0[ielem][1] = rho[ielem]*u[ielem];
         W_0[ielem][2] = rho[ielem]*v[ielem];
         W_0[ielem][3] = rho[ielem]*w[ielem];
-        W_0[ielem][4] = P2E(p[ielem]);         //To edit
+        W_0[ielem][4] = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 
     for (int k=0;k<RK_step;++k) {
@@ -286,13 +296,13 @@ void solver::TimeStepRkM() {
             w[ielem] = (W_0[ielem][3] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d[ielem][3]))*invrho;
 			
 			eTempo= (W_0[ielem][4] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d[ielem][4]))*invrho;
-            p[ielem] = E2P(eTempo);    // to edit
+            p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
         }
         // update residu
         if (k!=RK_step) {
             ExchangePrimitive();
             UpdateBound();
-            if (Order==1){ComputeFluxO1();}else {ComputeFluxO2();}
+            if (Order==1){ComputeFluxO1();}else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
             ComputeResidu();
         }
     }
@@ -308,10 +318,10 @@ void solver::TimeStepRkH() {
     // update W_0 with initial results
     for (int ielem=0;ielem<nelem;++ielem) {
         W_0[ielem][0] = rho[ielem];
-        W_0[ielem][1] = u[ielem];
-        W_0[ielem][2] = v[ielem];
-        W_0[ielem][3] = w[ielem];
-        W_0[ielem][4] = p[ielem]; 
+        W_0[ielem][1] = rho[ielem]*u[ielem];
+        W_0[ielem][2] = rho[ielem]*v[ielem];
+        W_0[ielem][3] = rho[ielem]*w[ielem];
+        W_0[ielem][4] = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 
     for (int k=0;k<RK_step;++k) {
@@ -335,24 +345,24 @@ void solver::TimeStepRkH() {
             c = sqrt(1.4*p[ielem]/rho[ielem]);
             sumLambda = (fabs(u[ielem])+c)*elem2spectral[ielem][0]+(fabs(v[ielem])+c)*elem2spectral[ielem][1]+(fabs(w[ielem])+c)*elem2spectral[ielem][2];
             dTi_sans_V = cfl/sumLambda;
-            rho[ielem] = W_0[ielem][0] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][0]-residu_d_hyb[ielem][0]);
+            rho[ielem] = W_0[ielem][0] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][0]-residu_d_hyb[ielem][0]);
 			invrho=1/rho[ielem];
-            u[ielem] = (W_0[ielem][1] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d_hyb[ielem][1]))*invrho;
-            v[ielem] = (W_0[ielem][2] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d_hyb[ielem][2]))*invrho;
-            w[ielem] = (W_0[ielem][3] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d_hyb[ielem][3]))*invrho;
+            u[ielem] = (W_0[ielem][1] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d_hyb[ielem][1]))*invrho;
+            v[ielem] = (W_0[ielem][2] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d_hyb[ielem][2]))*invrho;
+            w[ielem] = (W_0[ielem][3] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d_hyb[ielem][3]))*invrho;
 			
-			eTempo= (W_0[ielem][4] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d_hyb[ielem][4]))*invrho;
-            p[ielem] = E2P(eTempo);    // to edit
+			eTempo= (W_0[ielem][4] - RKM_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d_hyb[ielem][4]))*invrho;
+            p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
         }
         // update residu
         if (k!=RK_step) {
             ExchangePrimitive();
             UpdateBound();
 			if (k==1 || k==3) {
-				if (Order==1){ComputeFluxO1();}else {ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
+				if (Order==1){ComputeFluxO1();}else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
 			}
 			else {
-				if (Order==1){ComputeFluxO1Conv();}else {ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
+				if (Order==1){ComputeFluxO1Conv();}else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
 			}
             ComputeResidu();
         }
@@ -361,17 +371,16 @@ void solver::TimeStepRkH() {
 void solver::ComputeFluxO1Conv() {
 	for (int iface = 0; iface < nface; iface++) {    
 			int ielemL, ielemR;
-			double dp, du, dv, dV, drho,dw;
 			double rhoL, rhoR, VL, VR, UL, UR,WR,WL, uL, uR, vL, vR,wR,wL, pL, pR, cL, cR, HL, HR, nx, ny, nz;
 			double rhoAvg, uAvg, vAvg,wAvg, pAvg, Vavg, Havg, Uavg;
 			double Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
+            double gamma = 1.4;
 
-			ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche 
-			ielemR = face2elem[iface][1] - 1;		// numero de l'element droit
+			ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche [-1 NEEDED!?!?!]
+			ielemR = face2elem[iface][1] - 1;		// numero de l'element droit  [-1 NEEDED!?!?!]
 
 			rhoL = rho[ielemL];
 			rhoR = rho[ielemR];
-			drho = rhoR - rhoL;
 
 			//Calcul des vitesses à droite et à gauche de chaque élément
 			uL = u[ielemL];    //A changer pour la bonne variable
@@ -380,31 +389,20 @@ void solver::ComputeFluxO1Conv() {
 			uR = u[ielemR];
 			vR = v[ielemR];
 			wR = w[ielemR];
-			du = uR - uL;
-			dv = vR - vL;
-			dw = wR - wL; 
 
 			//Calcul des normales
 			nx = face2norm[iface][0];  
 			ny = face2norm[iface][1];
 			nz = face2norm[iface][2];
-				
 
 			UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
 			UR = sqrt(uR * uR + vR * vR + wR*wR);
 
-
 			VL = nx * uL + ny * vL + nz*wL;     //ajouter w?
 			VR = nx * uR + ny * vR + nz*wR;
 
-			dV = VR - VL;
-				
-
-
 			pL = p[ielemL];
 			pR = p[ielemR];
-			dp = pR - pL;
-
 
 			//Calcul des moyennes des variables 
 			rhoAvg = 0.5 * (rhoL + rhoR);
@@ -413,12 +411,10 @@ void solver::ComputeFluxO1Conv() {
 			wAvg = 0.5 * (wL + wR);
 			pAvg = 0.5 * (pL + pR);
 			Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
-			Uavg = sqrt(uAvg * uAvg + vAvg * vAvg + wAvg * wAvg);  //ajouter w?
 
-			HL = 0.5 * UL * UL + pL / rhoL / (gamma - 1) + pL / rhoL;
-			HR = 0.5 * UR * UR + pR / rhoR / (gamma - 1) + pR / rhoR;
+			HL = 0.5 * UL * UL + pL /rhoL /(gamma - 1) + pL / rhoL;
+			HR = 0.5 * UR * UR + pR /rhoR /(gamma - 1) + pR / rhoR;
 			Havg = 0.5 * (HL + HR);
-
 
 			//Calcul du flux conservatif
 			Fcmass = rhoAvg * Vavg;
@@ -432,186 +428,527 @@ void solver::ComputeFluxO1Conv() {
 			flux_c[iface][1] = Fcmom1;   //u
 			flux_c[iface][2] = Fcmom2;   //v
 			flux_c[iface][3] = Fcmom3;   //w
-			flux_c[iface][4] = Fcenergy;   //p
-			
-
-
-			
-		}
+			flux_c[iface][4] = Fcenergy; //e
 	}
-
-
-
-
+}
 
 // Roe fluxes, order 1 [REMEMBER TO SPLIT CONVECTIVE AND DIFFUSIVE FLUXES]
 void solver::ComputeFluxO1() {
-	for (int iface = 0; iface < nface; iface++) {    
-			int ielemL, ielemR;
-			double dp, du, dv, dV, drho,dw;
-			double rhoL, rhoR, VL, VR, UL, UR,WR,WL, uL, uR, vL, vR,wR,wL, pL, pR, cL, cR, HL, HR, nx, ny, nz, rhobar, ubar, vbar,wbar, hbar, cbar, Vbar, qbar, SR1, SR2, SR3, delta;
-			double rhoAvg, uAvg, vAvg,wAvg, pAvg, Vavg, Havg, Uavg;
-			double imassFlux, imomentumFlux[2], ienergyFlux, F1mass, F1mom1, F1mom2, F1mom3, F1energy, F234mass, F234mom1, F234mom2,F234mom3, F234energy, F5mass, F5mom1, F5mom2, F5mom3, F5energy;
-			double AWW1, AWW2, AWW3, AWW4,AWW5, Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
-			double c1, c2, c3, c4, c5;
-            double gamma=1.4;
+for (int iface = 0; iface < nface; iface++) {    
+        int ielemL, ielemR;
+        double dp, du, dv, dV, drho,dw;
+        double rhoL, rhoR, VL, VR, UL, UR,WR,WL, uL, uR, vL, vR,wR,wL, pL, pR, cL, cR, HL, HR, nx, ny, nz, rhobar, ubar, vbar,wbar, hbar, cbar, Vbar, qbar, SR1, SR2, SR3, delta;
+        double rhoAvg, uAvg, vAvg,wAvg, pAvg, Vavg, Havg, Uavg;
+        double imassFlux, imomentumFlux[2], ienergyFlux, F1mass, F1mom1, F1mom2, F1mom3, F1energy, F234mass, F234mom1, F234mom2,F234mom3, F234energy, F5mass, F5mom1, F5mom2, F5mom3, F5energy;
+        double AWW1, AWW2, AWW3, AWW4,AWW5, Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
+        double c1, c2, c3, c4, c5;
+        double gamma=1.4;
 
-			ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche 
-			ielemR = face2elem[iface][1] - 1;		// numero de l'element droit
+        ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche  [-1 NEEDED!?!?!]
+        ielemR = face2elem[iface][1] - 1;		// numero de l'element droit   [-1 NEEDED!?!?!]
 
-			rhoL = rho[ielemL];
-			rhoR = rho[ielemR];
-			drho = rhoR - rhoL;
+        rhoL = rho[ielemL];
+        rhoR = rho[ielemR];
+        drho = rhoR - rhoL;
 
-			//Calcul des vitesses à droite et à gauche de chaque élément
-			uL = u[ielemL];    //A changer pour la bonne variable
-			vL = v[ielemL];
-			wL = w[ielemL];
-			uR = u[ielemR];
-			vR = v[ielemR];
-			wR = w[ielemR];
-			du = uR - uL;
-			dv = vR - vL;
-			dw = wR - wL; 
+        //Calcul des vitesses à droite et à gauche de chaque élément
+        uL = u[ielemL];    //A changer pour la bonne variable
+        vL = v[ielemL];
+        wL = w[ielemL];
+        uR = u[ielemR];
+        vR = v[ielemR];
+        wR = w[ielemR];
+        du = uR - uL;
+        dv = vR - vL;
+        dw = wR - wL; 
 
-			//Calcul des normales
-			nx = face2norm[iface][0];  
-			ny = face2norm[iface][1];
-			nz = face2norm[iface][2];
-				
+        //Calcul des normales
+        nx = face2norm[iface][0];  
+        ny = face2norm[iface][1];
+        nz = face2norm[iface][2];
+        
+        UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
+        UR = sqrt(uR * uR + vR * vR + wR*wR);
 
-			UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
-			UR = sqrt(uR * uR + vR * vR + wR*wR);
+        VL = nx * uL + ny * vL + nz*wL;     //ajouter w?
+        VR = nx * uR + ny * vR + nz*wR;
+
+        dV = VR - VL;
+            
+        pL = p[ielemL];
+        pR = p[ielemR];
+        dp = pR - pL;
+
+        //Calcul des moyennes des variables 
+        rhoAvg = 0.5 * (rhoL + rhoR);
+        uAvg = 0.5 * (uL + uR);
+        vAvg = 0.5 * (vL + vR);
+        wAvg = 0.5 * (wL + wR);
+        pAvg = 0.5 * (pL + pR);
+        Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
+        Uavg = sqrt(uAvg * uAvg + vAvg * vAvg + wAvg * wAvg);  //ajouter w?
+
+        HL = 0.5 * UL * UL + pL / rhoL / (gamma - 1) + pL / rhoL;
+        HR = 0.5 * UR * UR + pR / rhoR / (gamma - 1) + pR / rhoR;
+        Havg = 0.5 * (HL + HR);
+
+        //Calcul constantes pour simplifier la compilation 
+        c1=sqrt(rhoL); 
+        c2=sqrt(rhoR);
+        c3= 1/(c1+c2);
+        c4= 1/(2 * cbar * cbar); 
+        c5= 1/(cbar * cbar);
+    
+        //Calcul des variables bar du schéma ROE
+        rhobar = sqrt(rhoL * rhoR);
+        ubar = (uL * c1 + uR * c2) * c3;
+        vbar = (vL * c1 + vR * c2) * c3; 
+        wbar = (wL * c1 + wR * c2) * c3;
+        hbar = (HL * c1 + HR * c2) * c3;
+        qbar = (ubar * ubar) + (vbar * vbar)+(wbar*wbar); // c'est le qbar au carré
+        cbar = sqrt((gamma - 1) * (hbar - qbar * 0.5)); 
+        Vbar = ubar * nx + vbar * ny+ wbar * nz;
+
+        cL = sqrt(gamma * pL / rhoL);
+        cR = sqrt(gamma * pR / rhoR);
+
+        // Harten’s entropy correction
+        SR1 = abs(Vbar - cbar);
+        SR2 = abs(Vbar);
+        SR3 = abs(Vbar + cbar);
+
+        delta = 0.1 * (cL + cR) / 2;    // Potentielle erreur pour vitesse dus on locale
+
+        if (SR1 < delta && SR1>-delta) {         
+            SR1 = (SR1 + delta * delta) / (2 * delta);
+        }
+        if (SR2 < delta && SR2>-delta) {
+            SR2 = (SR2 + delta * delta) / (2 * delta);
+        }
+        if (SR3 < delta && SR3>-delta) {
+            SR3 = (SR3 + delta * delta) / (2 * delta);
+        }
+            
+        //Calcul des différents termes du flux dissipatif
+        F1mass = SR1 * ((dp - rhobar * cbar * dV) *c4) * 1;
+        F1mom1 = (SR1 * ((dp - rhobar * cbar * dV)*c4)) * (ubar - (cbar * nx));
+        F1mom2 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (vbar - (cbar * ny));
+        F1mom3 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (wbar - (cbar * nz));
+        F1energy = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (hbar - (cbar * Vbar));
+
+        F234mass = SR2 * ((drho - (dp *c5)) * 1 + rhobar * 0); 
+        F234mom1 = SR2 * ((drho - (dp *c5)) * ubar + rhobar * (du - dV * nx));
+        F234mom2 = SR2 * ((drho - (dp *c5)) * vbar + rhobar * (dv - dV * ny));
+        F234mom3 = SR2 * ((drho - (dp *c5)) * wbar + rhobar * (dw - dV * nz));
+        F234energy = SR2 * ((drho - (dp*c5)) * (qbar * 0.5) + rhobar * (ubar * du + vbar * dv +wbar * dw - Vbar * dV)); 
+
+        F5mass = SR3 * ((dp + rhobar * cbar * dV) *c4) * 1;
+        F5mom1 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (ubar + cbar * nx);
+        F5mom2 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (vbar + cbar * ny);
+        F5mom3 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (wbar + cbar * nz);
+        F5energy = SR3 * ((dp + rhobar * cbar * dV)*c4) * (hbar + cbar * Vbar);
+
+        //Sommes des termes pour avoir le flux dissipatif
+        AWW1 = 0.5 * (F1mass + F234mass + F5mass);
+        AWW2 = 0.5 * (F1mom1 + F234mom1 + F5mom1);
+        AWW3 = 0.5 * (F1mom2 + F234mom2 + F5mom2);
+        AWW4 = 0.5 * (F1mom3 + F234mom3 + F5mom3);
+        AWW5 = 0.5 * (F1energy + F234energy + F5energy);
+
+        //Calcul du flux conservatif
+        Fcmass = rhoAvg * Vavg;
+        Fcmom1 = rhoAvg * Vavg * uAvg + pAvg * nx;
+        Fcmom2 = rhoAvg * Vavg * vAvg + pAvg * ny;
+        Fcmom3 = rhoAvg * Vavg * wAvg + pAvg * nz;
+        Fcenergy = rhoAvg * Vavg * Havg;
+        
+        // Flux dans les bonnes variables
+        flux_c[iface][0] = Fcmass;   //rho
+        flux_c[iface][1] = Fcmom1;   //u
+        flux_c[iface][2] = Fcmom2;   //v
+        flux_c[iface][3] = Fcmom3;   //w
+        flux_c[iface][4] = Fcenergy; //e
+        
+        flux_d[iface][0] = AWW1;   //rho
+        flux_d[iface][1] = AWW2;   //u
+        flux_d[iface][2] = AWW3;   //v
+        flux_d[iface][3] = AWW4;   //w
+        flux_d[iface][4] = AWW5;   //e
+    }
+}
+
+// Computes grandients for order 2
+void solver::ComputeGrandientsNLimit() {
+    int ielem0,ielem1,locFaceIndx;
+    double TempDemiSurVol,sign;       
+    double delta_2,UminRho,UmaxRho,UminU,UmaxU,UminV,UmaxV,UminP,UmaxP,UminW,UmaxW; //Barth & Jespersen p:166 Blasek
+    int locElem2;   //Index [0/1]
+    double MachinePrecision = pow(10,-15);
+    double**GradU;
+    double*psi;
+    //Create temp array containing local gradient
+    GradU = new double*[3];
+    for (int idim=0;idim<3;++idim) {
+        GradU[idim] = new double[5];
+        for (int ivar=0;ivar<5;ivar++) {    //Initialise value
+            GradU[idim][ivar] = 0;
+        }
+    }
+    //Creat temp array containing limitors
+    psi = new double[5];
+    for (int ivar=0;ivar<5;ivar++) {    //Initialise value
+        psi[ivar] = 0;
+    }
+ 
+    for (int ielem0=0;ielem0<nelem;++ielem0) {
+        UminRho=rho[ielem0];
+        UmaxRho=rho[ielem0];
+        UminU=u[ielem0];
+        UmaxU=u[ielem0];
+        UminV=v[ielem0];
+        UmaxV=v[ielem0];
+        UminW=w[ielem0];
+        UmaxW=w[ielem0];
+        UminP=p[ielem0];
+        UmaxP=p[ielem0];
+
+        // Compute gradient
+        int MaxElemPoints=0;//Edit to good termination index
+        for (int ineighbor=0;ineighbor<MaxElemPoints;++ineighbor) {       //Edit to good termination index
+            ielem1 = elem2elem[ielem0][ineighbor];
+            if (ielem1>-1) {
+                locFaceIndx = elem2face[ielem0][ineighbor];
+                locElem2 = int(face2elem[locFaceIndx][0]!=ielem0);      //TBD if still is valid
+                sign = ((1-locElem2)*2.0-1);
+                // x
+                GradU[0][0] += sign*(rho[ielem0]+rho[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
+                GradU[0][1] += sign*(u[ielem0]+u[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
+                GradU[0][2] += sign*(v[ielem0]+v[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
+                GradU[0][3] += sign*(w[ielem0]+w[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
+                GradU[0][4] += sign*(p[ielem0]+p[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
+
+                // y
+                GradU[1][0] += sign*(rho[ielem0]+rho[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
+                GradU[1][1] += sign*(u[ielem0]+u[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
+                GradU[1][2] += sign*(v[ielem0]+v[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
+                GradU[1][3] += sign*(w[ielem0]+w[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
+                GradU[1][4] += sign*(p[ielem0]+p[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
+
+                // z
+                GradU[2][0] += sign*(rho[ielem0]+rho[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
+                GradU[2][1] += sign*(u[ielem0]+u[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
+                GradU[2][2] += sign*(v[ielem0]+v[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
+                GradU[2][3] += sign*(w[ielem0]+w[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
+                GradU[2][4] += sign*(p[ielem0]+p[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
+
+                //Update Umax/Umin
+                UminRho=min(UminRho,rho[ielem1]);
+                UmaxRho=max(UmaxRho,rho[ielem1]);
+                UminU=min(UminU,u[ielem1]);
+                UmaxU=max(UmaxU,u[ielem1]);
+                UminV=min(UminV,v[ielem1]);
+                UmaxV=max(UmaxV,v[ielem1]);
+                UminW=min(UminW,w[ielem1]);
+                UmaxW=max(UmaxW,w[ielem1]);
+                UminP=min(UminP,p[ielem1]);
+                UmaxP=max(UmaxP,p[ielem1]);
+            }
+        }
+        TempDemiSurVol = 0.5/elem2vol[ielem0];
+        for (int i=0;i<3;++i){
+            for (int j=0;j<5;++j) {
+                GradU[i][j] = GradU[i][j]*TempDemiSurVol;
+            }
+        }
+        
+        // Compute Limiter  [NOTE THAT FOR EFFICIENCY AN ALTERNATIVE FORMULATION TO IFS SHOULD BE USED ONCE VALIDATED]
+        for (int ineighbor=0;ineighbor<MaxElemPoints;++ineighbor) {   //For surrounding elements
+            ielem1 = elem2elem[ielem0][ineighbor];
+            locFaceIndx = elem2face[ielem0][ineighbor];
+            locElem2 = int(face2elem[locFaceIndx][0]!=ielem0);        //TBD if still is valid, see index of cent2face below
+            // rho
+            delta_2 = 0.5*(GradU[0][0]*cent2face[locFaceIndx][0][locElem2]+GradU[1][0]*cent2face[locFaceIndx][1][locElem2]+GradU[2][0]*cent2face[locFaceIndx][2][locElem2]);
+            if ((delta_2>0)) {
+                psi[0]  = min(psi[0],fabs((UmaxRho-rho[ielem0])/(delta_2+MachinePrecision)));
+            }
+            else if ((delta_2<0)) {
+                psi[0]  = min(psi[0],fabs((UminRho-rho[ielem0])/(delta_2-MachinePrecision)));
+            }
+
+            // U
+            delta_2 = 0.5*(GradU[0][1]*cent2face[locFaceIndx][0][locElem2]+GradU[1][1]*cent2face[locFaceIndx][1][locElem2]+GradU[2][1]*cent2face[locFaceIndx][2][locElem2]);
+            if ((delta_2>0)) {
+                psi[1]  = min(psi[1],fabs((UmaxU-u[ielem0])/(delta_2+MachinePrecision)));
+            }
+            else if ((delta_2<0)) {
+                psi[1]  = min(psi[1],fabs((UminU-u[ielem0])/(delta_2-MachinePrecision)));
+            }
+
+            // V
+            delta_2 = 0.5*(GradU[0][2]*cent2face[locFaceIndx][0][locElem2]+GradU[1][2]*cent2face[locFaceIndx][1][locElem2]+GradU[2][2]*cent2face[locFaceIndx][2][locElem2]);
+            if ((delta_2>0)) {
+                psi[2]  = min(psi[2],fabs((UmaxV-v[ielem0])/(delta_2+MachinePrecision)));
+            }
+            else if ((delta_2<0)) {
+                psi[2]  = min(psi[2],fabs((UminV-v[ielem0])/(delta_2-MachinePrecision)));
+            }
+
+            // w
+            delta_2 = 0.5*(GradU[0][3]*cent2face[locFaceIndx][0][locElem2]+GradU[1][3]*cent2face[locFaceIndx][1][locElem2]+GradU[2][3]*cent2face[locFaceIndx][2][locElem2]);
+            if ((delta_2>0)) {
+                psi[3]  = min(psi[3],fabs((UmaxW-w[ielem0])/(delta_2+MachinePrecision)));
+            }
+            else if ((delta_2<0)) {
+                psi[3]  = min(psi[3],fabs((UminW-w[ielem0])/(delta_2-MachinePrecision)));
+            }
+
+            // E
+            delta_2 = 0.5*(GradU[0][4]*cent2face[locFaceIndx][0][locElem2]+GradU[1][4]*cent2face[locFaceIndx][1][locElem2]+GradU[2][4]*cent2face[locFaceIndx][2][locElem2]);
+            if((delta_2>0)) {
+                psi[4]  = min(psi[4],fabs((UmaxP-p[ielem0])/(delta_2+MachinePrecision)));
+            }
+            else if ((delta_2<0)) {
+                psi[4]  = min(psi[4],fabs((UminP-p[ielem0])/(delta_2-MachinePrecision)));
+            }
+        }
+
+        //Store & reset Gradients
+        for (int idim=0;idim<3;++idim) {
+            for (int ivar;ivar<5;++ivar) {
+                gradient[ielem0][idim][ivar] = GradU[idim][ivar]*psi[ivar];
+                GradU[idim][ivar]=0;
+            }
+        }
+        //Reset limitors
+        for (int ivar;ivar<5;++ivar) {
+            psi[ivar] = 1;
+        }
+    }
+    for (int idim=0;idim<3;++idim) {
+        delete[] GradU[idim];
+    }
+    delete[] GradU;
+}
 
 
-			VL = nx * uL + ny * vL + nz*wL;     //ajouter w?
-			VR = nx * uR + ny * vR + nz*wR;
-
-			dV = VR - VL;
-				
-
-
-			pL = p[ielemL];
-			pR = p[ielemR];
-			dp = pR - pL;
-
-
-			//Calcul des moyennes des variables 
-			rhoAvg = 0.5 * (rhoL + rhoR);
-			uAvg = 0.5 * (uL + uR);
-			vAvg = 0.5 * (vL + vR);
-			wAvg = 0.5 * (wL + wR);
-			pAvg = 0.5 * (pL + pR);
-			Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
-			Uavg = sqrt(uAvg * uAvg + vAvg * vAvg + wAvg * wAvg);  //ajouter w?
-
-			HL = 0.5 * UL * UL + pL / rhoL / (gamma - 1) + pL / rhoL;
-			HR = 0.5 * UR * UR + pR / rhoR / (gamma - 1) + pR / rhoR;
-			Havg = 0.5 * (HL + HR);
-
-			//Calcul constantes pour simplifier la compilation 
-			c1=sqrt(rhoL); 
-			c2=sqrt(rhoR);
-			c3= 1/(c1+c2);
-			c4= 1/(2 * cbar * cbar); 
-			c5= 1/(cbar * cbar);
-			
-			
-			//Calcul des variables bar du schéma ROE
-			rhobar = sqrt(rhoL * rhoR);
-			ubar = (uL * c1 + uR * c2) * c3;
-			vbar = (vL * c1 + vR * c2) * c3; 
-			wbar = (wL * c1 + wR * c2) * c3;
-			hbar = (HL * c1 + HR * c2) * c3;
-			qbar = (ubar * ubar) + (vbar * vbar)+(wbar*wbar); // c'est le qbar au carré
-			cbar = sqrt((gamma - 1) * (hbar - qbar * 0.5)); 
-			Vbar = ubar * nx + vbar * ny+ wbar * nz;
-
-			cL = sqrt(gamma * pL / rhoL);
-			cR = sqrt(gamma * pR / rhoR);
-
-
-			// Harten’s entropy correction
-			SR1 = abs(Vbar - cbar);
-			SR2 = abs(Vbar);
-			SR3 = abs(Vbar + cbar);
-
-			delta = 0.1 * (cL + cR) / 2;    // Potentielle erreur pour vitesse dus on locale
-
-			if (SR1 < delta && SR1>-delta) {         
-				SR1 = (SR1 + delta * delta) / (2 * delta);
-			}
-			if (SR2 < delta && SR2>-delta) {
-				SR2 = (SR2 + delta * delta) / (2 * delta);
-			}
-			if (SR3 < delta && SR3>-delta) {
-				SR3 = (SR3 + delta * delta) / (2 * delta);
-			}
-				
-
-			//Calcul des différents termes du flux dissipatif
-			F1mass = SR1 * ((dp - rhobar * cbar * dV) *c4) * 1;
-			F1mom1 = (SR1 * ((dp - rhobar * cbar * dV)*c4)) * (ubar - (cbar * nx));
-			F1mom2 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (vbar - (cbar * ny));
-			F1mom3 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (wbar - (cbar * nz));
-			F1energy = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (hbar - (cbar * Vbar));
-
-
-			F234mass = SR2 * ((drho - (dp *c5)) * 1 + rhobar * 0); 
-			F234mom1 = SR2 * ((drho - (dp *c5)) * ubar + rhobar * (du - dV * nx));
-			F234mom2 = SR2 * ((drho - (dp *c5)) * vbar + rhobar * (dv - dV * ny));
-			F234mom3 = SR2 * ((drho - (dp *c5)) * wbar + rhobar * (dw - dV * nz));
-			F234energy = SR2 * ((drho - (dp*c5)) * (qbar * 0.5) + rhobar * (ubar * du + vbar * dv +wbar * dw - Vbar * dV)); 
-
-
-			F5mass = SR3 * ((dp + rhobar * cbar * dV) *c4) * 1;
-			F5mom1 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (ubar + cbar * nx);
-			F5mom2 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (vbar + cbar * ny);
-			F5mom3 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (wbar + cbar * nz);
-			F5energy = SR3 * ((dp + rhobar * cbar * dV)*c4) * (hbar + cbar * Vbar);
-
-
-			//Sommes des termes pour avoir le flux dissipatif
-			AWW1 = 0.5 * (F1mass + F234mass + F5mass);
-			AWW2 = 0.5 * (F1mom1 + F234mom1 + F5mom1);
-			AWW3 = 0.5 * (F1mom2 + F234mom2 + F5mom2);
-			AWW4 = 0.5 * (F1mom3 + F234mom3 + F5mom3);
-			AWW5 = 0.5 * (F1energy + F234energy + F5energy);
-
-			//Calcul du flux conservatif
-			Fcmass = rhoAvg * Vavg;
-			Fcmom1 = rhoAvg * Vavg * uAvg + pAvg * nx;
-			Fcmom2 = rhoAvg * Vavg * vAvg + pAvg * ny;
-			Fcmom3 = rhoAvg * Vavg * wAvg + pAvg * nz;
-			Fcenergy = rhoAvg * Vavg * Havg;
-			
-			// Flux dans les bonnes variables
-			flux_c[iface][0] = Fcmass;   //rho
-			flux_c[iface][1] = Fcmom1;   //u
-			flux_c[iface][2] = Fcmom2;   //v
-			flux_c[iface][3] = Fcmom3;   //w
-			flux_c[iface][4] = Fcenergy;   //p
-			
-
-			
-			flux_d[iface][0] = AWW1;   //rho
-			flux_d[iface][1] = AWW2;   //u
-			flux_d[iface][2] = AWW3;   //v
-			flux_d[iface][3] = AWW4;   //w
-			flux_d[iface][4] = AWW5;   //p
-			
-		}
-	}
 
 // Roe fluxes, order 2 [REMEMBER TO SPLIT CONVECTIVE AND DIFFUSIVE FLUXES]
-void solver::ComputeFluxO2() {
+void solver::ComputeFluxO2Conv() {  
+	for (int iface = 0; iface < nface; iface++) {    
+        int ielemL, ielemR;
+        double rhoL, rhoR, VL, VR, UL, UR,WR,WL, uL, uR, vL, vR,wR,wL, pL, pR, cL, cR, HL, HR, nx, ny, nz;
+        double rhoAvg, uAvg, vAvg,wAvg, pAvg, Vavg, Havg, Uavg;
+        double Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
+        double gamma = 1.4;
 
+        ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche  [-1 NEEDED!?!?!]
+        ielemR = face2elem[iface][1] - 1;		// numero de l'element droit   [-1 NEEDED!?!?!]
+
+        //Update L/R values [order 2]
+        rhoL = rho[ielemL]+gradient[ielemL][0][0]*cent2face[iface][0][0]+gradient[ielemL][1][0]*cent2face[iface][1][0]+gradient[ielemL][2][0]*cent2face[iface][2][0];
+        uL = u[ielemL]+gradient[ielemL][0][1]*cent2face[iface][0][0]+gradient[ielemL][1][1]*cent2face[iface][1][0]+gradient[ielemL][2][1]*cent2face[iface][2][0];
+        vL = v[ielemL]+gradient[ielemL][0][2]*cent2face[iface][0][0]+gradient[ielemL][1][2]*cent2face[iface][1][0]+gradient[ielemL][2][2]*cent2face[iface][2][0];
+        wL = w[ielemL]+gradient[ielemL][0][3]*cent2face[iface][0][0]+gradient[ielemL][1][3]*cent2face[iface][1][0]+gradient[ielemL][2][3]*cent2face[iface][2][0];
+        pL = p[ielemL]+gradient[ielemL][0][4]*cent2face[iface][0][0]+gradient[ielemL][1][4]*cent2face[iface][1][0]+gradient[ielemL][2][4]*cent2face[iface][2][0];
+
+        rhoR = rho[ielemR]+gradient[ielemR][0][0]*cent2face[iface][0][1]+gradient[ielemR][1][0]*cent2face[iface][1][1]+gradient[ielemR][2][0]*cent2face[iface][2][1];
+        uR = u[ielemR]+gradient[ielemR][0][1]*cent2face[iface][0][1]+gradient[ielemR][1][1]*cent2face[iface][1][1]+gradient[ielemR][2][1]*cent2face[iface][2][1];
+        vR = v[ielemR]+gradient[ielemR][0][2]*cent2face[iface][0][1]+gradient[ielemR][1][2]*cent2face[iface][1][1]+gradient[ielemR][2][2]*cent2face[iface][2][1];
+        wR = w[ielemR]+gradient[ielemR][0][3]*cent2face[iface][0][1]+gradient[ielemR][1][3]*cent2face[iface][1][1]+gradient[ielemR][2][3]*cent2face[iface][2][1];
+        pR = p[ielemR]+gradient[ielemR][0][4]*cent2face[iface][0][1]+gradient[ielemR][1][4]*cent2face[iface][1][1]+gradient[ielemR][2][4]*cent2face[iface][2][1];
+
+        //Calcul des normales
+        nx = face2norm[iface][0];  
+        ny = face2norm[iface][1];
+        nz = face2norm[iface][2];
+
+        UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
+        UR = sqrt(uR * uR + vR * vR + wR*wR);
+
+        VL = nx * uL + ny * vL + nz*wL;     //ajouter w?
+        VR = nx * uR + ny * vR + nz*wR;
+
+        //Calcul des moyennes des variables 
+        rhoAvg = 0.5 * (rhoL + rhoR);
+        uAvg = 0.5 * (uL + uR);
+        vAvg = 0.5 * (vL + vR);
+        wAvg = 0.5 * (wL + wR);
+        pAvg = 0.5 * (pL + pR);
+        Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
+
+        HL = 0.5 * UL * UL + pL /rhoL /(gamma - 1) + pL / rhoL;
+        HR = 0.5 * UR * UR + pR /rhoR /(gamma - 1) + pR / rhoR;
+        Havg = 0.5 * (HL + HR);
+
+        //Calcul du flux conservatif
+        Fcmass = rhoAvg * Vavg;
+        Fcmom1 = rhoAvg * Vavg * uAvg + pAvg * nx;
+        Fcmom2 = rhoAvg * Vavg * vAvg + pAvg * ny;
+        Fcmom3 = rhoAvg * Vavg * wAvg + pAvg * nz;
+        Fcenergy = rhoAvg * Vavg * Havg;
+        
+        // Flux dans les bonnes variables
+        flux_c[iface][0] = Fcmass;   //rho
+        flux_c[iface][1] = Fcmom1;   //u
+        flux_c[iface][2] = Fcmom2;   //v
+        flux_c[iface][3] = Fcmom3;   //w
+        flux_c[iface][4] = Fcenergy; //e
+	}
+}
+
+void solver::ComputeFluxO2() {
+for (int iface = 0; iface < nface; iface++) {    
+        int ielemL, ielemR;
+        double dp, du, dv, dV, drho,dw;
+        double rhoL, rhoR, VL, VR, UL, UR,WR,WL, uL, uR, vL, vR,wR,wL, pL, pR, cL, cR, HL, HR, nx, ny, nz, rhobar, ubar, vbar,wbar, hbar, cbar, Vbar, qbar, SR1, SR2, SR3, delta;
+        double rhoAvg, uAvg, vAvg,wAvg, pAvg, Vavg, Havg, Uavg;
+        double imassFlux, imomentumFlux[2], ienergyFlux, F1mass, F1mom1, F1mom2, F1mom3, F1energy, F234mass, F234mom1, F234mom2,F234mom3, F234energy, F5mass, F5mom1, F5mom2, F5mom3, F5energy;
+        double AWW1, AWW2, AWW3, AWW4,AWW5, Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
+        double c1, c2, c3, c4, c5;
+        double gamma=1.4;
+
+        ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche  [-1 NEEDED!?!?!]
+        ielemR = face2elem[iface][1] - 1;		// numero de l'element droit   [-1 NEEDED!?!?!]
+
+        //Update L/R values [order 2]
+        rhoL = rho[ielemL]+gradient[ielemL][0][0]*cent2face[iface][0][0]+gradient[ielemL][1][0]*cent2face[iface][1][0]+gradient[ielemL][2][0]*cent2face[iface][2][0];
+        uL = u[ielemL]+gradient[ielemL][0][1]*cent2face[iface][0][0]+gradient[ielemL][1][1]*cent2face[iface][1][0]+gradient[ielemL][2][1]*cent2face[iface][2][0];
+        vL = v[ielemL]+gradient[ielemL][0][2]*cent2face[iface][0][0]+gradient[ielemL][1][2]*cent2face[iface][1][0]+gradient[ielemL][2][2]*cent2face[iface][2][0];
+        wL = w[ielemL]+gradient[ielemL][0][3]*cent2face[iface][0][0]+gradient[ielemL][1][3]*cent2face[iface][1][0]+gradient[ielemL][2][3]*cent2face[iface][2][0];
+        pL = p[ielemL]+gradient[ielemL][0][4]*cent2face[iface][0][0]+gradient[ielemL][1][4]*cent2face[iface][1][0]+gradient[ielemL][2][4]*cent2face[iface][2][0];
+
+        rhoR = rho[ielemR]+gradient[ielemR][0][0]*cent2face[iface][0][1]+gradient[ielemR][1][0]*cent2face[iface][1][1]+gradient[ielemR][2][0]*cent2face[iface][2][1];
+        uR = u[ielemR]+gradient[ielemR][0][1]*cent2face[iface][0][1]+gradient[ielemR][1][1]*cent2face[iface][1][1]+gradient[ielemR][2][1]*cent2face[iface][2][1];
+        vR = v[ielemR]+gradient[ielemR][0][2]*cent2face[iface][0][1]+gradient[ielemR][1][2]*cent2face[iface][1][1]+gradient[ielemR][2][2]*cent2face[iface][2][1];
+        wR = w[ielemR]+gradient[ielemR][0][3]*cent2face[iface][0][1]+gradient[ielemR][1][3]*cent2face[iface][1][1]+gradient[ielemR][2][3]*cent2face[iface][2][1];
+        pR = p[ielemR]+gradient[ielemR][0][4]*cent2face[iface][0][1]+gradient[ielemR][1][4]*cent2face[iface][1][1]+gradient[ielemR][2][4]*cent2face[iface][2][1];
+
+
+        drho = rhoR - rhoL;
+        du = uR - uL;
+        dv = vR - vL;
+        dw = wR - wL; 
+
+        //Calcul des normales
+        nx = face2norm[iface][0];  
+        ny = face2norm[iface][1];
+        nz = face2norm[iface][2];
+        
+        UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
+        UR = sqrt(uR * uR + vR * vR + wR*wR);
+
+        VL = nx * uL + ny * vL + nz*wL;     //ajouter w?
+        VR = nx * uR + ny * vR + nz*wR;
+
+        dV = VR - VL;
+            
+        pL = p[ielemL];
+        pR = p[ielemR];
+        dp = pR - pL;
+
+        //Calcul des moyennes des variables 
+        rhoAvg = 0.5 * (rhoL + rhoR);
+        uAvg = 0.5 * (uL + uR);
+        vAvg = 0.5 * (vL + vR);
+        wAvg = 0.5 * (wL + wR);
+        pAvg = 0.5 * (pL + pR);
+        Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
+        Uavg = sqrt(uAvg * uAvg + vAvg * vAvg + wAvg * wAvg);  //ajouter w?
+
+        HL = 0.5 * UL * UL + pL / rhoL / (gamma - 1) + pL / rhoL;
+        HR = 0.5 * UR * UR + pR / rhoR / (gamma - 1) + pR / rhoR;
+        Havg = 0.5 * (HL + HR);
+
+        //Calcul constantes pour simplifier la compilation 
+        c1=sqrt(rhoL); 
+        c2=sqrt(rhoR);
+        c3= 1/(c1+c2);
+        c4= 1/(2 * cbar * cbar); 
+        c5= 1/(cbar * cbar);
+    
+        //Calcul des variables bar du schéma ROE
+        rhobar = sqrt(rhoL * rhoR);
+        ubar = (uL * c1 + uR * c2) * c3;
+        vbar = (vL * c1 + vR * c2) * c3; 
+        wbar = (wL * c1 + wR * c2) * c3;
+        hbar = (HL * c1 + HR * c2) * c3;
+        qbar = (ubar * ubar) + (vbar * vbar)+(wbar*wbar); // c'est le qbar au carré
+        cbar = sqrt((gamma - 1) * (hbar - qbar * 0.5)); 
+        Vbar = ubar * nx + vbar * ny+ wbar * nz;
+
+        cL = sqrt(gamma * pL / rhoL);
+        cR = sqrt(gamma * pR / rhoR);
+
+        // Harten’s entropy correction
+        SR1 = abs(Vbar - cbar);
+        SR2 = abs(Vbar);
+        SR3 = abs(Vbar + cbar);
+
+        delta = 0.1 * (cL + cR) / 2;    // Potentielle erreur pour vitesse dus on locale
+
+        if (SR1 < delta && SR1>-delta) {         
+            SR1 = (SR1 + delta * delta) / (2 * delta);
+        }
+        if (SR2 < delta && SR2>-delta) {
+            SR2 = (SR2 + delta * delta) / (2 * delta);
+        }
+        if (SR3 < delta && SR3>-delta) {
+            SR3 = (SR3 + delta * delta) / (2 * delta);
+        }
+            
+        //Calcul des différents termes du flux dissipatif
+        F1mass = SR1 * ((dp - rhobar * cbar * dV) *c4) * 1;
+        F1mom1 = (SR1 * ((dp - rhobar * cbar * dV)*c4)) * (ubar - (cbar * nx));
+        F1mom2 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (vbar - (cbar * ny));
+        F1mom3 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (wbar - (cbar * nz));
+        F1energy = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (hbar - (cbar * Vbar));
+
+        F234mass = SR2 * ((drho - (dp *c5)) * 1 + rhobar * 0); 
+        F234mom1 = SR2 * ((drho - (dp *c5)) * ubar + rhobar * (du - dV * nx));
+        F234mom2 = SR2 * ((drho - (dp *c5)) * vbar + rhobar * (dv - dV * ny));
+        F234mom3 = SR2 * ((drho - (dp *c5)) * wbar + rhobar * (dw - dV * nz));
+        F234energy = SR2 * ((drho - (dp*c5)) * (qbar * 0.5) + rhobar * (ubar * du + vbar * dv +wbar * dw - Vbar * dV)); 
+
+        F5mass = SR3 * ((dp + rhobar * cbar * dV) *c4) * 1;
+        F5mom1 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (ubar + cbar * nx);
+        F5mom2 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (vbar + cbar * ny);
+        F5mom3 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (wbar + cbar * nz);
+        F5energy = SR3 * ((dp + rhobar * cbar * dV)*c4) * (hbar + cbar * Vbar);
+
+        //Sommes des termes pour avoir le flux dissipatif
+        AWW1 = 0.5 * (F1mass + F234mass + F5mass);
+        AWW2 = 0.5 * (F1mom1 + F234mom1 + F5mom1);
+        AWW3 = 0.5 * (F1mom2 + F234mom2 + F5mom2);
+        AWW4 = 0.5 * (F1mom3 + F234mom3 + F5mom3);
+        AWW5 = 0.5 * (F1energy + F234energy + F5energy);
+
+        //Calcul du flux conservatif
+        Fcmass = rhoAvg * Vavg;
+        Fcmom1 = rhoAvg * Vavg * uAvg + pAvg * nx;
+        Fcmom2 = rhoAvg * Vavg * vAvg + pAvg * ny;
+        Fcmom3 = rhoAvg * Vavg * wAvg + pAvg * nz;
+        Fcenergy = rhoAvg * Vavg * Havg;
+        
+        // Flux dans les bonnes variables
+        flux_c[iface][0] = Fcmass;   //rho
+        flux_c[iface][1] = Fcmom1;   //u
+        flux_c[iface][2] = Fcmom2;   //v
+        flux_c[iface][3] = Fcmom3;   //w
+        flux_c[iface][4] = Fcenergy; //e
+        
+        flux_d[iface][0] = AWW1;   //rho
+        flux_d[iface][1] = AWW2;   //u
+        flux_d[iface][2] = AWW3;   //v
+        flux_d[iface][3] = AWW4;   //w
+        flux_d[iface][4] = AWW5;   //e
+    }
 }
 
 void solver::ComputeResidu() {
 
 }
 
+// Check if converged
 double solver::CheckConvergence() {
     double residuSum = 0;
     for (int ielem=0;ielem<nelem;++ielem) {                                                 //Sum of residu in rho
@@ -620,21 +957,17 @@ double solver::CheckConvergence() {
     return sqrt(residuSum);
 }
 
-double solver::P2E(double p ) {
+// Conversion from pressure to energy
+double solver::P2E(double p_loc,double rho_loc,double u_loc,double v_loc,double w_loc) {
+	double e_loc;double lSurgammaM1 = 2.5;
+    e_loc = p_loc*lSurgammaM1/rho_loc+0.5*sqrt(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2));
+	return e_loc;
+}
 	
-	
-	
-	
-	
-	
-	}
-	
-double solver::E2P(double e) {
-	
-	
-	
-	
-	
-	
-	}
+// Conversion from energy to pressure
+double solver::E2P(double e_loc,double rho_loc,double u_loc,double v_loc,double w_loc) {
+	double p_loc;double gammaM1 = 0.4;
+    p_loc = gammaM1*rho_loc*(e_loc-0.5*sqrt(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2)));
+	return p_loc;
+}
 	
