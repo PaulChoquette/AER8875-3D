@@ -13,10 +13,10 @@ class solver : public supposed_metric_n_connec {    // TBD wheter public or priv
     solver();                   // Constructeur
     ~solver();                  // Destructeur
     void Compute();             // solve problem
+    Comm World;                 // MPI Cluster [World.world_rank to get thread ID]
 
     private:
     //Private variables
-    Comm World;                 // MPI Cluster
     double* rho;
     double* u;
     double* v;
@@ -29,12 +29,13 @@ class solver : public supposed_metric_n_connec {    // TBD wheter public or priv
     double** residu_d_hyb;      //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** W_0;               //copy of initial state for RK
     double** primitivesSendBuffer;  //Buffer for Tx
-    double ***gradient;             // Array containing gradiant [ielem][dimention][conservative]
+    double** gradientSendBuffer;    //Gradient buffer for Tx
+    double*** gradient;             // Array containing gradiant [ielem][dimention][conservative]
     double inf_speed,inf_speed_x,inf_speed_y,inf_speed_z;   // speed norm at infinity
     double RKM_coef[6][2][5] =     // RKM 5 coeffs [Stages][order-1][step]
-    {   {{0,0,0,0,0                 },{0,0,0,0,0}},                     //Order 0 ; Filler
-        {{1.0,0,0,0,0               },{1.0,0,0,0,0}},  //Order 1 ; Euler
-        {{0.0,1.0,0,0,0                 },{0.0,1.0,0,0,0}},  //Order 2 ; Not in blasek
+    {   {{0,0,0,0,0                     },{0,0,0,0,0}},                     //Order 0 ; Filler
+        {{1.0,0,0,0,0                   },{1.0,0,0,0,0}},                   //Order 1 ; Euler
+        {{0.0,1.0,0,0,0                 },{0.0,1.0,0,0,0}},                 //Order 2 ; Not in blasek
         {{0.1481,0.4000,1.0,0,0         },{0.1918,0.4929,1.0,0,0}},
         {{0.0833,0.2069,0.4265,1.0,0    },{0.1084,0.2602,0.5052,1.0,0}},
         {{0.0533,0.1263,0.2375,0.4414,1.0},{0.0695,0.1602,0.2898,0.5060,1.0}}};
@@ -46,25 +47,26 @@ class solver : public supposed_metric_n_connec {    // TBD wheter public or priv
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0.2742,0.2069,0.5020,0.5142,1.0},{1.0,0.0,0.56,0.0,0.44}}};   //Only order 5 in blasek
 
-
     //Private methods
-    void Initialisation();      // Initialise field to infinity
-    void UpdateBound();         // Update boundary conditions
+    void Initialisation();      // Initialise field to infinity 
+    void InitMPI();             // Declare necessary structures for MPI
     void ExchangePrimitive();   // MPI exchange primitive values
     void ExchangeGradiants();   // MPI exchange gradiant values
+    void UpdateBound();         // Update boundary conditions
     void TimeStepEul();         // Euler explicit time integration
     void TimeStepRkM();         // Runge-Kutta Multistage time integration
     void TimeStepRkH();         // Runge-Kutta Hybride time integration
     void ComputeGrandientsNLimit();// Computes gradiants WITH limitors INCLUDED
+    void UpwindFlux(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative flux [local]
+    void RoeDissipation(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative flux [local]
     void ComputeFluxO1();       // Calcul des flux (Roe) ordre 1
-	void ComputeFluxO1Conv() ;  // Calcul flux convectifs Ordre 1
+	void ComputeFluxO1Conv();   // Calcul flux convectifs Ordre 1
     void ComputeFluxO2();       // Calcul des flux (Roe) ordre 2
-    void ComputeFluxO2Conv() ;  // Calcul flux convectifs Ordre 2
-    void InitMPI();             // Declare necessary structures for MPI
-    //void computeGradiants();  // [May not be needed, depending on choosen implem]
+    void ComputeFluxO2Conv();   // Calcul flux convectifs Ordre 2
+    void ResidualSmoothing();   // 
     void ComputeResidu();       // Calcul des résidu
+    void ComputeResiduConv();   // Calcul des résidus convectifs seulement
     double CheckConvergence();  // Somme des résidus
-	double P2E(double,double,double,double,double);         // Calcul pression vers Energie
-	double E2P(double,double,double,double,double);         // Calcul  Energie vers pression
-	
+	double P2E(double,double,double,double,double);// Calcul pression vers Energie
+	double E2P(double,double,double,double,double);// Calcul  Energie vers pression
 };

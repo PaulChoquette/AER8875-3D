@@ -15,9 +15,11 @@ Comm::~Comm() {
     MPI_Barrier(MPI_COMM_WORLD);
     //Delete Dynamic Variables
     for (int izone;izone<ntgt;++izone) {
+        delete[] gradientBuffer[izone];
         delete[] primitivesBuffer[izone];
         delete[] rxOrder2localOrder[izone];
     }
+    delete[] gradientBuffer;
     delete[] primitivesBuffer;
     delete[] zone2nbelem;
     delete[] rxOrder2localOrder;
@@ -76,9 +78,11 @@ void Comm::InitBuffer(int* zone2nbelem_in) {
     for (int i=0;i<ntgt;++i) {
         zone2nbelem[i] = zone2nbelem_in[i];
     }
+    gradientBuffer =  new double*[ntgt];
     primitivesBuffer =  new double*[ntgt];
     rxOrder2localOrder = new int*[ntgt];
     for (int izone;izone<ntgt;++izone) {
+        gradientBuffer[izone] = new double[zone2nbelem[izone]*15];
         primitivesBuffer[izone] = new double[zone2nbelem[izone]*5];
         rxOrder2localOrder[izone] = new int[zone2nbelem[izone]];
     }
@@ -103,7 +107,7 @@ void Comm::ExchangeCellOrder(int** localBorderID) {
     }
 }
 
-void Comm::ExchangePrimitives(double** primitives) {
+void Comm::ExchangePrimitives(double** primitivesTx) {
     // Init requests
     MPI_Request send_request, recv_request;
     MPI_Status status;
@@ -112,7 +116,7 @@ void Comm::ExchangePrimitives(double** primitives) {
     // Send Buffer
     for (int itgt=0;itgt<ntgt;++itgt) {
         tempSize = zone2nbelem[itgt]*5;
-        MPI_Isend(primitives[itgt],tempSize,MPI_DOUBLE,tgtList[itgt],0,MPI_COMM_WORLD,&send_request);
+        MPI_Isend(primitivesTx[itgt],tempSize,MPI_DOUBLE,tgtList[itgt],0,MPI_COMM_WORLD,&send_request);
         MPI_Wait(&send_request,&status);
     }
     MPI_Barrier(MPI_COMM_WORLD);
@@ -137,7 +141,29 @@ void Comm::ReclassPrimitives(double**rho,double**u,double**v,double**w,double**p
     }
 }
 
+void Comm::ExchangeGradients(double**gradientsTx) {
+    // Init requests
+    MPI_Request send_request, recv_request;
+    MPI_Status status;
+    int tempSize;
 
+    // Send Buffer
+    for (int itgt=0;itgt<ntgt;++itgt) {
+        tempSize = zone2nbelem[itgt]*15;
+        MPI_Isend(gradientsTx[itgt],tempSize,MPI_DOUBLE,tgtList[itgt],0,MPI_COMM_WORLD,&send_request);
+        MPI_Wait(&send_request,&status);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (int itgt=0;itgt<ntgt;++itgt) {
+        tempSize = zone2nbelem[itgt]*15;
+        MPI_Irecv(gradientBuffer[itgt],tempSize,MPI_DOUBLE,tgtList[itgt],0,MPI_COMM_WORLD,&recv_request);
+        MPI_Wait(&recv_request,&status);
+    }
+}
+
+void Comm::ExchangeMetrics(){
+    
+}
 
 void Comm::PrintCellOrder(void){
     for (int izone=0;izone<ntgt;++izone) {
