@@ -1,3 +1,5 @@
+#ifndef READER_H // include guard
+#define READER_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,8 +39,11 @@ class Reader_c {
 		void Fill_E2N_VTK(const char* cline);
 		void Fill_BC_E2N_VTK(const char* cline, int bc);
 		double** Fill_coord(const char* cline);
+		void check();
 		//Write SU2++ file
 		void write_file();
 		//Write Tecplot output
 		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
 };
+
+#endif
