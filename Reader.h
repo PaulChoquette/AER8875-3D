@@ -14,6 +14,7 @@ using namespace std;
 
 class Reader_c {
 	public:
+		//Read Files
 		ifstream file;
 		int linen;
 		string line;
@@ -36,10 +37,8 @@ class Reader_c {
 		void Fill_E2N_VTK(const char* cline);
 		void Fill_BC_E2N_VTK(const char* cline, int bc);
 		double** Fill_coord(const char* cline);
-};
-
-class TECIO {
-	public:
-		INTEGER4 npoint;
-		INTEGER4 nelem;
+		//Write SU2++ file
+		void write_file();
+		//Write Tecplot output
+		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
 };
