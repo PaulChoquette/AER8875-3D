@@ -4,6 +4,7 @@
 #include <string>
 #include "Reader.h"
 #include "main.h"
+#include "include/TECIO.h"
 using namespace std;
 
 void Reader_c::read_file(string filename) {

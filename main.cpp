@@ -16,15 +16,16 @@
 #include "Solver.h"
 
 
+#include "./include/TECXXX.h"
 using namespace std;
 
 int main() {
 	cout << "Starting ..." << endl;
 	//string File_Name = "block.su2";
 	//string File_Name = "test_justSquare.su2";
-	string File_Name = "test.su2";
+	//string File_Name = "test.su2";
 	//string File_Name = "2cube.su2";
-	//string File_Name = "naca0012_euler_65x65x2_O_1B.su2";
+	string File_Name = "naca0012_euler_65x65x2_O_1B.su2";
 	Reader_c FileContents;
 	FileContents.read_file(File_Name);
 	FileContents.check();
@@ -33,24 +34,23 @@ int main() {
 	Solver_c solve;
 	solve.cfl = 1.0;
 	solve.ComputeGlobalConnectivity(FileContents);
-	solve.Display2DArray(solve.elem2elem_g, solve.ncell_g, 6, "elem2elem_g");
+//	solve.Display2DArray(solve.elem2elem_g, solve.ncell_g, 6, "elem2elem_g");
 	solve.ComputeZoneConnectivity(FileContents);
 	solve.ComputeLocalConnectivity();
-	solve.Display3DArray(solve.face2node, 0, solve.zone2nface[0], 5, "face2node");
-	solve.Display2DArray(solve.face2Nbr_of_node, 1, solve.zone2nface[0], "face2Nbr_of_node");
+//	solve.Display3DArray(solve.face2node, 0, solve.zone2nface[0], 5, "face2node");
+//	solve.Display2DArray(solve.face2Nbr_of_node, 1, solve.zone2nface[0], "face2Nbr_of_node");
 	// METRIC
 	cout << "\nMetriques ..." << endl;
 	Metric_c metric;
 	metric.Compute(solve, FileContents);
-	solve.Display3DArray(metric.Face2Norm, 0, solve.zone2nface[0], 3, "Face2Norm");
-	solve.Display2DArray(metric.Face2Area, 1, solve.zone2nface[0], "Face2Area");
-	solve.Display2DArray(metric.Elem2Vol, 1, solve.zone2nelem[0], "Elem2Vol");
+//	solve.Display3DArray(metric.Face2Norm, 0, solve.zone2nface[0], 3, "Face2Norm");
+//	solve.Display2DArray(metric.Face2Area, 1, solve.zone2nface[0], "Face2Area");
+//	solve.Display2DArray(metric.Elem2Vol, 1, solve.zone2nelem[0], "Elem2Vol");
 	metric.SumNorm(solve, FileContents, 1);
-	solve.Display3DArray(metric.Elem2DeltaS_xyz, 0, solve.zone2nelem[0], 3, "Elem2DeltaS_xyz");
-	solve.Display3DArray(metric.Elem2Center, 0, solve.zone2nelem[0], 3, "Elem2Center");
+//	solve.Display3DArray(metric.Elem2DeltaS_xyz, 0, solve.zone2nelem[0], 3, "Elem2DeltaS_xyz");
+//	solve.Display3DArray(metric.Elem2Center, 0, solve.zone2nelem[0], 3, "Elem2Center");
 	cout << "Face2ElemCenter[i_zone][faceID][0] : "; cout << metric.Face2ElemCenter[0][2][0] <<endl;
-  cout << "Face2ElemCenter[i_zone][faceID][1] : "; cout << metric.Face2ElemCenter[0][2][1] <<endl;
-
+	cout << "Face2ElemCenter[i_zone][faceID][1] : "; cout << metric.Face2ElemCenter[0][2][1] <<endl;
 
 
 	cout << "Face2ElemCenter : " << endl;
@@ -95,6 +95,23 @@ int main() {
 	solve.SolverExemple();
 	*/
 	cout << "**************\nEnd\n**************\n";
+
+	double* p = new double[FileContents.nelem];
+	double* Rho = new double[FileContents.nelem];
+	double* u = new double[FileContents.nelem];
+	double* v = new double[FileContents.nelem];
+	double* w = new double[FileContents.nelem];
+
+	for (int i = 0; i < FileContents.nelem; i++) {
+		p[i] = 0.;
+		Rho[i] = 1.;
+		u[i] = 0.;
+		v[i] = 0.;
+		w[i] = 0.;
+	}
+
+
+	FileContents.write_tecplot(FileContents, "test2", p, Rho, u, v, w);
 
 	return 0;
 }
