@@ -24,7 +24,7 @@ void Metric_c::Compute(Solver_c& solve, Reader_c& read)
 	cout << "-------------------------------------- COMPUTE Volumes --------------------------------------"<<endl;
 	Volume(solve, read);
 	cout << "-------------------------------------- COMPUTE Elem2DeltaS_xyz --------------------------------------"<<endl;
-	Elem2DeltaS(solve);
+	Elem2DeltaS(solve, read);
 	cout << "-------------------------------------- COMPUTE Face2Center --------------------------------------"<<endl;
 	Face2Center(solve, read);
   /*
@@ -47,7 +47,7 @@ void Metric_c::Norm_Area(Solver_c& solve, Reader_c& read)
 		//cout << "4" << endl;
 		for(int i_face=0; i_face<solve.zone2nface[i_zone]; i_face++)
 		{
-			Face2Norm[i_zone][i_face] = new double[ndime];
+			Face2Norm[i_zone][i_face] = new double[read.ndime];
 			//cout << "5" << endl;
 			int nnode = solve.face2Nbr_of_node[i_zone][i_face];
 			//cout << "nnode : ";cout << nnode << endl;
@@ -214,7 +214,7 @@ void Metric_c::SumNorm(Solver_c& solve, Reader_c& read, int choix)
 			Elem2sumNorm[i_zone]	= new double* [solve.zone2nelem[i_zone]];
 			for(int i_elem=0; i_elem<solve.zone2nelem[i_zone]; i_elem++)
 			{
-				Elem2sumNorm[i_zone][i_elem] = new double[ndime];
+				Elem2sumNorm[i_zone][i_elem] = new double[read.ndime];
 				Elem2sumNorm[i_zone][i_elem][0] = 0.0;
 				Elem2sumNorm[i_zone][i_elem][1] = 0.0;
 				Elem2sumNorm[i_zone][i_elem][2] = 0.0;
@@ -322,7 +322,7 @@ void Metric_c::SumNorm(Solver_c& solve, Reader_c& read, int choix)
 	cout << state << endl;
 }
 
-void Metric_c::Elem2DeltaS(Solver_c& solve)
+void Metric_c::Elem2DeltaS(Solver_c& solve, Reader_c& read)
 {
 	double Gamma = 1.4;
 	Elem2DeltaS_xyz	= new double** [solve.nzone];
@@ -334,7 +334,7 @@ void Metric_c::Elem2DeltaS(Solver_c& solve)
 			double somme_sX = 0.0;
 		  double somme_sY = 0.0;
 		  double somme_sZ = 0.0;
-			Elem2DeltaS_xyz[i_zone][i_elem] = new double[ndime];
+			Elem2DeltaS_xyz[i_zone][i_elem] = new double[read.ndime];
 			int ElemIdentifier = solve.elem2vtk[i_zone][i_elem];
 			int Nbr_of_face = vtklookup[0][ElemIdentifier][0];
 			for (int i_face=0; i_face<Nbr_of_face; i_face++)
@@ -365,7 +365,7 @@ void Metric_c::Face2Center(Solver_c& solve, Reader_c& read)
 		}
 		for(int i_elem=0; i_elem<solve.zone2nelem[i_zone]; i_elem++)
 		{
-			Elem2Center[i_zone][i_elem] = new double[ndime];
+			Elem2Center[i_zone][i_elem] = new double[read.ndime];
 			//cout << "Elemt ID : "; cout << i_elem << endl;
 			int ElemIdentifier = solve.elem2vtk[i_zone][i_elem];
 			int Nbr_of_face = vtklookup[0][ElemIdentifier][0];

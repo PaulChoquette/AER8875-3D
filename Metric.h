@@ -27,7 +27,7 @@ public:
 	void Norm_Area(Solver_c& solve, Reader_c& read);
 	void SumNorm(Solver_c& solve, Reader_c& read, int choix);
 	void Volume(Solver_c& solve, Reader_c& read);
-	void Elem2DeltaS(Solver_c& solve);
+	void Elem2DeltaS(Solver_c& solve, Reader_c& read);
 	void Face2Center(Solver_c& solve, Reader_c& read);
 };
 
