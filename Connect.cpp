@@ -13,6 +13,7 @@
 #include "Connect.h"
 #include "Reader.h"
 #include "main.h"
+#include <metis.h>
 using namespace std;
 
 
@@ -261,9 +262,54 @@ void Connect_c::Element2Elements(Reader_c& read) {
 			}
 		}
 	}
-	/*delete[] psup1;
-	delete[] psup2;
-	delete[] lpoin;*/
+}
+void Connect_c::METISElement2Nodes(Reader_c& read){
+	neind = 0;
+	for (int ielem = 0; ielem < nelem_g; ielem++) {
+		int vtk = read.elem2vtk[ielem];
+		neind += vtklookup[ndime-2][vtk][1];
+	}
+
+
+	eind = new int[neind];
+	eptr = new int[nelem_g+1];
+	eptr[0] = 0;
+	int ipos = 0;
+	for (int ielem = 0; ielem < nelem_g; ielem++){
+		int vtk = read.elem2vtk[ielem];
+		int nnoel = vtklookup[ndime-2][vtk][1];
+		for (int inoel = 0; inoel < nnoel; inoel++){
+			int inode = read.elem2node[ielem][inoel];
+			eind[ipos] = inode + 1;
+			ipos += 1;
+		}
+		eptr[ielem+1] = ipos;
+	}
+}
+void Connect_c::ComputeMETIS(int nzoneMETIS, Reader_c& read) {
+
+	Connect_c::METISElement2Nodes(read);
+
+	//Connect_c::Display1DArray(eind,neind,"eind");
+	//Connect_c::Display1DArray(eptr,nelem_g+1,"eptr");
+
+	elem2zone = new int[nelem_g];
+
+	int* npart;
+	int objval;
+	int ncommon = 5; // Input qui depend du nombre de noeuds par face (nombre de noeud en commun)
+
+	npart = new int[nnode_g];
+
+	int success = METIS_PartMeshDual(&nelem_g, &nnode_g, &eptr[0], &eind[0], NULL, NULL,
+		&ncommon, &nzoneMETIS, NULL, NULL, &objval,
+		&elem2zone[0], &npart[0]);
+
+	//Connect_c::Display1DArray(elem2zone,nelem_g,"elem2zone");
+
+	delete[] eptr;
+	delete[] eind;
+	delete[] npart;
 }
 int Connect_c::GetnelemArNode(int inode) {
 	// Retourne le nombre d'element autour d'un noeud
@@ -281,6 +327,9 @@ void Connect_c::ComputeGlobalConnectivity(Reader_c& read) {
 	Connect_c::Node2Elements(read);
 	Connect_c::Node2Nodes(read);
 	Connect_c::Element2Elements(read);
+	delete[] psup1;
+	delete[] psup2;
+	delete[] lpoin;
 }
 
 // ============================================= ZONE ELEMENTS CONNECTIVITY ================================================
@@ -555,8 +604,8 @@ void Connect_c::ComputeLocalConnectivity()
 		Connect_c::Element2Faces(izone);
 	}
 
-	//delete[] zone2esup1;
-	//delete[] zone2esup2;
+	delete[] zone2esup1;
+	delete[] zone2esup2;
 	delete[] zone2psup1;
 	delete[] zone2psup2;
 	delete[] zone2lpoin;
@@ -569,6 +618,7 @@ void Connect_c::ComputeLocalConnectivity()
 
 // ================================================= ZONES CONNECTIVITY ====================================================
 void Connect_c::Findnzone() {
+	// A SUPPRIMER
 	nzone = 1;
 	for (int ielem = 0; ielem < nelem_g; ielem++) {
 		int izone = elem2zone[ielem];
@@ -612,7 +662,7 @@ void Connect_c::Zone2nnode() {
 		for (int ielno = 0; ielno < nelno; ielno++) {
 			ielem_g = GetielemArNode(inode, ielno);
 			izone = elem2zone[ielem_g];
-			//Verifie si on n’a pas deja compter le nœud dans la zone:
+			//Verifie si on nï¿½a pas deja compter le nï¿½ud dans la zone:
 			if (ielem_g < nelem_g && checkzone[izone] == 0) {
 				zone2nnode[izone] += 1;
 				checkzone[izone] = 1;
@@ -649,7 +699,7 @@ void Connect_c::Zone2Nodes() {
 		for (int ielno = 0; ielno < nelno; ielno++) {
 			ielem_g = GetielemArNode(inode, ielno);
 			izone = elem2zone[ielem_g];
-			//Verifie si on n’a pas deja compter le nœud dans la zone:
+			//Verifie si on nï¿½a pas deja compter le nï¿½ud dans la zone:
 			if (ielem_g < nelem_g && checkzone[izone] == 0 ) {
 				idz = indexzone[izone];
 				zone2node[izone][idz] = inode;
@@ -805,10 +855,10 @@ void Connect_c::Zone2Bound(Reader_c& read) {
 			elem2vtk[izone][idz] = vtk;
 			indexzone[izone] += 1;
 		}
-		cout << "ielem1 = " << ielem1 << endl;
-		cout << "ielem2 = " << ielem2 << endl;
+		// cout << "ielem1 = " << ielem1 << endl;
+		// cout << "ielem2 = " << ielem2 << endl;
 	}
-	cout << read.BoundIndex[0] << " " << read.BoundIndex[1] << " " << read.BoundIndex[2] << " " << read.BoundIndex[3] << endl;
+	//cout << read.BoundIndex[0] << " " << read.BoundIndex[1] << " " << read.BoundIndex[2] << " " << read.BoundIndex[3] << endl;
 	delete[] indexzone;
 
 }
@@ -938,7 +988,6 @@ void Connect_c::Zone2Zones()
 
 
 void Connect_c::ComputeZoneConnectivity(Reader_c& read) {
-	elem2zone = new int[nelem_g](); // Doit etre supprimer quand metis marche
 	Connect_c::Findnzone();
 	Connect_c::InitializeLocal();
 	Connect_c::Zone2nnode();
@@ -950,6 +999,10 @@ void Connect_c::ComputeZoneConnectivity(Reader_c& read) {
 	Connect_c::Zone2Coord(read);
 	Connect_c::Element2Nodes(read);
 	Connect_c::Zone2Zones();
+	delete[] zone2node;
+	delete[] zone2elem;
+	delete[] nodeglobal2local;
+	delete[] elemglobal2local;
 }
 
 

@@ -31,10 +31,10 @@ public:
 
 
 	// Integrer :
-	int nzone, ndime, mesup1, mpsup;
+	int nzone, ndime, mesup1, mpsup, neind;
 	int nelem_g, nnode_g, ncell_g;
 	// 1D Array of Integrer :
-	int* esup2; int* esup1; int* psup1; int* psup2; int* lpoin;
+	int* esup2; int* esup1; int* psup1; int* psup2; int* lpoin; int* eptr; int* eind;
 	int* zone2nelem; int* zone2nnode; int* checkzone;  int* zone2nbelem; int* zone2nbound; int* zone2ncell; int* zone2nface;
 	// 2D Array of Integrer :
 	int** vtk2nnofa; int** vtk2facevtk;
@@ -60,9 +60,9 @@ public:
 	void InitializeGlobal(Reader_c& read);
 	void Node2Elements(Reader_c& read);
 	void Node2Nodes(Reader_c& read);
-	
 	void Element2Elements(Reader_c& read);
-	
+	void METISElement2Nodes(Reader_c& read);
+	void ComputeMETIS(int nzoneMETIS, Reader_c& read);
 	int GetnelemArNode(int inode);
 	int GetielemArNode(int inode, int ielno);
 	void ComputeGlobalConnectivity(Reader_c& read);
