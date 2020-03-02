@@ -1,8 +1,10 @@
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
-#include <string> 
-#include "Reader.h" 
+#include <string>
+#include "Reader.h"
+#include "Solver.h"
 #include "main.h"
 using namespace std;
 
@@ -15,7 +17,7 @@ void Reader_c::read_file(string filename) {
 	elem = 0; point = 0; line = ""; bc = 0; nbc = 0;
 
 	//Open the file and continue if file is succesfully opened
-	if (OpenFile(filename)) 
+	if (OpenFile(filename))
 	{
 		//Read file line by line
 		while (getline(file, line))
@@ -47,10 +49,10 @@ void Reader_c::read_file(string filename) {
 			}
 
 			//If elem2node definition line has been defined
-			if (nelemlinen) 
+			if (nelemlinen)
 			{
 				//Check if line defines the element
-				if (linen > nelemlinen&& linen <= nelemlinen + nelem) 
+				if (linen > nelemlinen&& linen <= nelemlinen + nelem)
 				{
 					Fill_E2N_VTK(cline);
 					continue;
@@ -64,7 +66,7 @@ void Reader_c::read_file(string filename) {
 				npoint = Readcnst(line,"NPOIN= ");
 
 				//Define coordinate matrix if number of points has been defined
-				if (npoint) 
+				if (npoint)
 				{
 					npointlinen = linen;
 					coord = new double* [npoint];
@@ -77,7 +79,7 @@ void Reader_c::read_file(string filename) {
 			}
 
 			//If number of point definition line has been found
-			if (npointlinen) 
+			if (npointlinen)
 			{
 				if (linen > npointlinen&& linen <= npointlinen + npoint) {
 					Fill_coord(cline);
@@ -137,7 +139,7 @@ void Reader_c::read_file(string filename) {
 							elem2node[ielem] = new int[vtklookup[ndime-2][elem2vtk[ielem]][1]];
 
 							for (int inode = 0; inode < vtklookup[ndime-2][elem2vtk[ielem]][1]; inode++)
-							{		
+							{
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 							}
 						}
@@ -151,7 +153,7 @@ void Reader_c::read_file(string filename) {
 								elem2node[nelem + imelem] = new int[vtklookup[ndime-2][elem2vtk[nelem + imelem]][1]];
 
 								for (int j = 0; j < vtklookup[ndime-2][elem2vtk[nelem + imelem]][1]; j++)
-								{									
+								{
 									elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
 								}
 								imelem++;
@@ -223,7 +225,7 @@ void Reader_c::Fill_E2N_VTK(const char* cline) {
 	{
 		cline = end;
 
-		//Where j is the integer counter. 0 is the vtk index and the rest is the 
+		//Where j is the integer counter. 0 is the vtk index and the rest is the
 		if (j == 0) {
 			elem2vtk_nh[elem] = c;
 			elem2node_nh[elem] = new int [vtklookup[ndime-2][c][1]];
@@ -254,7 +256,7 @@ void Reader_c::Fill_BC_E2N_VTK(const char* cline, int bc) {
 	{
 		cline = end;
 
-		//Where j is the integer counter. 0 is the vtk index and the rest is the 
+		//Where j is the integer counter. 0 is the vtk index and the rest is the
 		if (j == 0) {
 			bc_elem2vtk[bc][bc_e2n_counter] = c;
 			bc_elem2node[bc][bc_e2n_counter] = new int[vtklookup[ndime-2][c][1]];
@@ -291,4 +293,96 @@ double** Reader_c::Fill_coord(const char* cline) {
 	point++;
 
 	return coord;
+}
+
+void Reader_c::check()
+{
+	cout << "-------Parametres de la simulation--------\n";
+	cout << "ndime : ";cout << ndime;cout << "\n";
+	cout << "nelem : ";cout << nelem;cout << "\n";
+	cout << "npoint : ";cout << npoint;cout << "\n";
+	cout << "nhalo : ";cout << nhalo;cout << "\n";
+	cout << "elem : ";cout << elem;cout << "\n";
+	cout << "point : ";cout << point;cout << "\n";
+	cout << "line : ";cout << line;cout << "\n";
+	cout << "bc : ";cout << bc;cout << "\n";
+	cout << "\nElem2Node :\n";
+	for(int i=0; i<elem;i++)
+	{
+		for(int j=0; j<vtklookup[1][elem2vtk[i]][1]; j++)
+		{
+			cout << elem2node[i][j]; cout << " ; ";
+		}
+		cout << "\n";
+	}
+	cout << "\ncoord :\n";
+	for(int i=0; i<npoint; i++)
+	{
+		cout << coord[i][0]; cout << " ; "; cout << coord[i][1]; cout << " ; "; cout << coord[i][2]; cout << "\n";
+	}
+	cout << "\nelem2vtk :\n";
+	for(int i=0; i<nelem; i++)
+	{
+		cout << elem2vtk[i];cout << "\n";
+	}
+}
+void Reader_c::write_file(string filename, Reader_c& read, Solver_c& solve, int izone) {
+	ofstream outfile(filename, std::ios_base::binary | std::ios_base::out);
+	if (outfile.is_open()) {
+		setprecision(16);
+		outfile << "% \n";
+		outfile << "% Problem dimension \n";
+		outfile << "% \n";
+		outfile << "NDIME= " << read.ndime << "\n";
+		outfile << "% \n";
+		outfile << "% Inner element connectivity \n";
+		outfile << "% \n";
+		outfile << "NELEM= "<< solve.zone2nelem[izone] << "\n";
+		//Connectivity
+		for (int i = 0; i < solve.zone2nelem[izone]; i++) {
+			string temp_connec = "";
+			for (int j = 0; j < vtklookup[1][solve.elem2vtk[izone][i]][1]; j++) {
+				temp_connec += "    ";
+				temp_connec += to_string(solve.elem2node[izone][i][j]);
+				
+			}
+			temp_connec += "    ";
+			outfile << solve.elem2vtk[izone][i]<< temp_connec << izone <<"\n";
+		}
+		//Coord
+		outfile << "% \n";
+		outfile << "% Node coordinates \n";
+		outfile << "% \n";
+		outfile << "NPOIN= " << solve.zone2nnode[izone] << "\n";
+		for (int i = 0; i < solve.zone2nnode[izone]; i++) {
+			outfile << fixed;
+			outfile << setprecision(16) << solve.zone2coord[izone][i][0] <<"    "<< solve.zone2coord[izone][i][1] << "    " << solve.zone2coord[izone][i][2] << "\n";
+		}
+		//Boundaries
+		outfile << "% \n";
+		outfile << "% Boundary elements \n";
+		outfile << "% \n";
+		
+		outfile << "NMARK= 4" << "\n";
+		for (int i = 0; i < 3; i++) { // Need to complete
+			outfile << "MARKER_TAG= \n";
+			outfile << "MARKER_ELEMS= " << solve.zone2boundIndex[izone][i + 1] - solve.zone2boundIndex[izone][i] <<"\n";
+			
+			for (int j = 0; j < (solve.zone2boundIndex[izone][i+1]- solve.zone2boundIndex[izone][i]); j++) {
+				string temp_connec = "";
+				int temp_bnelem = j + solve.zone2boundIndex[izone][i];
+				for (int k = 0; k < vtklookup[0][solve.elem2vtk[izone][temp_bnelem]][1]; k++) {
+					temp_connec += "    ";
+					temp_connec += to_string(solve.elem2node[izone][j][k]);
+
+				}
+				outfile << solve.elem2vtk[izone][temp_bnelem] << temp_connec << izone << "\n";
+			}
+
+		}
+		outfile.close();
+
+
+	}
+
 }

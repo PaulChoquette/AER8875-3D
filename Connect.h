@@ -48,7 +48,7 @@ public:
 	// 1D Array of Double :
 
 	// 2D Array of Double :
-	
+
 	// 3D Array of Double :
 	double*** zone2coord;
 
@@ -102,4 +102,4 @@ public:
 	void Display3DArray(double** V[], int ix, int nLine, int nColomn, string name);
 };
 
-#endif 
+#endif

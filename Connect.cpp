@@ -9,13 +9,11 @@
 #include <time.h>
 #include <omp.h>
 #include <iomanip>
-
 #include "Connect.h"
 #include "Reader.h"
 #include "main.h"
 #include <metis.h>
 using namespace std;
-
 
 // ================================================= ELEMENTS CONNECTIVITY ====================================================
 void Connect_c::InitializeGlobal(Reader_c& read) {
@@ -921,7 +919,7 @@ void Connect_c::Element2Nodes(Reader_c& read)
 			if (jelem_g < nelem_g) {
 				int jzone = elem2zone[jelem_g];
 				int jelem_z = elemglobal2local[jelem_g][0];
-				
+
 				// Detection d'une frontiere auvec une autre zone:
 				if (jzone != izone) {
 					int idz = indexzone[izone];
