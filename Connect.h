@@ -37,10 +37,11 @@ public:
 	int* esup2; int* esup1; int* psup1; int* psup2; int* lpoin; int* eptr; int* eind;
 	int* zone2nelem; int* zone2nnode; int* checkzone;  int* zone2nbelem; int* zone2nbound; int* zone2ncell; int* zone2nface;
 	// 2D Array of Integrer :
+	int** face2Nbr_of_node;
 	int** vtk2nnofa; int** vtk2facevtk;
 	int** elem2elem_g;
 	int** zone2node; int** zone2elem; int** elemglobal2local; int** nodeglobal2local; int** zone2markelem;  int** zone2zone; int** zone2ijzone;
-	int** elem2vtk; int** zone2boundIndex; int** zone2esup1; int** zone2esup2; int** zone2psup1; int** zone2psup2; int** zone2lpoin; 
+	int** elem2vtk; int** zelem2jelem; int** zone2boundIndex; int** zone2zoneIndex; int** zone2esup1; int** zone2esup2; int** zone2psup1; int** zone2psup2; int** zone2lpoin; 
 	// 3D Array of Integrer :
 	int*** elem2node; int*** vtk2lpofa; int*** belem2node; int*** elem2elem; int*** face2elem; int*** face2node; int*** face2fael; int*** elem2face;
 	// Double :

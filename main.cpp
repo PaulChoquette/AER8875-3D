@@ -29,16 +29,20 @@ int main() {
 	string File_Name = "naca0012_euler_65x65x2_O_1B.su2";
 	Reader_c FileContents;
 	FileContents.read_file(File_Name);
-	FileContents.check();
+	//FileContents.check();
 
-	// CONNECTIVITY
 	Solver_c solve;
 	solve.cfl = 1.0;
 	solve.ComputeGlobalConnectivity(FileContents);
 	solve.ComputeMETIS(4, FileContents);
-	solve.Display1DArray(solve.elem2zone,solve.nelem_g,"elem2zone");
 	solve.ComputeZoneConnectivity(FileContents);
+	FileContents.WriteAllZoneFile(FileContents, solve);
+
+	// =================================== EXECUTABLE 2 ====================================================
+
 	solve.ComputeLocalConnectivity();
+
+
 	// METRIC
 	cout << "\nMetriques ..." << endl;
 	Metric_c metric;
@@ -49,19 +53,19 @@ int main() {
 	metric.SumNorm(solve, FileContents, 1);
 //	solve.Display3DArray(metric.Elem2DeltaS_xyz, 0, solve.zone2nelem[0], 3, "Elem2DeltaS_xyz");
 //	solve.Display3DArray(metric.Elem2Center, 0, solve.zone2nelem[0], 3, "Elem2Center");
-	cout << "Face2ElemCenter[i_zone][faceID][0] : "; cout << metric.Face2ElemCenter[0][2][0] <<endl;
-	cout << "Face2ElemCenter[i_zone][faceID][1] : "; cout << metric.Face2ElemCenter[0][2][1] <<endl;
+	// cout << "Face2ElemCenter[i_zone][faceID][0] : "; cout << metric.Face2ElemCenter[0][2][0] <<endl;
+	// cout << "Face2ElemCenter[i_zone][faceID][1] : "; cout << metric.Face2ElemCenter[0][2][1] <<endl;
 
-	for (int i = 0; i < solve.nzone; i++) {
-		FileContents.write_file("lmaoout.su2", FileContents, solve, i);
-	}
+	
 	
 
-	cout << "Face2ElemCenter : " << endl;
-	for(int face_i=0; face_i<solve.zone2nface[0]; face_i++)
-	{
-		cout << metric.Face2ElemCenter[0][face_i][0]; cout << " ; ";cout << metric.Face2ElemCenter[0][face_i][1] << endl;
-	}
+	
+
+	//cout << "Face2ElemCenter : " << endl;
+	// for(int face_i=0; face_i<solve.zone2nface[0]; face_i++)
+	// {
+	// 	cout << metric.Face2ElemCenter[0][face_i][0]; cout << " ; ";cout << metric.Face2ElemCenter[0][face_i][1] << endl;
+	// }
 
 	 // DISPLAY OF GLOBAL
 	cout << "\n========================================= DISPLAY OF GLOBAL ========================================= " << endl;
@@ -89,7 +93,7 @@ int main() {
 	//solve.Display3DArray(solve.face2node, 0, solve.zone2nface[0], 5, "face2node");
 	// solve.Display3DArray(solve.face2elem, 0, solve.zone2nface[0], 2, "face2elem");
 	// solve.Display3DArray(solve.face2fael, 0, solve.zone2nface[0], 2, "face2fael");
-	solve.Display3DArray(solve.elem2face, 0, solve.zone2ncell[0], 6, "elem2face");
+	//solve.Display3DArray(solve.elem2face, 0, solve.zone2ncell[0], 6, "elem2face");
 	cout << "**************\nEnd\n**************\n";
 	double* p = new double[FileContents.nelem];
 	double* Rho = new double[FileContents.nelem];

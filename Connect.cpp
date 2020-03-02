@@ -285,7 +285,7 @@ void Connect_c::METISElement2Nodes(Reader_c& read){
 	}
 }
 void Connect_c::ComputeMETIS(int nzoneMETIS, Reader_c& read) {
-
+	cout << "METIS Starting ..." << endl;
 	Connect_c::METISElement2Nodes(read);
 
 	//Connect_c::Display1DArray(eind,neind,"eind");
@@ -321,6 +321,7 @@ int Connect_c::GetielemArNode(int inode, int ielno) {
 	return ielem;
 }
 void Connect_c::ComputeGlobalConnectivity(Reader_c& read) {
+	cout << "Global Connectivity Starting" << endl;
 	Connect_c::InitializeGlobal(read);
 	Connect_c::Node2Elements(read);
 	Connect_c::Node2Nodes(read);
@@ -479,6 +480,7 @@ void Connect_c::Face2ElementsNodes(int izone) {
 	face2elem[izone] = new int* [zone2nface[izone]];
 	face2node[izone] = new int* [zone2nface[izone]];
 	face2fael[izone] = new int* [zone2nface[izone]];
+	face2Nbr_of_node[izone] = new int [zone2nface[izone]];
 
 	// Creation d'une matrice d'aide identique a elem2elem
 	int** elem2elemHelp;
@@ -505,6 +507,7 @@ void Connect_c::Face2ElementsNodes(int izone) {
 
 				int nnofa = vtk2nnofa[vtk][ifael];
 				face2node[izone][iface] = new int[nnofa];
+				face2Nbr_of_node[izone][iface] = nnofa;
 				face2elem[izone][iface] = new int[2];
 				face2fael[izone][iface] = new int[2];
 
@@ -581,6 +584,7 @@ void Connect_c::Element2Faces(int izone)
 }
 void Connect_c::ComputeLocalConnectivity() 
 {
+	cout << "Local Connectivity Starting" << endl;
 	zone2esup1	= new int* [nzone];
 	zone2esup2	= new int* [nzone];
 	zone2psup1	= new int* [nzone];
@@ -590,6 +594,7 @@ void Connect_c::ComputeLocalConnectivity()
 	zone2nface	= new int [nzone];
 	face2elem	= new int** [nzone];
 	face2node	= new int** [nzone];
+	face2Nbr_of_node	= new int* [nzone];
 	face2fael	= new int** [nzone];
 	elem2face	= new int** [nzone];
 
@@ -845,10 +850,12 @@ void Connect_c::Zone2Bound(Reader_c& read) {
 			int izone = elem2zone[jelem];
 			int idz = indexzone[izone];
 			elem2node[izone][idz] = new int[nnoel];
+		
 			for (int inoel = 0; inoel < nnoel; inoel++) {
 				int inode_g = read.elem2node[ighost][inoel]; // 
 				int inode_z = nodeglobal2local[inode_g][izone];
 				elem2node[izone][idz][inoel] = inode_z;
+				
 			}
 			elem2vtk[izone][idz] = vtk;
 			indexzone[izone] += 1;
@@ -871,16 +878,20 @@ void Connect_c::Element2Nodes(Reader_c& read)
 	indexzone = new int[nzone];
 	belem2node = new int**[nzone];
 	izone2jzone = new int* [nzone];
-
+	zone2zoneIndex = new int*[nzone];
 	zone2markelem = new int*[nzone];
+	zelem2jelem = new int*[nzone];
 	//zone2idmark.resize(nzone);
 
 	// Creation de izone2jzone
 	for (int izone = 0; izone < nzone; izone++) {
-		zone2markelem[izone] = new int[nzone - 1];;
+		zone2markelem[izone] = new int[nzone - 1];
+		zone2zoneIndex[izone] = new int[nzone];
+		zone2zoneIndex[izone][0] = zone2nelem[izone] + zone2nbound[izone];
 		//zone2idmark[izone].resize(nzone - 1);
 		izone2jzone[izone] = new int[nzone];
 		belem2node[izone] = new int*[zone2nbelem[izone]];
+		zelem2jelem[izone] = new int[zone2nbelem[izone]];
 		indexzone[izone] = 0;
 		int idz = 0;
 		for (int jzone = 0; jzone < nzone; jzone++) {
@@ -891,6 +902,7 @@ void Connect_c::Element2Nodes(Reader_c& read)
 			else {
 				izone2jzone[izone][jzone] = -1;
 			}
+			//zone2zoneIndex[izone][jzone] = 0;
 		}
 
 		for (int ijzone = 0; ijzone < nzone - 1; ijzone++) {
@@ -927,10 +939,12 @@ void Connect_c::Element2Nodes(Reader_c& read)
 					int nnofa = vtk2nnofa[vtk][ifael];
 					int fvtk = vtk2facevtk[vtk][ifael];
 					belem2node[izone][idz] = new int[nnofa + 2];
-					elem2node[izone][ighost] = new int[nnofa];
+					elem2node[izone][ighost] = new int[nnofa + 1];
 					belem2node[izone][idz][0] = fvtk; // vtk de la face
 					belem2node[izone][idz][nnofa + 1] = jelem_z;
 					elem2vtk[izone][ighost] = fvtk;
+					elem2node[izone][ighost][nnofa] = jelem_z; 
+					//zelem2jelem[izone][ighost] = jelem_z;
 					int ijzone = izone2jzone[izone][jzone];
 					zone2markelem[izone][ijzone] += 1;
 					//zone2idmark[izone][ijzone].push_back(idz);
@@ -945,6 +959,14 @@ void Connect_c::Element2Nodes(Reader_c& read)
 					indexzone[izone] += 1;	
 				}
 			}
+		}
+
+		for (int izone = 0; izone < nzone; izone++){
+			for (int ijzone = 0; ijzone < nzone - 1; ijzone++){
+				int njzone = zone2markelem[izone][ijzone];
+				zone2zoneIndex[izone][ijzone+1] = zone2zoneIndex[izone][ijzone] + njzone;
+			}
+			
 		}
 	}
 	delete[] indexzone;

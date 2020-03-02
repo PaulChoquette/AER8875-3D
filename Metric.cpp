@@ -40,8 +40,7 @@ void Metric_c::Norm_Area(Solver_c& solve, Reader_c& read)
 	//cout << "2" << endl;
 	for(int i_zone=0; i_zone<solve.nzone; i_zone++)
 	{
-		//cout << "3" << endl;cout << "i_zone : ";cout << i_zone << endl;
-		//cout << "zone2nface : ";cout << solve.zone2nface[i_zone] << endl;
+		
 		Face2Norm[i_zone] = new double* [solve.zone2nface[i_zone]];
 		Face2Area[i_zone] = new double [solve.zone2nface[i_zone]];
 		//cout << "4" << endl;

@@ -9,10 +9,10 @@
 using namespace std;
 
 void Reader_c::read_file(string filename) {
-
+	cout << "Reading of Global SU2 Starting ..." << endl;
 	//Initialize mesh constants
 	ndime = 0; nelem = 0; npoint = 0; nhalo = 0;
-
+	ncell = 0; bclinen = 0;
 	//Initialize information reading counters;
 	elem = 0; point = 0; line = ""; bc = 0; nbc = 0;
 
@@ -25,14 +25,12 @@ void Reader_c::read_file(string filename) {
 			//Tick line number and store line as character array
 			linen++;
 			cline = line.c_str();
-
 			if (ndime == 0)
 			{
 				//Read number of dimensions of the mesh
 				ndime = Readcnst(line, "NDIME= ");
 				continue;
 			}
-
 			if (nelem == 0)
 			{
 				//Read number of elements in the mesh
@@ -90,6 +88,7 @@ void Reader_c::read_file(string filename) {
 			if (nbc == 0) {
 				nbc = Readcnst(line, "NMARK= ");
 				if (nbc != 0) {
+					bound2tag = new string[nbc];
 					bclinen = linen;
 					BoundIndex = new int[nbc + 1];
 					BoundIndex[0] = nelem;
@@ -105,14 +104,17 @@ void Reader_c::read_file(string filename) {
 
 			if (bclinen != 0) {
 				if (linen > bclinen && linen <= bclinen + bcnl) {
+					
 					//3 steps : step 0 is reading marker tag, step 1 is reading marker elemn and final step is filling bc_elem2nnode
 					if (step == 0) {
+						bound2tag[bc] = line.substr(12,8);
 						step++;
 					}
 					else if (step == 1) {
 						bc_nelem = Readcnst(line, "MARKER_ELEMS= ");
 						bc_nelemv[bc] = bc_nelem;
 						BoundIndex[bc + 1] =BoundIndex[bc]+ bc_nelem;
+						cout << "bc_nelem " << bc_nelem << endl;
 						bcnl += bc_nelem; //add nelem since each elem has 1 line
 						bc_elem2vtk[bc] = new int [bc_nelem];
 						bc_elem2node[bc] = new int* [bc_nelem];
@@ -130,14 +132,15 @@ void Reader_c::read_file(string filename) {
 					if (bc == nbc) {
 						nhalo = bcnl - 2 * nbc;
 						ncell = nelem + nhalo;
-
+						cout << "TEST Read 6.1 " << endl;
 						elem2node = new int* [ncell];
+						cout << "TEST Read 6.2 " << endl;
 						elem2vtk = new int [ncell];
+						cout << "TEST Read 6.3 " << endl;
 						for (int ielem = 0; ielem < nelem; ielem++)
 						{
 							elem2vtk[ielem] = elem2vtk_nh[ielem];
 							elem2node[ielem] = new int[vtklookup[ndime-2][elem2vtk[ielem]][1]];
-
 							for (int inode = 0; inode < vtklookup[ndime-2][elem2vtk[ielem]][1]; inode++)
 							{
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
@@ -185,6 +188,7 @@ void Reader_c::read_file(string filename) {
 	else {
 		//ERROR 1 : File could not be opened
 	}
+	cout << "... Reading ENDING" << endl;
 }
 
 bool Reader_c::OpenFile(string filename)
@@ -326,30 +330,35 @@ void Reader_c::check()
 		cout << elem2vtk[i];cout << "\n";
 	}
 }
-void Reader_c::write_file(string filename, Reader_c& read, Solver_c& solve, int izone) {
+void Reader_c::write_file(Reader_c& read, Solver_c& solve, int izone) {
+	string filename = "Zone"+to_string(izone)+".su2";
+
 	ofstream outfile(filename, std::ios_base::binary | std::ios_base::out);
 	if (outfile.is_open()) {
 		setprecision(16);
+		outfile << "% \n";
+		outfile << "ZONE= " << to_string(izone) << "\n";
 		outfile << "% \n";
 		outfile << "% Problem dimension \n";
 		outfile << "% \n";
 		outfile << "NDIME= " << read.ndime << "\n";
 		outfile << "% \n";
+
+		//=========================================== ELEM2NODES ===========================================
 		outfile << "% Inner element connectivity \n";
 		outfile << "% \n";
 		outfile << "NELEM= "<< solve.zone2nelem[izone] << "\n";
-		//Connectivity
-		for (int i = 0; i < solve.zone2nelem[izone]; i++) {
+		for (int ielem = 0; ielem < solve.zone2nelem[izone]; ielem++) {
 			string temp_connec = "";
-			for (int j = 0; j < vtklookup[1][solve.elem2vtk[izone][i]][1]; j++) {
+			for (int inoel = 0; inoel < vtklookup[1][solve.elem2vtk[izone][ielem]][1]; inoel++) {
 				temp_connec += "    ";
-				temp_connec += to_string(solve.elem2node[izone][i][j]);
+				temp_connec += to_string(solve.elem2node[izone][ielem][inoel]);
 				
 			}
 			temp_connec += "    ";
-			outfile << solve.elem2vtk[izone][i]<< temp_connec << izone <<"\n";
+			outfile << solve.elem2vtk[izone][ielem]<< temp_connec <<"\n";
 		}
-		//Coord
+		//============================================== COORD ==============================================
 		outfile << "% \n";
 		outfile << "% Node coordinates \n";
 		outfile << "% \n";
@@ -358,31 +367,70 @@ void Reader_c::write_file(string filename, Reader_c& read, Solver_c& solve, int 
 			outfile << fixed;
 			outfile << setprecision(16) << solve.zone2coord[izone][i][0] <<"    "<< solve.zone2coord[izone][i][1] << "    " << solve.zone2coord[izone][i][2] << "\n";
 		}
-		//Boundaries
+		// ============================================= BOUNDARY =============================================
 		outfile << "% \n";
 		outfile << "% Boundary elements \n";
 		outfile << "% \n";
 		
-		outfile << "NMARK= 4" << "\n";
-		for (int i = 0; i < 3; i++) { // Need to complete
-			outfile << "MARKER_TAG= \n";
-			outfile << "MARKER_ELEMS= " << solve.zone2boundIndex[izone][i + 1] - solve.zone2boundIndex[izone][i] <<"\n";
-			
-			for (int j = 0; j < (solve.zone2boundIndex[izone][i+1]- solve.zone2boundIndex[izone][i]); j++) {
+		outfile << "NMARK= " << read.nbc << "\n";
+		for (int ibc = 0; ibc < read.nbc -1; ibc++) { 
+			//int jzone = solve.zone2ijzone[izone][ijzone];
+			outfile << "MARKER_TAG= " << read.bound2tag[ibc] << "\n";
+			int nghost = solve.zone2boundIndex[izone][ibc + 1] - solve.zone2boundIndex[izone][ibc];
+			outfile << "MARKER_ELEMS= " << nghost <<"\n";
+			int ielem1 = solve.zone2boundIndex[izone][ibc];
+			int ielem2 = solve.zone2boundIndex[izone][ibc+1];
+			for (int ighost = ielem1; ighost < ielem2; ighost++) {
 				string temp_connec = "";
-				int temp_bnelem = j + solve.zone2boundIndex[izone][i];
-				for (int k = 0; k < vtklookup[0][solve.elem2vtk[izone][temp_bnelem]][1]; k++) {
+				int vtk = solve.elem2vtk[izone][ighost];
+				int nnoel = vtklookup[read.ndime-2][vtk][1]; 
+				for (int inoel = 0; inoel < nnoel; inoel++) {
 					temp_connec += "    ";
-					temp_connec += to_string(solve.elem2node[izone][j][k]);
+					temp_connec += to_string(solve.elem2node[izone][ighost][inoel]);
 
 				}
-				outfile << solve.elem2vtk[izone][temp_bnelem] << temp_connec << izone << "\n";
+				outfile << vtk << temp_connec << "\n";
 			}
+		}
 
+		//=========================================== ZONE BOUNDARY ===========================================
+		outfile << "% \n";
+		outfile << "% Zone Boundary elements \n";
+		outfile << "% \n";
+		
+		outfile << "NZONE= " << solve.nzone -1 << "\n";
+		int ighost = 0;
+		for (int ijzone = 0; ijzone < solve.nzone -1; ijzone++) { 
+			int jzone = solve.zone2ijzone[izone][ijzone];
+			outfile << "ZONE_TAG= " << to_string(jzone) << "\n";
+
+			int njzone = solve.zone2markelem[izone][ijzone];
+			outfile << "ZONE_ELEMS= " << njzone <<"\n";
+
+			int ielem1 = solve.zone2zoneIndex[izone][ijzone];
+			int ielem2 = solve.zone2zoneIndex[izone][ijzone+1];
+			
+			for (int ielem = ielem1; ielem < ielem2; ielem++) {
+				string temp_connec = "";
+				int vtk = solve.elem2vtk[izone][ielem];
+				int nnofa = vtklookup[read.ndime-2][vtk][1]; 
+
+				for (int inofa = 0; inofa < nnofa + 1; inofa++) {
+					temp_connec += "    ";
+					temp_connec += to_string(solve.elem2node[izone][ielem][inofa]);
+
+				}
+				outfile << to_string(vtk) << temp_connec  <<  "\n";
+			}
 		}
 		outfile.close();
 
 
 	}
 
+}
+void Reader_c::WriteAllZoneFile(Reader_c& read,Solver_c& solve ){
+	for (int izone = 0; izone < solve.nzone; izone++) {
+		write_file(read, solve, izone);
+	}
 }
