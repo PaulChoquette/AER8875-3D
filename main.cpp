@@ -16,7 +16,7 @@
 #include "Solver.h"
 
 
-#include "./include/TECXXX.h"
+//#include "./include/TECXXX.h"
 using namespace std;
 
 int main() {
@@ -29,6 +29,8 @@ int main() {
 	Reader_c FileContents;
 	FileContents.read_file(File_Name);
 	FileContents.check();
+
+	
 ///////////////////////////////////////////////////////////////////////////////////////
 	// CONNECTIVITY
 	Solver_c solve;
@@ -52,6 +54,10 @@ int main() {
 	cout << "Face2ElemCenter[i_zone][faceID][0] : "; cout << metric.Face2ElemCenter[0][2][0] <<endl;
 	cout << "Face2ElemCenter[i_zone][faceID][1] : "; cout << metric.Face2ElemCenter[0][2][1] <<endl;
 
+	for (int i = 0; i < solve.nzone; i++) {
+		FileContents.write_file("lmaoout.su2", FileContents, solve, i);
+	}
+	
 
 	cout << "Face2ElemCenter : " << endl;
 	for(int face_i=0; face_i<solve.zone2nface[0]; face_i++)
@@ -111,7 +117,7 @@ int main() {
 	}
 
 
-	FileContents.write_tecplot(FileContents, "test2", p, Rho, u, v, w);
+//FileContents.write_tecplot(FileContents, "test2", p, Rho, u, v, w);
 
 	return 0;
 }

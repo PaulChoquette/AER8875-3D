@@ -1,10 +1,11 @@
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
 #include <string>
 #include "Reader.h"
+#include "Solver.h"
 #include "main.h"
-#include "include/TECIO.h"
 using namespace std;
 
 void Reader_c::read_file(string filename) {
@@ -324,4 +325,64 @@ void Reader_c::check()
 	{
 		cout << elem2vtk[i];cout << "\n";
 	}
+}
+void Reader_c::write_file(string filename, Reader_c& read, Solver_c& solve, int izone) {
+	ofstream outfile(filename, std::ios_base::binary | std::ios_base::out);
+	if (outfile.is_open()) {
+		setprecision(16);
+		outfile << "% \n";
+		outfile << "% Problem dimension \n";
+		outfile << "% \n";
+		outfile << "NDIME= " << read.ndime << "\n";
+		outfile << "% \n";
+		outfile << "% Inner element connectivity \n";
+		outfile << "% \n";
+		outfile << "NELEM= "<< solve.zone2nelem[izone] << "\n";
+		//Connectivity
+		for (int i = 0; i < solve.zone2nelem[izone]; i++) {
+			string temp_connec = "";
+			for (int j = 0; j < vtklookup[1][solve.elem2vtk[izone][i]][1]; j++) {
+				temp_connec += "    ";
+				temp_connec += to_string(solve.elem2node[izone][i][j]);
+				
+			}
+			temp_connec += "    ";
+			outfile << solve.elem2vtk[izone][i]<< temp_connec << izone <<"\n";
+		}
+		//Coord
+		outfile << "% \n";
+		outfile << "% Node coordinates \n";
+		outfile << "% \n";
+		outfile << "NPOIN= " << solve.zone2nnode[izone] << "\n";
+		for (int i = 0; i < solve.zone2nnode[izone]; i++) {
+			outfile << fixed;
+			outfile << setprecision(16) << solve.zone2coord[izone][i][0] <<"    "<< solve.zone2coord[izone][i][1] << "    " << solve.zone2coord[izone][i][2] << "\n";
+		}
+		//Boundaries
+		outfile << "% \n";
+		outfile << "% Boundary elements \n";
+		outfile << "% \n";
+		
+		outfile << "NMARK= 4" << "\n";
+		for (int i = 0; i < 3; i++) { // Need to complete
+			outfile << "MARKER_TAG= \n";
+			outfile << "MARKER_ELEMS= " << solve.zone2boundIndex[izone][i + 1] - solve.zone2boundIndex[izone][i] <<"\n";
+			
+			for (int j = 0; j < (solve.zone2boundIndex[izone][i+1]- solve.zone2boundIndex[izone][i]); j++) {
+				string temp_connec = "";
+				int temp_bnelem = j + solve.zone2boundIndex[izone][i];
+				for (int k = 0; k < vtklookup[0][solve.elem2vtk[izone][temp_bnelem]][1]; k++) {
+					temp_connec += "    ";
+					temp_connec += to_string(solve.elem2node[izone][j][k]);
+
+				}
+				outfile << solve.elem2vtk[izone][temp_bnelem] << temp_connec << izone << "\n";
+			}
+
+		}
+		outfile.close();
+
+
+	}
+
 }

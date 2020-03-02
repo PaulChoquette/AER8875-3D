@@ -5,7 +5,6 @@
 #include <fstream>
 #include "main.h"
 #include "Reader.h"
-#include "./include/TECXXX.h"
 
 
 void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w) {
