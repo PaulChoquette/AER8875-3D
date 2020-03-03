@@ -13,6 +13,7 @@
 #include "Connect.h"
 #include "Metric.h"
 #include "Solver.h"
+#include "./include/TECXXX.h"
 
 
 //#include "./include/TECXXX.h"
@@ -34,7 +35,7 @@ int main() {
 	Solver_c solve;
 	solve.cfl = 1.0;
 	solve.ComputeGlobalConnectivity(FileContents);
-	solve.ComputeMETIS(4, FileContents);
+	solve.ComputeMETIS(2, FileContents);
 	solve.ComputeZoneConnectivity(FileContents);
 	FileContents.WriteAllZoneFile(FileContents, solve);
 
@@ -110,7 +111,7 @@ int main() {
 	}
 
 
-//FileContents.write_tecplot(FileContents, "test2", p, Rho, u, v, w);
+FileContents.write_tecplot(FileContents, "test2", p, Rho, u, v, w);
 
 	return 0;
 }
