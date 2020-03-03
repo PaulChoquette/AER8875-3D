@@ -15,20 +15,20 @@ public:
 	double SumNormLocalZone;
 	double SumNormAllZones;
 	// :
-	double** Face2Area;
-	double** Elem2Vol;
+	double* face2area;
+	double* elem2vol;
 	// :
-	double*** Face2Norm;
-	double*** Elem2Center;
-	double*** Face2ElemCenter;
-	double*** Elem2DeltaS_xyz;
+	double** face2norm;
+	double** elem2center;
+	double** face2elemCenter;
+	double** elem2deltaSxyz;
 	// =========================================== FUNCTION MEMBERS ============================================
-	void Compute(Solver_c& solve, Reader_c& read);
-	void Norm_Area(Solver_c& solve, Reader_c& read);
-	void SumNorm(Solver_c& solve, Reader_c& read, int choix);
-	void Volume(Solver_c& solve, Reader_c& read);
-	void Elem2DeltaS(Solver_c& solve, Reader_c& read);
-	void Face2Center(Solver_c& solve, Reader_c& read);
+	void ComputeMetric(Reader_c& read);
+	void Norm_Area(Reader_c& read);
+	void SumNorm(Reader_c& read, int choix);
+	void Volume(Reader_c& read);
+	void Elem2DeltaS(Reader_c& read);
+	void Face2Center(Reader_c& read);
 };
 
 #endif

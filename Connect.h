@@ -27,27 +27,22 @@ public:
 	int* esup2; int* esup1; int* psup1; int* psup2; int* lpoin;
 
 	// 2D Array of Integrer :
-	int** face2Nbr_of_node;
+	int* face2nnofa;
 	int** vtk2nnofa; int** vtk2facevtk;
 
 	int* elem2vtk; int* zelem2jelem;
 	// 2D Array of Integrer :
-	int** elem2node; int*** vtk2lpofa; int** elem2elem; int** face2elem; int** face2node; int** face2fael; int** elem2face;
-	// Double :
-
+	 int** elem2elem; int** face2elem; int** face2node; int** face2fael; int** elem2face;
+	// 3D
+    int*** vtk2lpofa;
 	// 1D Array of Double :
 
 	// 2D Array of Double :
 	// 3D Array of Double :
 
 
-	// Vector
-	vector<vector<vector<int>>> zone2idmark;
-
 	// =========================================== CONNECTIVITY FUNCTION MEMBERS ============================================
-	// ELEMENTS CONNECTIVITY:
-	void InitializeGlobal(Reader_c& read);
-
+	void InitializeLocal(Reader_c& read);
 	// ZONE ELEMENTS CONNECTIVITY:
 	void Node2Elements(Reader_c& read);
 	void Node2Nodes(Reader_c& read);

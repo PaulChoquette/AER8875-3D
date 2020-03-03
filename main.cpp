@@ -11,7 +11,7 @@
 #include "UI.h"
 #include "Reader.h"
 #include "Connect.h"
-//#include "Metric.h"
+#include "Metric.h"
 #include "Solver.h"
 //#include <metis.h>
 //#include "./include/TECXXX.h"
@@ -28,14 +28,8 @@ int main() {
 	solve.cfl = 1.0;
 	FileContents.read_file_local("Zone0.su2");
 	solve.ComputeLocalConnectivity(FileContents);
-
-    //FileContents.check();
-	// METRIC
-	cout << "\nMetriques ..." << endl;
-	//Metric_c metric;
-	//metric.Compute(solve, FileContents);
-
-	//metric.SumNorm(solve, FileContents, 1);
+	solve.ComputeMetric(FileContents);
+	solve.SumNorm(FileContents, 1);
 
 
 	

@@ -15,15 +15,19 @@
 using namespace std;
 
 // ================================================= ELEMENTS CONNECTIVITY ====================================================
-void Connect_c::InitializeGlobal(Reader_c& read) {
+void Connect_c::InitializeLocal(Reader_c& read) {
 	//int nelem, nnode, nzelem, nbound, ncell, nface;
-	nelem = read.nelem;
-	nnode = read.npoint;
-	nzelem = read.nzelem;
-	nzone = read.nzone;
-	ndime = read.ndime;
-	ncell = read.ncell;
-	nbound = read.nhalo;
+	
+	nnode 	= read.npoint;
+	nzone 	= read.nzone;
+	ndime 	= read.ndime;
+	nelem 	= read.nelem;
+	nbound 	= read.nhalo;		// Number of Boundaries Ghostcell
+	nzelem 	= read.nzelem;		// Number of Zone Ghostcell
+	ncell 	= read.ncell;		// Number of total element
+	nhalo 	= nzelem + nbound;  // Number of Ghostcell including zone and boundaries
+
+
 	vtk2nnofa = new int* [16];
 	vtk2lpofa = new int** [16];
 	vtk2facevtk = new int* [16];
@@ -131,8 +135,6 @@ void Connect_c::InitializeGlobal(Reader_c& read) {
 	vtk2lpofa[14][4] = new int[4]{ 0,3,2,1 }; // face 4
 
 }
-
-
 // ============================================= ZONE ELEMENTS CONNECTIVITY ================================================
 // === ELEMENT === 
 void Connect_c::Node2Elements(Reader_c& read) {
@@ -282,7 +284,7 @@ void Connect_c::Face2ElementsNodes(Reader_c& read) {
 	face2elem = new int* [nface];
 	face2node = new int* [nface];
 	face2fael = new int* [nface];
-	//face2Nbr_of_node = new int [nface];
+	face2nnofa = new int [nface];
 
 	// Creation d'une matrice d'aide identique a elem2elem
 	int** elem2elemHelp;
@@ -308,7 +310,7 @@ void Connect_c::Face2ElementsNodes(Reader_c& read) {
 
 				int nnofa = vtk2nnofa[vtk][ifael];
 				face2node[iface] = new int[nnofa];
-				//face2Nbr_of_node[iface] = nnofa;
+				face2nnofa[iface] = nnofa;
 				face2elem[iface] = new int[2];
 				face2fael[iface] = new int[2];
 
@@ -373,7 +375,7 @@ void Connect_c::Element2Faces(Reader_c& read)
 void Connect_c::ComputeLocalConnectivity(Reader_c& read) 
 {
 	cout << "Local Connectivity \tSTARTING...";
-	Connect_c::InitializeGlobal(read);
+	Connect_c::InitializeLocal(read);
 	Connect_c::Node2Elements(read); 
 	Connect_c::Node2Nodes(read);
 	Connect_c::Element2Elements(read); 
@@ -392,12 +394,6 @@ void Connect_c::ComputeLocalConnectivity(Reader_c& read)
 	Display3DArray(face2fael, 0, nface[0], 2, "face2fael");*/
 	cout << "...............DONE" << endl;
 }
-
-
-// ================================================= ZONES CONNECTIVITY ====================================================
-
-
-
 
 // ================================================= OTHER FUNCTION MEMBERS ====================================================
 void	Connect_c::Display1DArray(int V[], int size, string name) {
