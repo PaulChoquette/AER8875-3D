@@ -12,16 +12,10 @@
 #include "Connect.h"
 #include "Reader.h"
 #include "main.h"
-#include <metis.h>
 using namespace std;
 
 // ================================================= ELEMENTS CONNECTIVITY ====================================================
-void Connect_c::InitializeGlobal(Reader_c& read) {
-	nnode_g = read.npoint;
-	nelem_g = read.nelem;
-	ndime = read.ndime;
-	ncell_g = read.ncell;
-
+void Connect_c::InitializeGlobal() {
 	vtk2nnofa = new int* [16];
 	vtk2lpofa = new int** [16];
 	vtk2facevtk = new int* [16];
@@ -129,59 +123,62 @@ void Connect_c::InitializeGlobal(Reader_c& read) {
 	vtk2lpofa[14][4] = new int[4]{ 0,3,2,1 }; // face 4
 
 }
-void Connect_c::Node2Elements(Reader_c& read) {
-	mesup1 = 0;
-	for (int ielem = 0; ielem < ncell_g; ielem++) {
-		int vtk = read.elem2vtk[ielem];
+
+
+// ============================================= ZONE ELEMENTS CONNECTIVITY ================================================
+// === ELEMENT === 
+void Connect_c::Node2Elements() {
+	int mesup1 = 0;
+	for (int ielem = 0; ielem < ncell; ielem++) {
+		int vtk = elem2vtk[ielem];
 		mesup1 += vtklookup[ndime-2][vtk][1];
 	}
 
 	// Initializing esup and other parameters :
-	esup2 = new int[nnode_g + 1]();
+	esup2 = new int[nnode + 1]();
 	esup1 = new int[mesup1]();
 	int ipoil;
 	//
-	for (int ielem = 0; ielem < ncell_g; ielem++) {
-		int vtk = read.elem2vtk[ielem];
+	for (int ielem = 0; ielem < ncell; ielem++) {
+		int vtk = elem2vtk[ielem];
 		int nnode = vtklookup[ndime-2][vtk][1];
 		for (int inode = 0; inode < nnode; inode++) {
-			ipoil = read.elem2node[ielem][inode] + 1 + 1; // elem2node en 0 based
+			ipoil = elem2node[ielem][inode] + 2; // elem2node en 0 base 
 			esup2[ipoil - 1] = esup2[ipoil - 1] + 1;
 		}
 	}
-	for (int ipoin = 2; ipoin <= nnode_g + 1; ipoin++) {
+	for (int ipoin = 2; ipoin <= nnode + 1; ipoin++) {
 		esup2[ipoin - 1] = esup2[ipoin - 1] + esup2[ipoin - 1 - 1];
 	}
 	int ipoin, istor;
-	for (int ielem = 0; ielem < ncell_g; ielem++) {
-		int vtk = read.elem2vtk[ielem];
+	for (int ielem = 0; ielem < ncell; ielem++) {
+		int vtk = elem2vtk[ielem];
 		int nnode = vtklookup[ndime-2][vtk][1];
 
 		for (int inode = 0; inode <= nnode - 1; inode++) {
-			ipoin = read.elem2node[ielem][inode]+1; // elem2node en o base
+			ipoin = elem2node[ielem][inode] + 1; // elem2node en 0 base
 			istor = esup2[ipoin - 1] + 1;
 			esup2[ipoin - 1] = istor;
 			esup1[istor - 1] = ielem + 1;
 		}
 	}
-	for (int ipoin = nnode_g + 1; ipoin >= 2; --ipoin) {
+	for (int ipoin = nnode + 1; ipoin >= 2; --ipoin) {
 		esup2[ipoin - 1] = esup2[ipoin - 1 - 1];
 	}
 	esup2[0] = 0;
+
 }
-void Connect_c::Node2Nodes(Reader_c& read) {
-	lpoin = new int[nnode_g]();
-	psup2 = new int[nnode_g + 1]();
-	int ielem, istor{ 0 }, jpoin;
-
-
-	for (int ipoin = 1; ipoin <= nnode_g; ipoin++) {
+void Connect_c::Node2Nodes() {
+	lpoin = new int[nnode]();
+	psup2 = new int[nnode + 1]();
+	int istor{ 0 };
+	for (int ipoin = 1; ipoin <= nnode; ipoin++) {
 		for (int iesup = esup2[ipoin - 1] + 1; iesup <= esup2[ipoin + 1 - 1]; iesup++) {
-			ielem = esup1[iesup - 1] - 1;															
-			int vtk = read.elem2vtk[ielem];
+			int ielem = esup1[iesup - 1] - 1;
+			int vtk = elem2vtk[ielem];
 			int nnode = vtklookup[ndime-2][vtk][1];
 			for (int inode = 1; inode <= nnode; inode++) {
-				jpoin = read.elem2node[ielem][inode - 1] + 1; // elem2node en 0 base
+				int jpoin = elem2node[ielem][inode - 1] + 1; // elem2node en 9 base
 				if (jpoin != ipoin && lpoin[jpoin - 1] != ipoin) {
 					istor = istor + 1;
 					lpoin[jpoin - 1] = ipoin;
@@ -191,18 +188,17 @@ void Connect_c::Node2Nodes(Reader_c& read) {
 		psup2[ipoin + 1 - 1] = istor;
 	}
 
-	//delete[] lpoin;
-	lpoin = new int[nnode_g]();
-	istor = 0; jpoin = 0;
-	mpsup = psup2[nnode_g]; 
+	lpoin = new int[nnode]();
+	istor = 0; int jpoin = 0;
+	int mpsup = psup2[nnode];
 	psup1 = new int[mpsup]();
-	for (int ipoin = 1; ipoin <= nnode_g; ipoin++) {
+	for (int ipoin = 1; ipoin <= nnode; ipoin++) {
 		for (int iesup = esup2[ipoin - 1] + 1; iesup <= esup2[ipoin + 1 - 1]; iesup++) {
-			ielem = esup1[iesup - 1] - 1;																		// 1 based
-			int vtk = read.elem2vtk[ielem];
+			int ielem = esup1[iesup - 1] - 1;																		// 1 based
+			int vtk = elem2vtk[ielem];
 			int nnode = vtklookup[ndime-2][vtk][1];
 			for (int inode = 1; inode <= nnode; inode++) {
-				jpoin = read.elem2node[ielem][inode - 1] +1; // elem2node en 0 based
+				jpoin = elem2node[ielem][inode - 1] + 1; // elem2node en 9 base
 				if (jpoin != ipoin && lpoin[jpoin - 1] != ipoin) {
 					istor = istor + 1;
 					psup1[istor - 1] = jpoin;
@@ -212,229 +208,27 @@ void Connect_c::Node2Nodes(Reader_c& read) {
 		}
 	}
 }
-void Connect_c::Element2Elements(Reader_c& read) {
-	elem2elem_g = new int* [ncell_g]();
-	int nnofa, ilpofa, ipoin, jelem, nnofj, icoun, jpoin;
-	vector<int> lhelp;
-	for (int ielem = 0; ielem < ncell_g; ielem++) {
-		int vtk = read.elem2vtk[ielem];
-		int nfael = vtklookup[ndime-2][vtk][0];
-		elem2elem_g[ielem] = new int[nfael];
-		for (int ifael = 0; ifael <= nfael - 1; ifael++) {
-			nnofa = vtk2nnofa[vtk][ifael];
-			lhelp.resize(nnofa);															// vecteur a enlever
-
-			for (int inofa = 0; inofa <= nnofa - 1; inofa++) {
-			
-				ilpofa = vtk2lpofa[vtk][ifael][inofa]+1;
-				lhelp[inofa] = read.elem2node[ielem][ilpofa - 1] + 1;	// elem2node en 0 base
-				lpoin[lhelp[inofa] - 1] = 1;
-			}
-			ipoin = lhelp[0] - 1;
-			for (int istor = esup2[ipoin]; istor <= esup2[ipoin + 1] - 1; istor++) {
-				jelem = esup1[istor];
-				int jvtk = read.elem2vtk[jelem-1];
-				int nfael = vtklookup[ndime-2][jvtk][0];
-				if (jelem != ielem + 1) {
-					for (int jfael = 0; jfael <= nfael - 1; jfael++) {
-						//nnofj = Getlnofa(jelem - 1, jfael);  // lnofa[jfael];
-						nnofj = vtk2nnofa[jvtk][jfael];
-						if (nnofj == nnofa) {
-							icoun = 0;
-							for (int jnofa = 0; jnofa <= nnofa - 1; jnofa++) {
-								//jpoin = read.elem2node[jelem - 1][Getlpofa(jelem - 1, jnofa, jfael) + 1 - 1];
-								jpoin = read.elem2node[jelem - 1][vtk2lpofa[jvtk][jfael][jnofa] + 1 - 1] + 1;  // ICI
-								icoun = icoun + lpoin[jpoin - 1];
-							}
-							if (icoun == nnofa) {
-								elem2elem_g[ielem][ifael] = jelem - 1;
-							}
-						}
-					}
-				}
-			}
-			int vtk2 = read.elem2vtk[ielem];
-			nnofa = vtk2nnofa[vtk2][ifael];
-			for (int inova = 0; inova <= nnofa - 1; inova++) {
-				lpoin[lhelp[inova] - 1] = 0;
-			}
-		}
-	}
-}
-void Connect_c::METISElement2Nodes(Reader_c& read){
-	neind = 0;
-	for (int ielem = 0; ielem < nelem_g; ielem++) {
-		int vtk = read.elem2vtk[ielem];
-		neind += vtklookup[ndime-2][vtk][1];
-	}
-
-
-	eind = new int[neind];
-	eptr = new int[nelem_g+1];
-	eptr[0] = 0;
-	int ipos = 0;
-	for (int ielem = 0; ielem < nelem_g; ielem++){
-		int vtk = read.elem2vtk[ielem];
-		int nnoel = vtklookup[ndime-2][vtk][1];
-		for (int inoel = 0; inoel < nnoel; inoel++){
-			int inode = read.elem2node[ielem][inoel];
-			eind[ipos] = inode + 1;
-			ipos += 1;
-		}
-		eptr[ielem+1] = ipos;
-	}
-}
-void Connect_c::ComputeMETIS(int nzoneMETIS, Reader_c& read) {
-	cout << "METIS Starting ..." << endl;
-	Connect_c::METISElement2Nodes(read);
-
-	//Connect_c::Display1DArray(eind,neind,"eind");
-	//Connect_c::Display1DArray(eptr,nelem_g+1,"eptr");
-
-	elem2zone = new int[nelem_g];
-
-	int* npart;
-	int objval;
-	int ncommon = 5; // Input qui depend du nombre de noeuds par face (nombre de noeud en commun)
-
-	npart = new int[nnode_g];
-
-	int success = METIS_PartMeshDual(&nelem_g, &nnode_g, &eptr[0], &eind[0], NULL, NULL,
-		&ncommon, &nzoneMETIS, NULL, NULL, &objval,
-		&elem2zone[0], &npart[0]);
-
-	//Connect_c::Display1DArray(elem2zone,nelem_g,"elem2zone");
-
-	delete[] eptr;
-	delete[] eind;
-	delete[] npart;
-}
-int Connect_c::GetnelemArNode(int inode) {
-	// Retourne le nombre d'element autour d'un noeud
-	int nelno = esup2[inode+1] - esup2[inode - 1+1];
-	return nelno;
-}
-int Connect_c::GetielemArNode(int inode, int ielno) {
-	// Retourne l'index de l'element autour d'un noeud
-	// ielno	: i element around that node you want to acces	(0 based integrer)
-	int ielem = esup1[esup2[inode] + ielno] -1;			
-	return ielem;
-}
-void Connect_c::ComputeGlobalConnectivity(Reader_c& read) {
-	cout << "Global Connectivity Starting" << endl;
-	Connect_c::InitializeGlobal(read);
-	Connect_c::Node2Elements(read);
-	Connect_c::Node2Nodes(read);
-	Connect_c::Element2Elements(read);
-	delete[] psup1;
-	delete[] psup2;
-	delete[] lpoin;
-}
-
-// ============================================= ZONE ELEMENTS CONNECTIVITY ================================================
-// === ELEMENT === 
-void Connect_c::Node2Elements(int izone) {
-	int mesup1 = 0;
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		mesup1 += vtklookup[ndime-2][vtk][1];
-	}
-
-	// Initializing esup and other parameters :
-	zone2esup2[izone] = new int[zone2nnode[izone] + 1]();
-	zone2esup1[izone] = new int[mesup1]();
-	int ipoil;
-	//
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nnode = vtklookup[ndime-2][vtk][1];
-		for (int inode = 0; inode < nnode; inode++) {
-			ipoil = elem2node[izone][ielem][inode] + 2; // elem2node en 0 base 
-			zone2esup2[izone][ipoil - 1] = zone2esup2[izone][ipoil - 1] + 1;
-		}
-	}
-	for (int ipoin = 2; ipoin <= zone2nnode[izone] + 1; ipoin++) {
-		zone2esup2[izone][ipoin - 1] = zone2esup2[izone][ipoin - 1] + zone2esup2[izone][ipoin - 1 - 1];
-	}
-	int ipoin, istor;
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nnode = vtklookup[ndime-2][vtk][1];
-
-		for (int inode = 0; inode <= nnode - 1; inode++) {
-			ipoin = elem2node[izone][ielem][inode] + 1; // elem2node en 0 base
-			istor = zone2esup2[izone][ipoin - 1] + 1;
-			zone2esup2[izone][ipoin - 1] = istor;
-			zone2esup1[izone][istor - 1] = ielem + 1;
-		}
-	}
-	for (int ipoin = zone2nnode[izone] + 1; ipoin >= 2; --ipoin) {
-		zone2esup2[izone][ipoin - 1] = zone2esup2[izone][ipoin - 1 - 1];
-	}
-	zone2esup2[izone][0] = 0;
-
-}
-void Connect_c::Node2Nodes(int izone) {
-	zone2lpoin[izone] = new int[zone2nnode[izone]]();
-	zone2psup2[izone] = new int[zone2nnode[izone] + 1]();
-	int istor{ 0 };
-	for (int ipoin = 1; ipoin <= zone2nnode[izone]; ipoin++) {
-		for (int iesup = zone2esup2[izone][ipoin - 1] + 1; iesup <= zone2esup2[izone][ipoin + 1 - 1]; iesup++) {
-			int ielem = zone2esup1[izone][iesup - 1] - 1;
-			int vtk = elem2vtk[izone][ielem];
-			int nnode = vtklookup[ndime-2][vtk][1];
-			for (int inode = 1; inode <= nnode; inode++) {
-				int jpoin = elem2node[izone][ielem][inode - 1] + 1; // elem2node en 9 base
-				if (jpoin != ipoin && zone2lpoin[izone][jpoin - 1] != ipoin) {
-					istor = istor + 1;
-					zone2lpoin[izone][jpoin - 1] = ipoin;
-				}
-			}
-		}
-		zone2psup2[izone][ipoin + 1 - 1] = istor;
-	}
-
-	zone2lpoin[izone] = new int[zone2nnode[izone]]();
-	istor = 0; int jpoin = 0;
-	int mpsup = zone2psup2[izone][zone2nnode[izone]];
-	zone2psup1[izone] = new int[mpsup]();
-	for (int ipoin = 1; ipoin <= zone2nnode[izone]; ipoin++) {
-		for (int iesup = zone2esup2[izone][ipoin - 1] + 1; iesup <= zone2esup2[izone][ipoin + 1 - 1]; iesup++) {
-			int ielem = zone2esup1[izone][iesup - 1] - 1;																		// 1 based
-			int vtk = elem2vtk[izone][ielem];
-			int nnode = vtklookup[ndime-2][vtk][1];
-			for (int inode = 1; inode <= nnode; inode++) {
-				jpoin = elem2node[izone][ielem][inode - 1] + 1; // elem2node en 9 base
-				if (jpoin != ipoin && zone2lpoin[izone][jpoin - 1] != ipoin) {
-					istor = istor + 1;
-					zone2psup1[izone][istor - 1] = jpoin;
-					zone2lpoin[izone][jpoin - 1] = ipoin;
-				}
-			}
-		}
-	}
-}
-void Connect_c::Element2Elements(int izone) {
-	elem2elem[izone] = new int* [zone2ncell[izone]];
+void Connect_c::Element2Elements() {
+	elem2elem = new int* [ncell];
 
 	vector<int> lhelp;
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
+	for (int ielem = 0; ielem < ncell; ielem++) {
+		int vtk = elem2vtk[ielem];
 		int nfael = vtklookup[ndime-2][vtk][0];
-		elem2elem[izone][ielem] = new int[nfael]();
+		elem2elem[ielem] = new int[nfael]();
 		for (int ifael = 0; ifael <= nfael - 1; ifael++) {
 			int nnofa = vtk2nnofa[vtk][ifael];
 			lhelp.resize(nnofa);															// vecteur a enlever
 
 			for (int inofa = 0; inofa <= nnofa - 1; inofa++) {
 				int ilpofa = vtk2lpofa[vtk][ifael][inofa] + 1;
-				lhelp[inofa] = elem2node[izone][ielem][ilpofa - 1] + 1;	// elem2node en 0 base 
-				zone2lpoin[izone][lhelp[inofa] - 1] = 1;
+				lhelp[inofa] = elem2node[ielem][ilpofa - 1] + 1;	// elem2node en 0 base 
+				lpoin[lhelp[inofa] - 1] = 1;
 			}
 			int ipoin = lhelp[0] - 1;
-			for (int istor = zone2esup2[izone][ipoin]; istor <= zone2esup2[izone][ipoin + 1] - 1; istor++) {
-				int jelem = zone2esup1[izone][istor];
-				int jvtk = elem2vtk[izone][jelem - 1];
+			for (int istor = esup2[ipoin]; istor <= esup2[ipoin + 1] - 1; istor++) {
+				int jelem = esup1[istor];
+				int jvtk = elem2vtk[jelem - 1];
 				int nfael = vtklookup[ndime-2][jvtk][0];
 				if (jelem != ielem + 1) {
 					for (int jfael = 0; jfael <= nfael - 1; jfael++) {
@@ -442,21 +236,21 @@ void Connect_c::Element2Elements(int izone) {
 						if (nnofj == nnofa) {
 							int icoun = 0;
 							for (int jnofa = 0; jnofa <= nnofa - 1; jnofa++) {
-								int jpoin = elem2node[izone][jelem - 1][vtk2lpofa[jvtk][jfael][jnofa] + 1 - 1] + 1; // elem2node en 0 base 
-								icoun = icoun + zone2lpoin[izone][jpoin - 1];
+								int jpoin = elem2node[jelem - 1][vtk2lpofa[jvtk][jfael][jnofa] + 1 - 1] + 1; // elem2node en 0 base 
+								icoun = icoun + lpoin[jpoin - 1];
 							}
 							if (icoun == nnofa) {
-								elem2elem[izone][ielem][ifael] = jelem - 1;
+								elem2elem[ielem][ifael] = jelem - 1;
 
 							}
 						}
 					}
 				}
 			}
-			int vtk2 = elem2vtk[izone][ielem];
+			int vtk2 = elem2vtk[ielem];
 			nnofa = vtk2nnofa[vtk2][ifael];
 			for (int inova = 0; inova <= nnofa - 1; inova++) {
-				zone2lpoin[izone][lhelp[inova] - 1] = 0;
+				lpoin[lhelp[inova] - 1] = 0;
 			}
 		}
 	}
@@ -464,39 +258,39 @@ void Connect_c::Element2Elements(int izone) {
 }
 
 // ==== FACE ====
-void Connect_c::Findnface(int izone) {
+void Connect_c::Findnface() {
 	int nfaeltot = 0;
-	for (int ielem = 0; ielem < zone2nelem[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
+	for (int ielem = 0; ielem < nelem; ielem++) {
+		int vtk = elem2vtk[ielem];
 		int nfael = vtklookup[ndime-2][vtk][0];
 		nfaeltot += nfael;
 	}
-	int ngcell = zone2nbound[izone] + zone2nbelem[izone];
-	zone2nface[izone] = 0.5 * (nfaeltot - ngcell) + ngcell;
-	//cout << "nface = " << zone2nface[izone] << endl;
+	int ngcell = nbound + nzelem;
+	nface = 0.5 * (nfaeltot - ngcell) + ngcell;
+	//cout << "nface = " << nface << endl;
 }
-void Connect_c::Face2ElementsNodes(int izone) {
+void Connect_c::Face2ElementsNodes() {
 	
-	face2elem[izone] = new int* [zone2nface[izone]];
-	face2node[izone] = new int* [zone2nface[izone]];
-	face2fael[izone] = new int* [zone2nface[izone]];
-	face2Nbr_of_node[izone] = new int [zone2nface[izone]];
+	face2elem = new int* [nface];
+	face2node = new int* [nface];
+	face2fael = new int* [nface];
+	//face2Nbr_of_node = new int [nface];
 
 	// Creation d'une matrice d'aide identique a elem2elem
 	int** elem2elemHelp;
-	elem2elemHelp = new int* [zone2ncell[izone]];
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
+	elem2elemHelp = new int* [ncell];
+	for (int ielem = 0; ielem < ncell; ielem++) {
+		int vtk = elem2vtk[ielem];
 		int nfael = vtklookup[ndime-2][vtk][0];
 		elem2elemHelp[ielem] = new int[nfael];
 		for (int ifael = 0; ifael < nfael; ifael++) {
-			elem2elemHelp[ielem][ifael] = elem2elem[izone][ielem][ifael];
+			elem2elemHelp[ielem][ifael] = elem2elem[ielem][ifael];
 		}
 	}
 	
     int iface = 0; int LeftCheck = 1;
-	for (int ielem = 0; ielem < zone2nelem[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
+	for (int ielem = 0; ielem < nelem; ielem++) {
+		int vtk = elem2vtk[ielem];
 		int nfael = vtklookup[ndime-2][vtk][0];
 
 		for (int ifael = 0; ifael <= nfael - 1; ifael++) {
@@ -506,21 +300,21 @@ void Connect_c::Face2ElementsNodes(int izone) {
 			if (jelem != -2) {
 
 				int nnofa = vtk2nnofa[vtk][ifael];
-				face2node[izone][iface] = new int[nnofa];
-				face2Nbr_of_node[izone][iface] = nnofa;
-				face2elem[izone][iface] = new int[2];
-				face2fael[izone][iface] = new int[2];
+				face2node[iface] = new int[nnofa];
+				//face2Nbr_of_node[iface] = nnofa;
+				face2elem[iface] = new int[2];
+				face2fael[iface] = new int[2];
 
 				if (ielem < jelem) {         // element i est a gauche de j  // 1 based
 					LeftCheck = 1;
 					
 					for (int inofa = 0; inofa < nnofa; inofa++) {	
 						int inoel = vtk2lpofa[vtk][ifael][inofa];
-						face2node[izone][iface][inofa] = elem2node[izone][ielem][inoel];
+						face2node[iface][inofa] = elem2node[ielem][inoel];
 					}
-					face2elem[izone][iface][0] = ielem;
-					face2elem[izone][iface][1] = jelem;
-					face2fael[izone][iface][0] = ifael;
+					face2elem[iface][0] = ielem;
+					face2elem[iface][1] = jelem;
+					face2fael[iface][0] = ifael;
 					iface++;
 				}
 				else if (ielem > jelem) {      // element i est a droite de j    // 1 based
@@ -528,15 +322,15 @@ void Connect_c::Face2ElementsNodes(int izone) {
 
 					for (int inofa = 0; inofa < nnofa; inofa++) {
 						int inoel = vtk2lpofa[vtk][ifael][inofa];
-						face2node[izone][iface][inofa] = elem2node[izone][ielem][inoel];
+						face2node[iface][inofa] = elem2node[ielem][inoel];
 					}
-					face2elem[izone][iface][0] = jelem;
-					face2elem[izone][iface][1] = ielem;
-					face2fael[izone][iface][1] = ifael;
+					face2elem[iface][0] = jelem;
+					face2elem[iface][1] = ielem;
+					face2fael[iface][1] = ifael;
 					iface++;
 				}
 
-				int jvtk = elem2vtk[izone][jelem];
+				int jvtk = elem2vtk[jelem];
 				int njfael = vtklookup[ndime-2][jvtk][0];
 
 				for (int jfael = 0; jfael < njfael; jfael++) {
@@ -544,13 +338,13 @@ void Connect_c::Face2ElementsNodes(int izone) {
 					if (kelem == ielem) {
 						elem2elemHelp[jelem][jfael] = -2; 
 
-						face2fael[izone][iface - 1][LeftCheck] = jfael;
+						face2fael[iface - 1][LeftCheck] = jfael;
 
 						//if (LeftCheck == 1) { // element i est a gauche de k 
-						//	face2fael[izone][iface - 1][1] = jfael;
+						//	face2fael[iface - 1][1] = jfael;
 						//}
 						//else {
-						//	face2fael[izone][iface - 1][0] = jfael;
+						//	face2fael[iface - 1][0] = jfael;
 						//}
 						break;
 					}
@@ -559,471 +353,58 @@ void Connect_c::Face2ElementsNodes(int izone) {
 		}
 	}
 	delete[] elem2elemHelp;
-	/*Display3DArray(face2fael, 0, zone2nface[0], 5, "face2fael");
-	Display3DArray(face2elem, 0, zone2nface[0], 5, "face2elem");*/
+	/*Display3DArray(face2fael, 0, nface[0], 5, "face2fael");
+	Display3DArray(face2elem, 0, nface[0], 5, "face2elem");*/
 
 }
-void Connect_c::Element2Faces(int izone) 
+void Connect_c::Element2Faces() 
 {
-	elem2face[izone] = new int* [zone2ncell[izone]];
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
+	elem2face = new int* [ncell];
+	for (int ielem = 0; ielem < ncell; ielem++) {
+		int vtk = elem2vtk[ielem];
 		int nfael = vtklookup[ndime-2][vtk][0];
-		elem2face[izone][ielem] = new int[nfael];
+		elem2face[ielem] = new int[nfael];
 	}
 	
-	for (int iface = 0; iface < zone2nface[izone]; iface++) 
+	for (int iface = 0; iface < nface; iface++) 
 	{
-		int ielemL = face2elem[izone][iface][0];
-		int ielemR = face2elem[izone][iface][1];
-		int ifaelL = face2fael[izone][iface][0];
-		int ifaelR = face2fael[izone][iface][1];
-		elem2face[izone][ielemL][ifaelL] = iface;
-		elem2face[izone][ielemR][ifaelR] = iface;
+		int ielemL = face2elem[iface][0];
+		int ielemR = face2elem[iface][1];
+		int ifaelL = face2fael[iface][0];
+		int ifaelR = face2fael[iface][1];
+		elem2face[ielemL][ifaelL] = iface;
+		elem2face[ielemR][ifaelR] = iface;
 	}
 }
 void Connect_c::ComputeLocalConnectivity() 
 {
 	cout << "Local Connectivity Starting" << endl;
-	zone2esup1	= new int* [nzone];
-	zone2esup2	= new int* [nzone];
-	zone2psup1	= new int* [nzone];
-	zone2psup2	= new int* [nzone];
-	zone2lpoin	= new int* [nzone];
-	elem2elem	= new int** [nzone];
-	zone2nface	= new int [nzone];
-	face2elem	= new int** [nzone];
-	face2node	= new int** [nzone];
-	face2Nbr_of_node	= new int* [nzone];
-	face2fael	= new int** [nzone];
-	elem2face	= new int** [nzone];
+	
 
-	for (int izone = 0; izone < nzone; izone++) {
-		Connect_c::Node2Elements(izone);
-		Connect_c::Node2Nodes(izone);
-		Connect_c::Element2Elements(izone);
-		Connect_c::Findnface(izone);
-		Connect_c::Face2ElementsNodes(izone);
-		Connect_c::Element2Faces(izone);
-	}
+	
+	Connect_c::Node2Elements();
+	Connect_c::Node2Nodes();
+	Connect_c::Element2Elements();
+	Connect_c::Findnface();
+	Connect_c::Face2ElementsNodes();
+	Connect_c::Element2Faces();
+	
 
-	delete[] zone2esup1;
-	delete[] zone2esup2;
-	delete[] zone2psup1;
-	delete[] zone2psup2;
-	delete[] zone2lpoin;
+	delete[] esup1;
+	delete[] esup2;
+	delete[] psup1;
+	delete[] psup2;
+	delete[] lpoin;
 
-	/*Display3DArray(face2node, 0, zone2nface[0], 5, "face2node");
-	Display3DArray(face2elem, 0, zone2nface[0], 2, "face2elem");
-	Display3DArray(face2fael, 0, zone2nface[0], 2, "face2fael");*/
+	/*Display3DArray(face2node, 0, nface[0], 5, "face2node");
+	Display3DArray(face2elem, 0, nface[0], 2, "face2elem");
+	Display3DArray(face2fael, 0, nface[0], 2, "face2fael");*/
 }
 
 
 // ================================================= ZONES CONNECTIVITY ====================================================
-void Connect_c::Findnzone() {
-	// A SUPPRIMER
-	nzone = 1;
-	for (int ielem = 0; ielem < nelem_g; ielem++) {
-		int izone = elem2zone[ielem];
-		if (izone + 1 > nzone) {
-			nzone = izone + 1;
-		}
-	}
-}
-void Connect_c::InitializeLocal() {
-	zone2nelem = new int[nzone];
-	zone2nnode = new int[nzone];
-	checkzone = new int[nzone];
-	for (int izone = 0; izone < nzone; izone++) {
-		zone2nelem[izone] = 0;
-	}
-
-	elemglobal2local = new int* [nelem_g];
-	for (int ielem_g = 0; ielem_g < nelem_g; ielem_g++) {
-		elemglobal2local[ielem_g] = new int[2];
-	}
-
-	nodeglobal2local = new int* [nnode_g];
-	for (int inode_g = 0; inode_g < nnode_g; inode_g++) {
-		nodeglobal2local[inode_g] = new int[nzone];
-		for (int izone = 0; izone < nzone; izone++) {
-			nodeglobal2local[inode_g][izone] = -1;
-		}
-	}
-
-}
-void Connect_c::Zone2nnode() {
-	for (int izone = 0; izone < nzone; izone++) {
-		checkzone[izone] = 0;
-		zone2nnode[izone] = 0;
-	}
-
-	int ielem_g, izone, nelno;
-	for (int inode = 0; inode < nnode_g; inode++) {
-		nelno = GetnelemArNode(inode);
-
-		for (int ielno = 0; ielno < nelno; ielno++) {
-			ielem_g = GetielemArNode(inode, ielno);
-			izone = elem2zone[ielem_g];
-			//Verifie si on n�a pas deja compter le n�ud dans la zone:
-			if (ielem_g < nelem_g && checkzone[izone] == 0) {
-				zone2nnode[izone] += 1;
-				checkzone[izone] = 1;
-			}
-		}
-		// Reset de checkzone
-		for (int izone = 0; izone < nzone; izone++) {
-			checkzone[izone] = 0;
-		}
-	}
-}
-void Connect_c::Zone2nelem() {
-	for (int ielem = 0; ielem < nelem_g; ielem++) {
-		// Jusqu'au ghostcell p-e
-		int izone = elem2zone[ielem];
-		zone2nelem[izone] += 1;
-
-	}
-}
-void Connect_c::Zone2Nodes() {
-	int* indexzone;
-	indexzone = new int[nzone];
-	zone2node = new int*[nzone];
-	for (int izone = 0; izone < nzone; izone++) {
-		checkzone[izone] = 0;
-		indexzone[izone] = 0;
-		zone2node[izone] = new int[zone2nnode[izone]];
-	}
-
-	int ielem_g, izone, nelno, idz;
-	for (int inode = 0; inode < nnode_g; inode++) {
-		nelno = GetnelemArNode(inode);
-
-		for (int ielno = 0; ielno < nelno; ielno++) {
-			ielem_g = GetielemArNode(inode, ielno);
-			izone = elem2zone[ielem_g];
-			//Verifie si on n�a pas deja compter le n�ud dans la zone:
-			if (ielem_g < nelem_g && checkzone[izone] == 0 ) {
-				idz = indexzone[izone];
-				zone2node[izone][idz] = inode;
-				indexzone[izone] += 1;
-				checkzone[izone] = 1;
-			}
-		}
-		// Reset de checkzone
-		for (int izone = 0; izone < nzone; izone++) {
-			checkzone[izone] = 0;
-		}
-	}
-	delete[] indexzone;
-}
-void Connect_c::Zone2Elements() {
-	//Initialization:
-	int* indexzone; indexzone = new int[nzone];
-	zone2elem = new int*[nzone];
-	for (int izone = 0; izone < nzone; izone++) {
-		zone2elem[izone] = new int[zone2nelem[izone]];
-		indexzone[izone] = 0;
-	}
-
-	for (int ielem = 0; ielem < nelem_g; ielem++) {
-		int izone = elem2zone[ielem];
-		int idz = indexzone[izone];
-		zone2elem[izone][idz] = ielem;
-		indexzone[izone] += 1;
-	}
-	delete[] indexzone;
-}
-void Connect_c::NodeGlobal2Local() {
-	for (int izone = 0; izone < nzone; izone++) {
-		for (int inode = 0; inode < zone2nnode[izone]; inode++) {
-			int inode_g = zone2node[izone][inode];
-			nodeglobal2local[inode_g][izone] = inode;
-		}
-	}
-}
-void Connect_c::ElementGlobal2Local() {
-	for (int izone = 0; izone < nzone; izone++) {
-		for (int ielem = 0; ielem < zone2nelem[izone]; ielem++) {
-			int ielem_g = zone2elem[izone][ielem];
-			elemglobal2local[ielem_g][0] = ielem;
-			elemglobal2local[ielem_g][1] = izone;
-		}
-	}
-}
-void Connect_c::Zone2Coord(Reader_c& read) {
-	zone2coord = new double** [nzone];
-	for (int izone = 0; izone < nzone; izone++) {
-		zone2coord[izone] = new double* [zone2nnode[izone]];
-		for (int inode = 0; inode < zone2nnode[izone]; inode++) {
-			zone2coord[izone][inode] = new double[ndime];
-			int inode_g = zone2node[izone][inode];
-			for (int iD = 0; iD < ndime; iD++) {
-				zone2coord[izone][inode][iD] = read.coord[inode_g][iD];
-			}
-		}
-	}
-
-}
-void Connect_c::InitializeElem2Node(Reader_c& read) {
-	zone2boundIndex = new int* [nzone];
-	zone2nbelem = new int[nzone];
-	zone2nbound = new int[nzone];
-	zone2ncell = new int[nzone];
-	
-	
-	for (int izone = 0; izone < nzone; izone++) {
-		zone2boundIndex[izone] = new int[read.nbc + 1];
-		zone2boundIndex[izone][0] = zone2nelem[izone];
-		zone2nbelem[izone] = 0;
-		zone2nbound[izone] = 0;
-
-	}
-
-	// Calcul de Taille de belem2node --> zone2nbelem:
-	for (int ielem_g = 0; ielem_g < nelem_g; ielem_g++) {
-		int izone = elemglobal2local[ielem_g][1];
-		int vtk = read.elem2vtk[ielem_g];
-		int nfael = vtklookup[ndime-2][vtk][0];
-
-		for (int ifael = 0; ifael < nfael; ifael++) {
-			int jelem_g = elem2elem_g[ielem_g][ifael];
-
-			// Si jelem nest pas un ghostcell:
-			if (jelem_g < nelem_g) {
-				int jzone = elem2zone[jelem_g];
-				int jelem_z = elemglobal2local[jelem_g][0];
-
-				// Detection d'une frontiere auvec une autre zone:
-				if (jzone != izone) {
-					zone2nbelem[izone] += 1;
-				}
-			}
-		}
-	}
-	
-	// Calcul de Taille de boundary --> zone2nbound:
-	for (int ibc = 1; ibc < read.nbc + 1; ibc++) {
-		int ielem1 = read.BoundIndex[ibc - 1];
-		int ielem2 = read.BoundIndex[ibc];
-		for (int ighost = ielem1; ighost < ielem2; ighost++) {
-			int jelem = elem2elem_g[ighost][0];
-			int izone = elem2zone[jelem];			
-			zone2nbound[izone] += 1;
-		}
-		for (int izone = 0; izone < nzone; izone++) {
-			zone2boundIndex[izone][ibc] = zone2nelem[izone] + zone2nbound[izone];
-		}	
-	}
-
-	// ============================= Initialization ============================================
-
-	// Initialisation de elem2node, elem2vtk
-	elem2node = new int** [nzone]; 
-	elem2vtk = new int* [nzone];
-	for (int izone = 0; izone < nzone; izone++) {
-		zone2ncell[izone] = zone2nelem[izone] + zone2nbound[izone] + zone2nbelem[izone];
-		elem2node[izone] = new int* [zone2ncell[izone]];
-		elem2vtk[izone] = new int[zone2ncell[izone]];
-		for (int ielem = 0; ielem < zone2nelem[izone]; ielem++) {
-			int vtk = read.elem2vtk[ielem];
-			int nnoel = vtklookup[ndime-2][vtk][1];
-			elem2node[izone][ielem] = new int[nnoel];
-			elem2vtk[izone][ielem] = vtk;
-		}
-	}
-}
-void Connect_c::Zone2Bound(Reader_c& read) {
-	// VOir avec Paul, BoundIndex est en 1 based mais pk
-	int* indexzone; indexzone = new int[nzone];
-	for (int izone = 0; izone < nzone; izone++) {
-		indexzone[izone] = zone2nelem[izone];
-	}
-
-	for (int ibc = 1; ibc < read.nbc+1; ibc++) {
-		int ielem1 = read.BoundIndex[ibc-1];
-		int ielem2 = read.BoundIndex[ibc];
-		for (int ighost = ielem1; ighost < ielem2; ighost++) {
-			int vtk = read.elem2vtk[ighost];
-			int nnoel = vtklookup[ndime-2][vtk][1]; 
-			int jelem = elem2elem_g[ighost][0];
-			int izone = elem2zone[jelem];
-			int idz = indexzone[izone];
-			elem2node[izone][idz] = new int[nnoel];
-		
-			for (int inoel = 0; inoel < nnoel; inoel++) {
-				int inode_g = read.elem2node[ighost][inoel]; // 
-				int inode_z = nodeglobal2local[inode_g][izone];
-				elem2node[izone][idz][inoel] = inode_z;
-				
-			}
-			elem2vtk[izone][idz] = vtk;
-			indexzone[izone] += 1;
-		}
-		// cout << "ielem1 = " << ielem1 << endl;
-		// cout << "ielem2 = " << ielem2 << endl;
-	}
-	//cout << read.BoundIndex[0] << " " << read.BoundIndex[1] << " " << read.BoundIndex[2] << " " << read.BoundIndex[3] << endl;
-	delete[] indexzone;
-
-}
-void Connect_c::Element2Nodes(Reader_c& read) 
-{	
-	Connect_c::InitializeElem2Node(read);
-	Connect_c::Zone2Bound(read);
-
-	// Initialization:
-	int** izone2jzone;
-	int* indexzone;
-	indexzone = new int[nzone];
-	belem2node = new int**[nzone];
-	izone2jzone = new int* [nzone];
-	zone2zoneIndex = new int*[nzone];
-	zone2markelem = new int*[nzone];
-	zelem2jelem = new int*[nzone];
-	//zone2idmark.resize(nzone);
-
-	// Creation de izone2jzone
-	for (int izone = 0; izone < nzone; izone++) {
-		zone2markelem[izone] = new int[nzone - 1];
-		zone2zoneIndex[izone] = new int[nzone];
-		zone2zoneIndex[izone][0] = zone2nelem[izone] + zone2nbound[izone];
-		//zone2idmark[izone].resize(nzone - 1);
-		izone2jzone[izone] = new int[nzone];
-		belem2node[izone] = new int*[zone2nbelem[izone]];
-		zelem2jelem[izone] = new int[zone2nbelem[izone]];
-		indexzone[izone] = 0;
-		int idz = 0;
-		for (int jzone = 0; jzone < nzone; jzone++) {
-			if (izone != jzone) {
-				izone2jzone[izone][jzone] = idz;
-				idz += 1;
-			}
-			else {
-				izone2jzone[izone][jzone] = -1;
-			}
-			//zone2zoneIndex[izone][jzone] = 0;
-		}
-
-		for (int ijzone = 0; ijzone < nzone - 1; ijzone++) {
-			zone2markelem[izone][ijzone] = 0;
-		}
-	}
-
-	// Debut du calcul:
-	for (int ielem_g = 0; ielem_g < nelem_g; ielem_g++) {
-		int ielem_z = elemglobal2local[ielem_g][0];
-		int izone = elemglobal2local[ielem_g][1];
-		int vtk = read.elem2vtk[ielem_g];
-		int nnoel = vtklookup[ndime-2][vtk][1];
-		int nfael = vtklookup[ndime-2][vtk][0];
-
-		for (int inoel = 0; inoel < nnoel; inoel++) {
-			int inode_g = read.elem2node[ielem_g][inoel]; 
-			int inode_z = nodeglobal2local[inode_g][izone];
-			elem2node[izone][ielem_z][inoel] = inode_z;
-		}
-
-		for (int ifael = 0; ifael < nfael; ifael++) {
-			int jelem_g = elem2elem_g[ielem_g][ifael];
-
-			// Si jelem nest pas un ghostcell:
-			if (jelem_g < nelem_g) {
-				int jzone = elem2zone[jelem_g];
-				int jelem_z = elemglobal2local[jelem_g][0];
-
-				// Detection d'une frontiere auvec une autre zone:
-				if (jzone != izone) {
-					int idz = indexzone[izone];
-					int ighost = idz + zone2nelem[izone] + zone2nbound[izone];
-					int nnofa = vtk2nnofa[vtk][ifael];
-					int fvtk = vtk2facevtk[vtk][ifael];
-					belem2node[izone][idz] = new int[nnofa + 2];
-					elem2node[izone][ighost] = new int[nnofa + 1];
-					belem2node[izone][idz][0] = fvtk; // vtk de la face
-					belem2node[izone][idz][nnofa + 1] = jelem_z;
-					elem2vtk[izone][ighost] = fvtk;
-					elem2node[izone][ighost][nnofa] = jelem_z; 
-					//zelem2jelem[izone][ighost] = jelem_z;
-					int ijzone = izone2jzone[izone][jzone];
-					zone2markelem[izone][ijzone] += 1;
-					//zone2idmark[izone][ijzone].push_back(idz);
-
-					for (int inofa = 0; inofa < nnofa; inofa++) {
-						int inoel = vtk2lpofa[vtk][ifael][inofa]; // Getlpofa()
-						int inode_g = read.elem2node[ielem_g][inoel]; // 
-						int inode_z = nodeglobal2local[inode_g][izone];
-						belem2node[izone][idz][inofa + 1] = inode_z;
-						elem2node[izone][ighost][inofa] = inode_z;
-					}
-					indexzone[izone] += 1;	
-				}
-			}
-		}
-
-		for (int izone = 0; izone < nzone; izone++){
-			for (int ijzone = 0; ijzone < nzone - 1; ijzone++){
-				int njzone = zone2markelem[izone][ijzone];
-				zone2zoneIndex[izone][ijzone+1] = zone2zoneIndex[izone][ijzone] + njzone;
-			}
-			
-		}
-	}
-	delete[] indexzone;
-}
-void Connect_c::Zone2Zones() 
-{
-	// Initialization:
-	zone2zone = new int* [nzone];
-	zone2ijzone = new int* [nzone];
-	for (int izone = 0; izone < nzone; izone++) {
-		zone2zone[izone] = new int[nzone];
-		zone2ijzone[izone] = new int[nzone - 1];
-		int ijzone = 0;
-		for (int jzone = 0; jzone < nzone; jzone++) {
-			zone2zone[izone][jzone] = -1;
-			if (izone != jzone) {
-				zone2ijzone[izone][ijzone] = jzone;
-				ijzone += 1;
-			}
-		}
-	}
-	
-	for (int izone = 0; izone < nzone; izone++) {
-		int istep = 0;
-		for (int ijzone = 0; ijzone < nzone - 1; ijzone++) {
-			int jzone = zone2ijzone[izone][ijzone];
-			int nmark = zone2markelem[izone][ijzone];
-			if (nmark > 0) {
-				zone2zone[izone][istep] = jzone;
-				istep += 1;
-			}
-		}
-	}
-
-	/*Display2DArray(zone2markelem, nzone, nzone - 1, "zone2markelem");
-	Display2DArray(zone2ijzone, nzone, nzone - 1, "zone2ijzone");
-	Display2DArray(zone2zone, nzone, nzone, "zone2zone");*/
-}
 
 
-void Connect_c::ComputeZoneConnectivity(Reader_c& read) {
-	Connect_c::Findnzone();
-	Connect_c::InitializeLocal();
-	Connect_c::Zone2nnode();
-	Connect_c::Zone2nelem();
-	Connect_c::Zone2Nodes();
-	Connect_c::Zone2Elements();
-	Connect_c::NodeGlobal2Local();
-	Connect_c::ElementGlobal2Local();
-	Connect_c::Zone2Coord(read);
-	Connect_c::Element2Nodes(read);
-	Connect_c::Zone2Zones();
-	delete[] zone2node;
-	delete[] zone2elem;
-	delete[] nodeglobal2local;
-	delete[] elemglobal2local;
-}
 
 
 // ================================================= OTHER FUNCTION MEMBERS ====================================================
