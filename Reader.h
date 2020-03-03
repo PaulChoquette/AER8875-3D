@@ -15,7 +15,7 @@ using namespace std;
 class Solver_c;
 class Reader_c {
 	public:
-		//Read Files
+		//Read Global Files
 		ifstream file;
 		int linen;
 		string line;
@@ -39,6 +39,22 @@ class Reader_c {
 		void Fill_BC_E2N_VTK(const char* cline, int bc);
 		double** Fill_coord(const char* cline);
 		void check();
+
+		//Local Only variables
+		int zoneid, nzone, zlinen, znl, nzelem, z_nelem;
+		int z_e2n_counter;
+		int** pre_zelem2jelem;
+		int* zelem2jelem, *zoneIndex;
+		int*** z_elem2node;
+		int** z_elem2vtk;
+		int* z_nelemv;
+
+		string* zone2tag;
+		
+		void read_file_local(string filename);
+		void Fill_ZN_E2N_VTK(const char* cline, int zoneid);
+
+
 		//Write SU2++ file
 		void write_file(Reader_c& read, Solver_c& solve, int izone);
 		void WriteAllZoneFile(Reader_c& read,Solver_c& solve );

@@ -20,13 +20,14 @@
 using namespace std;
 
 int main() {
-	cout << "Executeble 2 Starting ..." << endl;
+	cout << "Executable 2 Starting ..." << endl;
 
 	// =================================== EXECUTABLE 2 ====================================================
 	Reader_c FileContents;
 	Solver_c solve;
 	solve.cfl = 1.0;
-	FileContents.read_file("Zone0.su2");
+	FileContents.read_file_local("Zone0.su2");
+	//FileContents.check();
 	//solve.ComputeLocalConnectivity();
 
 	// METRIC
