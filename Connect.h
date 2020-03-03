@@ -21,9 +21,8 @@ public:
 
 
 	// Integrer :
-	int nelem, nnode, nzelem, nbound, ncell, nface;
+	int nelem, nnode, nzelem, nbound, nhalo, ncell, nface;
 	int nzone, ndime, mesup1, mpsup, neind;
-	int nelem_g, nnode_g, ncell_g;
 	// 1D Array of Integrer :
 	int* esup2; int* esup1; int* psup1; int* psup2; int* lpoin;
 
@@ -31,7 +30,7 @@ public:
 	int** face2Nbr_of_node;
 	int** vtk2nnofa; int** vtk2facevtk;
 
-	int* elem2vtk; int* zelem2jelem; int* boundIndex; int* zoneIndex;
+	int* elem2vtk; int* zelem2jelem;
 	// 2D Array of Integrer :
 	int** elem2node; int*** vtk2lpofa; int** elem2elem; int** face2elem; int** face2node; int** face2fael; int** elem2face;
 	// Double :
@@ -39,27 +38,26 @@ public:
 	// 1D Array of Double :
 
 	// 2D Array of Double :
-
 	// 3D Array of Double :
-	double** coord;
+
 
 	// Vector
 	vector<vector<vector<int>>> zone2idmark;
 
 	// =========================================== CONNECTIVITY FUNCTION MEMBERS ============================================
 	// ELEMENTS CONNECTIVITY:
-	void InitializeGlobal();
+	void InitializeGlobal(Reader_c& read);
 
 	// ZONE ELEMENTS CONNECTIVITY:
-	void Node2Elements();
-	void Node2Nodes();
-	void Element2Elements();
+	void Node2Elements(Reader_c& read);
+	void Node2Nodes(Reader_c& read);
+	void Element2Elements(Reader_c& read);
 
 	// FACES CONNECTIVITY:
-	void Findnface();
-	void Face2ElementsNodes();
-	void Element2Faces();
-	void ComputeLocalConnectivity();
+	void Findnface(Reader_c& read);
+	void Face2ElementsNodes(Reader_c& read);
+	void Element2Faces(Reader_c& read);
+	void ComputeLocalConnectivity(Reader_c& read);
 
 
 

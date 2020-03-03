@@ -9,7 +9,7 @@
 using namespace std;
 
 void Reader_c::read_file_local(string filename) {
-	cout << "Reading of Local SU2 Starting ..." << endl;
+	cout << "Reading of Local SU2 \tSTARTING...";
 	//Initialize mesh constants
 	ndime = 0; nelem = 0; npoint = 0; nhalo = 0;
 	ncell = 0;
@@ -35,7 +35,6 @@ void Reader_c::read_file_local(string filename) {
 			{
 				//Read number of elements in the mesh
 				nelem = Readcnst(line, "NELEM= ");
-
 				//Define elem2node matrix row size if nelem has been defined
 				//Store line where elem2node definitions start
 				if (nelem) {
@@ -103,18 +102,17 @@ void Reader_c::read_file_local(string filename) {
 			}
 
 			if (bclinen != 0) {
+
 				if (linen > bclinen && linen <= bclinen + bcnl) {
-					
 					//3 steps : step 0 is reading marker tag, step 1 is reading marker elemn and final step is filling bc_elem2nnode
 					if (step == 0) {
-						bound2tag[bc] = line.substr(12,8);
+						bound2tag[bc] = line.substr(12,8);	
 						step++;
 					}
 					else if (step == 1) {
 						bc_nelem = Readcnst(line, "MARKER_ELEMS= ");
 						bc_nelemv[bc] = bc_nelem;
 						BoundIndex[bc + 1] =BoundIndex[bc]+ bc_nelem;
-						cout << "bc_nelem " << bc_nelem << endl;
 						bcnl += bc_nelem; //add nelem since each elem has 1 line
 						bc_elem2vtk[bc] = new int [bc_nelem];
 						bc_elem2node[bc] = new int* [bc_nelem];
@@ -161,7 +159,6 @@ void Reader_c::read_file_local(string filename) {
 						z_nelem = Readcnst(line, "ZONE_ELEMS= ");
 						z_nelemv[zoneid] = z_nelem;
 						zoneIndex[zoneid + 1] = zoneIndex[zoneid] + z_nelem;
-						cout << "z_nelem " << z_nelem << endl;
 						znl += z_nelem; //add nelem since each elem has 1 line
 						z_elem2vtk[zoneid] = new int[z_nelem];
 						pre_zelem2jelem[zoneid] = new int[z_nelem];
@@ -181,11 +178,8 @@ void Reader_c::read_file_local(string filename) {
 						nhalo = bcnl - 2 * nbc;
 						nzelem = (znl - 2 * nzone);
 						ncell = nelem + nhalo + nzelem;
-						cout << "TEST Read 6.1 " << endl;
 						elem2node = new int* [ncell];
-						cout << "TEST Read 6.2 " << endl;
 						elem2vtk = new int[ncell];
-						cout << "TEST Read 6.3 " << endl;
 						zelem2jelem = new int[nzelem];
 
 						for (int ielem = 0; ielem < nelem; ielem++)
@@ -264,7 +258,6 @@ void Reader_c::read_file_local(string filename) {
 
 		delete[] z_elem2node;
 		delete[] z_elem2vtk;
-
 		delete[] elem2vtk_nh;
 
 		file.close();
@@ -272,7 +265,7 @@ void Reader_c::read_file_local(string filename) {
 	else {
 		//ERROR 1 : File could not be opened
 	}
-	cout << "... Reading ENDING" << endl;
+cout << "...............DONE" << endl;
 }
 
 bool Reader_c::OpenFile(string filename)

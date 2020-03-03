@@ -13,7 +13,7 @@
 #include "Connect.h"
 //#include "Metric.h"
 #include "Solver.h"
-
+//#include <metis.h>
 //#include "./include/TECXXX.h"
 
 
@@ -27,9 +27,9 @@ int main() {
 	Solver_c solve;
 	solve.cfl = 1.0;
 	FileContents.read_file_local("Zone0.su2");
-	//FileContents.check();
-	//solve.ComputeLocalConnectivity();
+	solve.ComputeLocalConnectivity(FileContents);
 
+    //FileContents.check();
 	// METRIC
 	cout << "\nMetriques ..." << endl;
 	//Metric_c metric;
@@ -41,7 +41,7 @@ int main() {
 	
 
 	
-	cout << "**************\nEnd\n**************\n";
+	cout << "**************\nEND\n**************\n";
 	double* p = new double[FileContents.nelem];
 	double* Rho = new double[FileContents.nelem];
 	double* u = new double[FileContents.nelem];
