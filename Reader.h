@@ -11,9 +11,8 @@
 #include <algorithm>
 #include <cmath>
 #include <functional> // std::divides
-#include "include/TECIO.h"
 using namespace std;
-
+class Solver_c;
 class Reader_c {
 	public:
 		//Read Files
@@ -32,7 +31,7 @@ class Reader_c {
 		int** bc_elem2vtk;
 		int bcnl, bc_nelem, bc_e2n_counter;
 		int* BoundIndex; int* bc_nelemv;
-
+		string* bound2tag;
 		bool OpenFile(string filename);
 		void read_file(string filename);
 		int Readcnst(const string& line, const string& tofind);
@@ -41,7 +40,8 @@ class Reader_c {
 		double** Fill_coord(const char* cline);
 		void check();
 		//Write SU2++ file
-		void write_file();
+		void write_file(Reader_c& read, Solver_c& solve, int izone);
+		void WriteAllZoneFile(Reader_c& read,Solver_c& solve );
 		//Write Tecplot output
 		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
 };

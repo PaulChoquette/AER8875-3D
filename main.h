@@ -42,11 +42,11 @@ using namespace std;
 //	{0,0},
 //};
 
-static unsigned vtklookup[2][15][2]{
+static int vtklookup[2][15][2]{
 	//First column is number of faces per shape and second column is number of points
 	//The array is the size of the SU2 VTK allowed indexes
 	// vtklookup[ndime-2][vtk][0 or 1]
-	//
+	// 
 	{
 	{0,0},
 	{0,0},
