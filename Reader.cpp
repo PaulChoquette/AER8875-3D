@@ -373,7 +373,7 @@ void Reader_c::write_file(Reader_c& read, Solver_c& solve, int izone) {
 		outfile << "% \n";
 		
 		outfile << "NMARK= " << read.nbc << "\n";
-		for (int ibc = 0; ibc < read.nbc -1; ibc++) { 
+		for (int ibc = 0; ibc < read.nbc; ibc++) { 
 			//int jzone = solve.zone2ijzone[izone][ijzone];
 			outfile << "MARKER_TAG= " << read.bound2tag[ibc] << "\n";
 			int nghost = solve.zone2boundIndex[izone][ibc + 1] - solve.zone2boundIndex[izone][ibc];
@@ -433,4 +433,68 @@ void Reader_c::WriteAllZoneFile(Reader_c& read,Solver_c& solve ){
 	for (int izone = 0; izone < solve.nzone; izone++) {
 		write_file(read, solve, izone);
 	}
+}
+
+void Reader_c::write_tecplot_METIS(Reader_c & read, Solver_c& solve){
+	
+
+	fstream outFile;
+	outFile.open("METISZONE.dat", ios::out);
+	outFile << "VARIABLES=\"X\",\"Y\",\"Z\",\"Zone\"" << endl;
+	//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
+	//Zone Carre pour le tecplot 
+
+	outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
+	outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
+	outFile << "DATAPACKING=BLOCK" << endl;
+	outFile << "VARLOCATION = ([4] = CELLCENTERED)" << endl;
+
+	string a;                      //ecrire les coordonnees de laxe x a la suite
+	for (int j = 0; j < solve.nnode_g; j++)
+	{
+		a = to_string(read.coord[j][0]);
+		outFile << a << endl;
+	}
+	string b;                      // ecrire les coordonnees de laxe y a la suite
+	for (int i = 0; i <= solve.nnode_g - 1; i++)
+	{
+		b = to_string(read.coord[i][1]);
+		outFile << b << endl;
+	}
+	string z;                      // ecrire les coordonnees de laxe y a la suite
+	for (int i = 0; i <= solve.nnode_g - 1; i++)
+	{
+		z = to_string(read.coord[i][2]);
+		outFile << z << endl;
+	}
+
+	// Zone
+	string m;
+	for (int j = 0; j <= solve.nelem_g - 1; j++)
+	{
+		m = to_string(solve.elem2zone[j]);
+		outFile << m << endl;
+	}
+
+		// Ecriture des noeuds de chaque elements pour les carres
+
+	for (int ielem = 0; ielem <= solve.nelem_g - 1; ielem++)
+	{
+		int vtk = read.elem2vtk[ielem];
+		int nnoel = vtklookup[ndime-2][vtk][1];
+		
+		for (int icol = 0; icol <= nnoel - 1; icol++)
+		{
+			string icols = to_string(read.elem2node[ielem][icol]+1);
+			outFile << icols << " ";
+		}
+		outFile << endl;
+		
+	}
+
+
+	outFile.close();
+
+
+
 }

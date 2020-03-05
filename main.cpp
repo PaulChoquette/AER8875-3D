@@ -37,6 +37,7 @@ int main() {
 	solve.ComputeMETIS(4, FileContents);
 	solve.ComputeZoneConnectivity(FileContents);
 	FileContents.WriteAllZoneFile(FileContents, solve);
+	FileContents.write_tecplot_METIS(FileContents,solve);
 
 	// =================================== EXECUTABLE 2 ====================================================
 

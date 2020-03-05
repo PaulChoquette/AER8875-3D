@@ -44,6 +44,7 @@ class Reader_c {
 		void WriteAllZoneFile(Reader_c& read,Solver_c& solve );
 		//Write Tecplot output
 		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
+		void write_tecplot_METIS(Reader_c & read, Solver_c& solve);
 };
 
 #endif

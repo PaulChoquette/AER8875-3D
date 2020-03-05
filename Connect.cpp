@@ -295,7 +295,7 @@ void Connect_c::ComputeMETIS(int nzoneMETIS, Reader_c& read) {
 
 	int* npart;
 	int objval;
-	int ncommon = 5; // Input qui depend du nombre de noeuds par face (nombre de noeud en commun)
+	int ncommon = 4; // Input qui depend du nombre de noeuds par face (nombre de noeud en commun)
 
 	npart = new int[nnode_g];
 
