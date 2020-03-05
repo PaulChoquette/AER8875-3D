@@ -96,7 +96,6 @@ void solver_c::Compute() {
         if (World.world_rank==0) {      //SUUUUUUUUUUUUUUUUUUUUUUUUUUUPER SKETCH!, SHOULD BE SUMMED WITH MPI
         printf("Iteration : %d, \tREL R :  %e, \tABS R :  %e\n",iteration,Residu/Residu_initial,Residu);
         }
-        
         if ((abs(Residu/Residu_initial)<convergeCrit)&&(abs(Old_Residu/Residu_initial)<convergeCrit)) {
             break;
         }
@@ -275,6 +274,11 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
 		}
 	}
     World.ExchangeCellOrder(localBorderID);
+
+    for (int izone=0;izone<World.ntgt;++izone) {
+        delete[] localBorderID[izone];
+	}
+    delete[] localBorderID;
     //To use ExchangeMetrics, a buffer needs to be created first...
     if (Order==2){World.ExchangeMetrics();}
     delete[] zone2nbelem;delete[] tgtList;
@@ -289,7 +293,6 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
         bound2tag[ibc] = Read.bound2tag[ibc];
     }
     BoundIndex[nbc] = Read.BoundIndex[nbc];
-    
 
     int indx1,indx2=BoundIndex[nbc];
     ZBoundIndex = new int[nzone+1];
@@ -299,19 +302,20 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
         ZBoundIndex[izone] = indx1;
 	}
     ZBoundIndex[nzone] = indx2;
-    elem2vtk = new int[nelem];
-    for(int ielem=0;ielem<nelem;++ielem) {
+    elem2vtk = new int[ncell];
+    for(int ielem=0;ielem<ncell;++ielem) {
         elem2vtk[ielem] = Read.elem2vtk[ielem];
     }
 }
 
 // exchange primitive values between zones
 void solver_c::ExchangePrimitive() {
-    int ibelemIndx; //Local boundary element index
+    int ielem,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
+    int Pre_ind=ndime-2;
     // Populate Tx Buffer
     for (int izone=0;izone<World.ntgt;++izone) {
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            ibelemIndx = 0;// TO EDIT 
+            ibelemIndx = ibelem + ZBoundIndex[izone];
             primitivesSendBuffer[izone][ibelem] = rho[ibelemIndx];
             primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = u[ibelemIndx];
             primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = v[ibelemIndx];
@@ -321,16 +325,37 @@ void solver_c::ExchangePrimitive() {
     }
     //Send & Store
     World.ExchangePrimitives(primitivesSendBuffer);
-    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
+//    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
+// PROBLEMATIC IF AN ELEMENTS SHARE TWO NEIGBHOORS IN THE SAME ZONE---------------------------------------------
+    for (int izone=0;izone<World.ntgt;++izone) {
+        BaseZoneIndxMin = ZBoundIndex[izone];
+        BaseZoneIndxMax = ZBoundIndex[izone+1];
+        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
+            ielem = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+	        Nbr_of_faceIndx = vtklookup[0][elem2vtk[ielem]][0]-1;
+            for (int jelem=Nbr_of_faceIndx;jelem>-1;--jelem) {
+                jbelemIndx = elem2elem[ielem][jelem];
+                if((BaseZoneIndxMin<=jbelemIndx)&&(jbelemIndx<BaseZoneIndxMax)) {
+                    break;
+                }
+            }
+            rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
+            u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
+            v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+            w[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
+            p[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
+        }
+    }
 }
 
 // exchange gradiant values between zones [Order 2 only]
 void solver_c::ExchangeGradiants() {
     int ibelemIndx; //Local boundary element index
     // Populate Tx Buffer
+    ibelemIndx = ZBoundIndex[nbc];
     for (int izone=0;izone<World.ntgt;++izone) {
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            ibelemIndx = 0;// TO EDIT 
             for (int idim;idim<3;++idim) {
                 gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5] = gradient[ibelemIndx][idim][0];
                 gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]] = gradient[ibelemIndx][idim][1];
@@ -338,6 +363,7 @@ void solver_c::ExchangeGradiants() {
                 gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*3] = gradient[ibelemIndx][idim][3];
                 gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*4] = gradient[ibelemIndx][idim][4];
             }
+            ++ibelemIndx;
         }
     }
     // Exchange Values
@@ -531,7 +557,7 @@ void solver_c::ComputeFluxO1() {
 
 // Computes grandients for order 2
 void solver_c::ComputeGrandientsNLimit() {
-    int ielem0,ielem1,locFaceIndx;
+    int ielem0,ielem1,locFaceIndx,Nbr_of_face,Pre_ind = ndime-2;
     double TempDemiSurVol,sign;       
     double delta_2,UminRho,UmaxRho,UminU,UmaxU,UminV,UmaxV,UminP,UmaxP,UminW,UmaxW; //Barth & Jespersen p:166 Blasek
     int locElem2;   //Index [0/1]
@@ -552,8 +578,8 @@ void solver_c::ComputeGrandientsNLimit() {
         UmaxP=p[ielem0];
 
         // Compute gradient
-        int MaxElemPoints=0;//Edit to good termination index
-        for (int ineighbor=0;ineighbor<MaxElemPoints;++ineighbor) {       //Edit to good termination index
+	    Nbr_of_face = vtklookup[Pre_ind][elem2vtk[ielem0]][0];
+        for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {       //Edit to good termination index
             ielem1 = elem2elem[ielem0][ineighbor];
             if (ielem1>-1) {
                 locFaceIndx = elem2face[ielem0][ineighbor];
@@ -601,7 +627,7 @@ void solver_c::ComputeGrandientsNLimit() {
         }
         
         // Compute Limiter  [NOTE THAT FOR EFFICIENCY AN ALTERNATIVE FORMULATION TO IFS SHOULD BE USED ONCE VALIDATED]
-        for (int ineighbor=0;ineighbor<MaxElemPoints;++ineighbor) {   //For surrounding elements
+        for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {   //For surrounding elements
             ielem1 = elem2elem[ielem0][ineighbor];
             locFaceIndx = elem2face[ielem0][ineighbor];
             locElem2 = int(face2elem[locFaceIndx][0]!=ielem0);        //TBD if still is valid, see index of cent2face below
@@ -674,8 +700,8 @@ for (int iface = 0; iface < nface; iface++) {
         int ielemL, ielemR;
         double rhoL, rhoR, uL, uR, vL, vR, wR, wL, pL, pR;
 
-        ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche  [-1 NEEDED!?!?!]
-        ielemR = face2elem[iface][1] - 1;		// numero de l'element droit   [-1 NEEDED!?!?!]
+        ielemL = face2elem[iface][0];
+        ielemR = face2elem[iface][1];
 
         //Update L/R values [order 2]
         rhoL = rho[ielemL]+gradient[ielemL][0][0]*face2elemCenter[iface][0][0]+gradient[ielemL][1][0]*face2elemCenter[iface][0][1]+gradient[ielemL][2][0]*face2elemCenter[iface][0][2];
@@ -698,8 +724,8 @@ void solver_c::ComputeFluxO2() {
         int ielemL, ielemR;
         double rhoL, rhoR, uL, uR, vL, vR, wR, wL, pL, pR;
 
-        ielemL = face2elem[iface][0] - 1;		// numero de l'element Gauche  [-1 NEEDED!?!?!]
-        ielemR = face2elem[iface][1] - 1;		// numero de l'element droit   [-1 NEEDED!?!?!]
+        ielemL = face2elem[iface][0];		
+        ielemR = face2elem[iface][1];
 
         //Update L/R values [order 2]
         rhoL = rho[ielemL]+gradient[ielemL][0][0]*face2elemCenter[iface][0][0]+gradient[ielemL][1][0]*face2elemCenter[iface][0][1]+gradient[ielemL][2][0]*face2elemCenter[iface][0][2];
@@ -877,7 +903,7 @@ void solver_c::ComputeResidu() {
         //Update it
         vtk = elem2vtk[ielem];
 	    Nbr_of_face = vtklookup[Pre_ind][vtk][0];
-        for (int jelemRel=0;jelemRel<1;++jelemRel) {
+        for (int jelemRel=0;jelemRel<Nbr_of_face;++jelemRel) {
             iface = elem2face[ielem][jelemRel];
             fluxSign = double(face2elem[iface][1]==ielem)*2.0-1.0;
             for (int iflux=0;iflux<5;++iflux) {

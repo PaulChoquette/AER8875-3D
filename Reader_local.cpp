@@ -113,7 +113,12 @@ void Reader_c::read_file_local(string filename) {
 						bc_nelem = Readcnst(line, "MARKER_ELEMS= ");
 						bc_nelemv[bc] = bc_nelem;
 						BoundIndex[bc + 1] =BoundIndex[bc]+ bc_nelem;
-						bcnl += bc_nelem; //add nelem since each elem has 1 line
+						if (bc_nelem==0){
+                            bcnl += 1; //has 1 line
+                        }
+                        else {
+                            bcnl += bc_nelem; //each elem has 1 line
+                        }
 						bc_elem2vtk[bc] = new int [bc_nelem];
 						bc_elem2node[bc] = new int* [bc_nelem];
 
@@ -122,7 +127,7 @@ void Reader_c::read_file_local(string filename) {
 					}
 					else if (step == 2) {
 						Fill_BC_E2N_VTK(cline, bc);
-						if (bc_e2n_counter == bc_nelem) {
+						if ((bc_e2n_counter == bc_nelem) || (bc_nelem == 0) && (bc_e2n_counter == 1) ){
 							bc++;
 							step = 0;
 						}

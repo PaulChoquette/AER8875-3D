@@ -35,8 +35,8 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     //Private variables
     int nbc;
     string* bound2tag;
-    int* BoundIndex;            //Limits of boundary cells id > [izone] = start, indexes up to n+1
-    int* ZBoundIndex;           //Limits of zone boundary cells id > [izone] = start, indexes up to n+1
+    int* BoundIndex;            //Limits of boundary cells id -> [izone] = start, indexes up to n+1
+    int* ZBoundIndex;           //Limits of zone boundary cells id -> [izone] = start, indexes up to n+1
     int ntgt;                   //Number of MPI targets
     int* elem2vtk;              //Overwrites the partially-deleted one in connect_c
     double** flux_c;            //convective flux  flux[iface][variable (rho=0,u,v,w,p=4)]

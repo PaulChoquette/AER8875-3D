@@ -217,10 +217,9 @@ $!Page
     }
 ### Frame Number 1 ###
 $!ReadDataSet  '|LFDSFN1|'
-  InitialPlotType = Cartesian3D
+  InitialPlotType = Cartesian2D
   IncludeText = No
   IncludeGeom = No
-  ResetStyle = No
   AssignStrandIDs = Yes
   VarLoadMode = ByName
   VarNameList = '|LFDSVL1|'
@@ -239,7 +238,7 @@ $!FrameLayout
 $!ThreeDAxis 
   AspectRatioLimit = 25
   BoxAspectRatioLimit = 25
-$!PlotType  = Cartesian3D
+$!PlotType  = Cartesian2D
 $!FrameName  = 'Frame 001'
 $!GlobalTime 
   SolutionTime = 0
@@ -251,7 +250,7 @@ $!GlobalRGB
   RangeMin = 0
   RangeMax = 1
 $!GlobalContour  1
-  Var = 4
+  Var = 5
   ColorMapName = 'Sequential - Viridis'
   Legend
     {
@@ -263,21 +262,34 @@ $!GlobalContour  1
     }
   ColorCutoff
     {
-    RangeMax = 1
+    RangeMin = 0.66935469413
+    RangeMax = 1.02139682445
     }
   ColorMapFilter
     {
     ContinuousColor
       {
-      CMin = 1
-      CMax = 1
+      CMin = 0.493333628969
+      CMax = 1.19741788961
       }
     }
 $!ContourLevels New
   ContourGroup = 1
   RawData
+13
+0.55
+0.6
+0.65
+0.7
+0.75
+0.8
+0.85
+0.9
+0.95
 1
-1
+1.05
+1.1
+1.15
 $!GlobalContour  2
   Var = 5
   ColorMapName = 'Sequential - Viridis'
@@ -300,8 +312,20 @@ $!GlobalContour  2
 $!ContourLevels New
   ContourGroup = 2
   RawData
+13
+0.55
+0.6
+0.65
+0.7
+0.75
+0.8
+0.85
+0.9
+0.95
 1
-1
+1.05
+1.1
+1.15
 $!GlobalContour  3
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -324,8 +348,17 @@ $!GlobalContour  3
 $!ContourLevels New
   ContourGroup = 3
   RawData
+10
+0.2
+0.4
+0.6
+0.8
 1
-1
+1.2
+1.4
+1.6
+1.8
+2
 $!GlobalContour  4
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -348,8 +381,17 @@ $!GlobalContour  4
 $!ContourLevels New
   ContourGroup = 4
   RawData
+10
+0.2
+0.4
+0.6
+0.8
 1
-1
+1.2
+1.4
+1.6
+1.8
+2
 $!GlobalContour  5
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -372,8 +414,17 @@ $!GlobalContour  5
 $!ContourLevels New
   ContourGroup = 5
   RawData
+10
+0.2
+0.4
+0.6
+0.8
 1
-1
+1.2
+1.4
+1.6
+1.8
+2
 $!GlobalContour  6
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -396,8 +447,17 @@ $!GlobalContour  6
 $!ContourLevels New
   ContourGroup = 6
   RawData
+10
+0.2
+0.4
+0.6
+0.8
 1
-1
+1.2
+1.4
+1.6
+1.8
+2
 $!GlobalContour  7
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -420,8 +480,17 @@ $!GlobalContour  7
 $!ContourLevels New
   ContourGroup = 7
   RawData
+10
+0.2
+0.4
+0.6
+0.8
 1
-1
+1.2
+1.4
+1.6
+1.8
+2
 $!GlobalContour  8
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -444,8 +513,17 @@ $!GlobalContour  8
 $!ContourLevels New
   ContourGroup = 8
   RawData
+10
+0.2
+0.4
+0.6
+0.8
 1
-1
+1.2
+1.4
+1.6
+1.8
+2
 $!GlobalScatter 
   Legend
     {
@@ -466,7 +544,7 @@ $!FieldMap  [1-4]
     }
   Contour
     {
-    ContourType = Flood
+    ContourType = PrimaryValue
     Color = Black
     UseLightingEffect = Yes
     }
@@ -504,7 +582,7 @@ $!FieldMap  [1-4]
     {
     LightingEffect = Gouraud
     }
-$!ThreeDAxis 
+$!TwoDAxis 
   XDetail
     {
     VarNum = 1
@@ -513,57 +591,28 @@ $!ThreeDAxis
     {
     VarNum = 2
     }
-  ZDetail
-    {
-    VarNum = 3
-    }
 $!View Fit
-$!ThreeDAxis 
-  AxisMode = XYDependent
-  XYDepXToYRatio = 1
+$!TwoDAxis 
   DepXToYRatio = 1
-  DepXToZRatio = 0.00673155678278
-$!ThreeDAxis 
+$!TwoDAxis 
   XDetail
     {
-    ShowAxis = No
-    RangeMin = -162.92270129999999995
-    RangeMax = 163.8979972999999859
-    GRSpacing = 100
-    AxisLine
-      {
-      Edge = 2
-      }
+    RangeMin = -148.06721500000000447
+    RangeMax = 177.53021634138147533
+    GRSpacing = 50
     }
-$!ThreeDAxis 
+$!TwoDAxis 
   YDetail
     {
-    ShowAxis = No
-    RangeMin = -163.40945125999999732
-    RangeMax = 163.40945125999999732
+    RangeMin = -148.5540465999999924
+    RangeMax = 148.58375740932001463
     GRSpacing = 50
-    AxisLine
-      {
-      Edge = 3
-      }
-    }
-$!ThreeDAxis 
-  ZDetail
-    {
-    ShowAxis = No
-    RangeMin = -0.050000000000000002776
-    RangeMax = 1.0500000000000000444
-    GRSpacing = 0.5
-    AxisLine
-      {
-      Edge = 2
-      }
     }
 $!IsoSurfaceAttributes  1
   IsoSurfaceSelection = OneSpecificValue
-  Isovalue1 = 1
-  Isovalue2 = 1
-  Isovalue3 = 1
+  Isovalue1 = 0.66935469413
+  Isovalue2 = 0.845375759291
+  Isovalue3 = 1.02139682445
   Effects
     {
     LightingEffect = Gouraud
@@ -779,48 +828,6 @@ $!StreamAttributes
       }
     }
   MaxSteps = 10000
-$!GlobalThreeD 
-  AxisScaleFact
-    {
-    X = 1
-    Y = 1
-    Z = 148.5540466
-    }
-  RotateOrigin
-    {
-    X = 0.487647999999993
-    Y = 0
-    Z = 0.5
-    }
-  LightSource
-    {
-    XYZDirection
-      {
-      X = -0.2
-      Y = -0.2
-      Z = 0.9591663046625438
-      }
-    Intensity = 75
-    BackgroundLight = 25
-    IncludeSpecular = Yes
-    SpecularIntensity = 40
-    SpecularShininess = 60
-    }
-  LineLiftFraction = 0.2
-  SymbolLiftFraction = 0.6
-  VectorLiftFraction = 0.7
-  NearPlaneFraction = 0.1
-$!ThreeDView 
-  PSIAngle = 43.8296
-  ThetaAngle = -108.96
-  AlphaAngle = -0.0652291
-  ViewerPosition
-    {
-    X = 1673.584311367661
-    Y = 574.7907728527267
-    Z = 12.90537956551304
-    }
-  ViewWidth = 405.858
 $!FieldLayers 
   ShowContour = Yes
   ShowShade = Yes
