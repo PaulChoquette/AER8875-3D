@@ -315,10 +315,13 @@ void Metric_c::Elem2DeltaS(Reader_c& read)
 void Metric_c::Face2Center(Reader_c& read)
 {
 	elem2center	= new double* [nelem];
-	face2elemCenter	= new double* [nface];
+	face2elemCenter	= new double**[nface];
 	for(int face_i=0; face_i<nface; face_i++)
 	{
-		face2elemCenter[face_i] = new double[2];
+		face2elemCenter[face_i] = new double*[2];
+		for (int idime=0;idime<ndime;++idime) {
+			face2elemCenter[face_i][idime] = new double;
+		}
 	}
 	for(int ielem=0; ielem<nelem; ielem++)
 	{
@@ -380,11 +383,15 @@ void Metric_c::Face2Center(Reader_c& read)
 			double delta_z = r_mid_z-elem2center[ielem][2];
 			if(ielem == elem1)
 			{
-				face2elemCenter[faceID][0] = sqrt(delta_x*delta_x + delta_y*delta_y + delta_z*delta_z);
+				face2elemCenter[faceID][0][0] = delta_x;
+				face2elemCenter[faceID][0][1] = delta_y;
+				face2elemCenter[faceID][0][2] = delta_z;
 			}
 			else if(ielem == elem2)
 			{
-				face2elemCenter[faceID][1] = sqrt(delta_x*delta_x + delta_y*delta_y + delta_z*delta_z);
+				face2elemCenter[faceID][1][0] = delta_x;
+				face2elemCenter[faceID][1][1] = delta_y;
+				face2elemCenter[faceID][1][2] = delta_z;
 			}
 			else
 			{

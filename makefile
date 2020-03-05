@@ -80,7 +80,7 @@ VPATH := $(AllDirs)
 
 # Default compilation configuration
 CXX = mpic++
-CXXFLAGS += -std=c++11 -Wall -Wno-unused-function -Wno-strict-overflow
+CXXFLAGS += -std=c++11 -Wall -Wno-unused-function -Wno-strict-overflow -Wno-unused-variable
 
 DEBUGFLAGS += -Og -g -pg
 RELEASEFLAGS += -O3 -fopenmp
@@ -88,9 +88,11 @@ SHAREDFLAGS += -shared -Wl,--export-dynamic,--no-as-needed -fpic
 
 # Include search paths
 METIS_INCLUDE_PATH = $(METISROOT)/include
+TECIO_INCLUDE_PATH = $(TECIOROOT)/include
 
 # Included Libraries
 METISLIBS += -L$(METISROOT)/lib -lmetis
+TECIOLIBS += -L$(TECIOROOT)/lib -ltecio -Lm -pthread
 #--------------------------------------------------------------------------------------------------------------------------------------+
 #---------------------------------------------------------------------------------------------------+
 # Targets
@@ -99,19 +101,19 @@ all : release $(ReleaseObjectFiles)
 
 debug : .debug  begun $(DebugObjectFiles) $(ExecutableDebugObjectFile)
 	@printf '   Linking Debug...'
-	@$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(DebugObjectFiles) $(ExecutableDebugObjectFile) -o $(addprefix bin/,$(Executable)) $(METISLIBS)
+	@$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) $(DebugObjectFiles) $(ExecutableDebugObjectFile) -o $(addprefix bin/,$(Executable)) $(METISLIBS) $(TECIOLIBS)
 	@printf 'Done'
 	@printf '\n'
 
 release : .release begun $(ReleaseObjectFiles) $(ExecutableReleaseObjectFile)
 	@printf '   Linking Release...'
-	@$(CXX) $(CXXFLAGS) $(RELEASEFLAGS) $(ReleaseObjectFiles) $(ExecutableReleaseObjectFile) -o $(addprefix bin/,$(Executable)) $(METISLIBS)
+	@$(CXX) $(CXXFLAGS) $(RELEASEFLAGS) $(ReleaseObjectFiles) $(ExecutableReleaseObjectFile) -o $(addprefix bin/,$(Executable)) $(METISLIBS) $(TECIOLIBS)
 	@printf 'Done'
 	@printf '\n'
 
 shared : .shared begun $(SharedObjectFiles) $(ExecutableSharedObjectFile)
 	@printf '   Linking Shared...'
-	@$(CXX) $(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS) $(SharedObjectFiles) $(ExecutableSharedObjectFile) -o $(addprefix lib/,$(Executable).so) $(METISLIBS)
+	@$(CXX) $(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS) $(SharedObjectFiles) $(ExecutableSharedObjectFile) -o $(addprefix lib/,$(Executable).so) $(METISLIBS) $(TECIOLIBS)
 	@printf 'Done'
 	@printf '\n'
 
@@ -125,18 +127,18 @@ verify : release $(ReleaseObjectFiles)
 # Pattern Rules
 
 .debug/%.o : %.cpp
-	@$(CXX) -c $(CXXFLAGS) $(DEBUGFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) $< -o $@
+	@$(CXX) -c $(CXXFLAGS) $(DEBUGFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(METIS_INCLUDE_PATH) $< -o $@
 	@echo '   Pattern Rule | Compiling | '$(CXXFLAGS) $(DEBUGFLAGS) ' | ' $<' ... Done'
 
 .release/%.o : %.cpp
-	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) $< -o $@
+	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(METIS_INCLUDE_PATH) $< -o $@
 	@echo '   Pattern Rule | Compiling | '$(CXXFLAGS) $(RELEASEFLAGS) ' | ' $<' ... Done '
 
 .shared/%.so : %.o
 	@$(CXX) $(SHAREDFLAGS)  $< -o $@ $(METISLIBS) -I$(METIS_INCLUDE_PATH) $< -o $@
 
 .shared/%.o : %.cpp
-	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) $< -o $@
+	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(METIS_INCLUDE_PATH) $< -o $@
 	@echo '   Pattern Rule | Compiling | '$(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS)' | ' $<' ... Done '
 
 

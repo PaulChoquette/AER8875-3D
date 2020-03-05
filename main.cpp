@@ -19,39 +19,45 @@
 
 using namespace std;
 
+string fileName;
+
 int main() {
-	cout << "Executable 2 Starting ..." << endl;
+	
 
 	// =================================== EXECUTABLE 2 ====================================================
+	double mach = 2.0;
+	double AoA = 0.0;
+	double cfl = 0.1;
+	bool RK_M=1;
+	int RK_step = 1;
+	int Order = 1;
+	int iterMax = 2;
+	double convergeCrit = pow(10,-13);
+
 	Reader_c FileContents;
-	Solver_c solve;
-	solve.cfl = 1.0;
-	FileContents.read_file_local("Zone0.su2");
+	solver_c solve(mach,AoA,Order,RK_step,RK_M,cfl,iterMax,convergeCrit);
+	cout << "Zone "<<solve.World.world_rank<<" Starting ..." << endl;
+	fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
+	cout<<fileName<<endl;
+	FileContents.read_file_local(fileName);
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
-	solve.SumNorm(FileContents, 1);
+	solve.SumNorm(FileContents, 1);	
+	cout << "**************\nEND OF PREMILINARY OPERATIONS FOR "<<solve.World.world_rank<<"\n**************\n";
 
-
+	solve.InitMPIBuffer(FileContents);
+	solve.Compute();
 	
+	cout << "**************\nGG NO RE\n**************\n";
 
-	
-	cout << "**************\nEND\n**************\n";
-	double* p = new double[FileContents.nelem];
-	double* Rho = new double[FileContents.nelem];
-	double* u = new double[FileContents.nelem];
-	double* v = new double[FileContents.nelem];
-	double* w = new double[FileContents.nelem];
 
-	for (int i = 0; i < FileContents.nelem; i++) {
-		p[i] = 0.;
-		Rho[i] = 1.;
-		u[i] = 0.;
-		v[i] = 0.;
-		w[i] = 0.;
+	// PURE EVIIIIIIIIIIIIIIIIIIIIIIIIIIIIL
+	switch (solve.World.world_rank){
+		case 0 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF0", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
+		case 1 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF1", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
+		case 2 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF2", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
+		case 3 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF3", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
 	}
 
-
-//FileContents.write_tecplot(FileContents, "test2", p, Rho, u, v, w);
-
-	return 0;
+	return 1;
 }

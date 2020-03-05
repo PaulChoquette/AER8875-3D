@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "Connect.h"
-class Solver_c;
+
 class Metric_c : public Connect_c
 {
 public:
@@ -20,7 +20,7 @@ public:
 	// :
 	double** face2norm;
 	double** elem2center;
-	double** face2elemCenter;
+	double*** face2elemCenter;
 	double** elem2deltaSxyz;
 	// =========================================== FUNCTION MEMBERS ============================================
 	void ComputeMetric(Reader_c& read);
