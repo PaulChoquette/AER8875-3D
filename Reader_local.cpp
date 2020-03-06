@@ -15,7 +15,7 @@ void Reader_c::read_file_local(string filename) {
 	ncell = 0;
 	//Initialize information reading counters;
 	elem = 0; point = 0; line = ""; linen = 0; bc = 0; nbc = 0; bclinen = 0; nzone = 0; zlinen = 0;
-
+	int bcempty = 0;
 	//Open the file and continue if file is succesfully opened
 	if (OpenFile(filename))
 	{
@@ -101,36 +101,46 @@ void Reader_c::read_file_local(string filename) {
 				}
 			}
 
-			if (bclinen != 0) {
-
+			if (bclinen != 0) {		
 				if (linen > bclinen && linen <= bclinen + bcnl) {
 					//3 steps : step 0 is reading marker tag, step 1 is reading marker elemn and final step is filling bc_elem2nnode
 					if (step == 0) {
 						bound2tag[bc] = line.substr(12,8);	
+						//cout << "================ STEP 0 : " << line.substr(12,8) << endl;
 						step++;
 					}
 					else if (step == 1) {
 						bc_nelem = Readcnst(line, "MARKER_ELEMS= ");
+						//cout << "================ Step 1 : bc_nelem =  " << bc_nelem << "  Line = " << line << endl;
+						
 						bc_nelemv[bc] = bc_nelem;
 						BoundIndex[bc + 1] =BoundIndex[bc]+ bc_nelem;
-						if (bc_nelem==0){
-                            bcnl += 1; //has 1 line
-                        }
-                        else {
-                            bcnl += bc_nelem; //each elem has 1 line
-                        }
+						
+						nhalo += bc_nelem;
 						bc_elem2vtk[bc] = new int [bc_nelem];
 						bc_elem2node[bc] = new int* [bc_nelem];
 
 						bc_e2n_counter = 0; //counter for marker element number used in FillMarker
 						step++;
+						if (bc_nelem==0){
+							step = 0;
+							bc++;
+							//bcnl += 1; //add nelem since each elem has 1 line
+							continue;
+						}
+						else {
+							
+							bcnl += bc_nelem; //add nelem since each elem has 1 line
+						}
 					}
 					else if (step == 2) {
+						//cout << "================ Step 2 = " << endl;
+						
 						Fill_BC_E2N_VTK(cline, bc);
-						if ((bc_e2n_counter == bc_nelem) || (bc_nelem == 0) && (bc_e2n_counter == 1) ){
+						if (bc_e2n_counter == bc_nelem) {
 							bc++;
 							step = 0;
-						}
+						}		
 					}
 				}
 			}
@@ -141,7 +151,7 @@ void Reader_c::read_file_local(string filename) {
 					zone2tag = new string[nzone];
 					zlinen = linen;
 					zoneIndex = new int[nzone + 1];
-					zoneIndex[0] = nelem + nhalo;
+					zoneIndex[0] = 0;                           //Indexation starts at 0
 					z_elem2node = new int** [nzone];
 					z_elem2vtk = new int* [nzone];
 					pre_zelem2jelem = new int* [nzone];
@@ -186,7 +196,6 @@ void Reader_c::read_file_local(string filename) {
 						elem2node = new int* [ncell];
 						elem2vtk = new int[ncell];
 						zelem2jelem = new int[nzelem];
-
 						for (int ielem = 0; ielem < nelem; ielem++)
 						{
 							elem2vtk[ielem] = elem2vtk_nh[ielem];
@@ -196,7 +205,6 @@ void Reader_c::read_file_local(string filename) {
 								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 							}
 						}
-
 						int imelem = 0;
 						for (int ibc = 0; ibc < nbc; ibc++)
 						{
@@ -212,7 +220,6 @@ void Reader_c::read_file_local(string filename) {
 								imelem++;
 							}
 						}
-
 						imelem = 0;
 						for (int izone = 0; izone < nzone; izone++)
 						{
@@ -231,24 +238,27 @@ void Reader_c::read_file_local(string filename) {
 						}
 
 					}
+					
 				}
+				
 			}
+			
 
 		}
+		
 
 		//Boundary condition array deletion
+
 		for (int i = 0; i < nelem;  i++) {
 			delete[] elem2node_nh[i];
 		}
 		delete[] elem2node_nh;
-
 		for (int i = 0; i < nbc; i++) {
 			for ( int j = 0; j < bc_nelemv[i]; j++) {
 				delete[] bc_elem2node[i][j];
 			}
 			delete[] bc_elem2node[i];
 		}
-
 		delete[] bc_elem2node;
 		delete[] bc_elem2vtk;
 
@@ -260,11 +270,9 @@ void Reader_c::read_file_local(string filename) {
 			}
 			delete[] z_elem2node[i];
 		}
-
 		delete[] z_elem2node;
 		delete[] z_elem2vtk;
 		delete[] elem2vtk_nh;
-
 		file.close();
 	}
 	else {
@@ -426,28 +434,28 @@ void Reader_c::check()
 	cout << "line : ";cout << line;cout << "\n";
 	cout << "bc : ";cout << bc;cout << "\n";
 	cout << "nzone : "; cout << nzone; cout << "\n";
-	cout << "\nElem2Node :\n";
-	for(int i=0; i<elem;i++)
-	{
-		for(int j=0; j<vtklookup[1][elem2vtk[i]][1]; j++)
-		{
-			cout << elem2node[i][j]; cout << " ; ";
-		}
-		cout << "\n";
-	}
-	cout << "\ncoord :\n";
-	for(int i=0; i<npoint; i++)
-	{
-		cout << coord[i][0]; cout << " ; "; cout << coord[i][1]; cout << " ; "; cout << coord[i][2]; cout << "\n";
-	}
-	cout << "\nelem2vtk :\n";
-	for(int i=0; i<ncell; i++)
-	{
-		cout << elem2vtk[i];cout << "\n";
-	}
-	cout << "\nzelem2jelem :\n";
-	for (int i = 0; i < nzelem; i++)
-	{
-		cout << zelem2jelem[i]; cout << "\n";
-	}
+	// cout << "\nElem2Node :\n";
+	// for(int i=0; i<elem;i++)
+	// {
+	// 	for(int j=0; j<vtklookup[1][elem2vtk[i]][1]; j++)
+	// 	{
+	// 		cout << elem2node[i][j]; cout << " ; ";
+	// 	}
+	// 	cout << "\n";
+	// }
+	// cout << "\ncoord :\n";
+	// for(int i=0; i<npoint; i++)
+	// {
+	// 	cout << coord[i][0]; cout << " ; "; cout << coord[i][1]; cout << " ; "; cout << coord[i][2]; cout << "\n";
+	// }
+	// cout << "\nelem2vtk :\n";
+	// for(int i=0; i<ncell; i++)
+	// {
+	// 	cout << elem2vtk[i];cout << "\n";
+	// }
+	// cout << "\nzelem2jelem :\n";
+	// for (int i = 0; i < nzelem; i++)
+	// {
+	// 	cout << zelem2jelem[i]; cout << "\n";
+	// }
 }

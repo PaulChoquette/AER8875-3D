@@ -252,6 +252,7 @@ $!GlobalRGB
 $!GlobalContour  1
   Var = 5
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 13
   Legend
     {
     Show = Yes
@@ -293,6 +294,7 @@ $!ContourLevels New
 $!GlobalContour  2
   Var = 5
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 13
   Legend
     {
     Show = Yes
@@ -329,6 +331,7 @@ $!ContourLevels New
 $!GlobalContour  3
   Var = 4
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 10
   Legend
     {
     Show = Yes
@@ -362,6 +365,7 @@ $!ContourLevels New
 $!GlobalContour  4
   Var = 4
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 10
   Legend
     {
     Show = Yes
@@ -395,6 +399,7 @@ $!ContourLevels New
 $!GlobalContour  5
   Var = 4
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 10
   Legend
     {
     Show = Yes
@@ -428,6 +433,7 @@ $!ContourLevels New
 $!GlobalContour  6
   Var = 4
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 10
   Legend
     {
     Show = Yes
@@ -461,6 +467,7 @@ $!ContourLevels New
 $!GlobalContour  7
   Var = 4
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 10
   Legend
     {
     Show = Yes
@@ -494,6 +501,7 @@ $!ContourLevels New
 $!GlobalContour  8
   Var = 4
   ColorMapName = 'Sequential - Viridis'
+  DefNumLevels = 10
   Legend
     {
     Show = Yes
@@ -537,10 +545,102 @@ $!GlobalScatter
     Color = Red
     FillColor = Red
     }
-$!FieldMap  [1-4]
+$!FieldMap  [1-2]
   Mesh
     {
     Color = Black
+    }
+  Contour
+    {
+    ContourType = PrimaryValue
+    Color = Black
+    UseLightingEffect = Yes
+    }
+  Vector
+    {
+    Color = Black
+    }
+  Scatter
+    {
+    Color = Black
+    }
+  Shade
+    {
+    Color = Custom2
+    }
+  EdgeLayer
+    {
+    Show = Yes
+    Color = Black
+    LineThickness = 0.1
+    }
+  Points
+    {
+    PointsToPlot = SurfaceNodes
+    }
+  Surfaces
+    {
+    SurfacesToPlot = BoundaryFaces
+    IRange
+      {
+      Max = 1
+      }
+    }
+  Effects
+    {
+    LightingEffect = Gouraud
+    }
+$!FieldMap  [3]
+  Mesh
+    {
+    Color = Black
+    LinePattern = Dashed
+    }
+  Contour
+    {
+    ContourType = PrimaryValue
+    Color = Black
+    UseLightingEffect = Yes
+    }
+  Vector
+    {
+    Color = Black
+    }
+  Scatter
+    {
+    Color = Black
+    }
+  Shade
+    {
+    Color = Custom2
+    }
+  EdgeLayer
+    {
+    Show = Yes
+    Color = Black
+    LineThickness = 0.1
+    }
+  Points
+    {
+    PointsToPlot = SurfaceNodes
+    }
+  Surfaces
+    {
+    SurfacesToPlot = BoundaryFaces
+    IRange
+      {
+      Max = 1
+      }
+    }
+  Effects
+    {
+    LightingEffect = Gouraud
+    }
+$!FieldMap  [4]
+  Mesh
+    {
+    Color = Black
+    LinePattern = Dotted
     }
   Contour
     {
@@ -597,16 +697,16 @@ $!TwoDAxis
 $!TwoDAxis 
   XDetail
     {
-    RangeMin = -148.06721500000000447
-    RangeMax = 177.53021634138147533
-    GRSpacing = 50
+    RangeMin = -0.27967354131070865098
+    RangeMax = 1.1837401313966373628
+    GRSpacing = 0.5
     }
 $!TwoDAxis 
   YDetail
     {
-    RangeMin = -148.5540465999999924
-    RangeMax = 148.58375740932001463
-    GRSpacing = 50
+    RangeMin = -0.73956527061013410673
+    RangeMax = 0.59593520700131041856
+    GRSpacing = 0.5
     }
 $!IsoSurfaceAttributes  1
   IsoSurfaceSelection = OneSpecificValue

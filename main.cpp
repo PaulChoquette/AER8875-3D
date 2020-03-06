@@ -27,11 +27,11 @@ int main() {
 	// =================================== EXECUTABLE 2 ====================================================
 	double mach = 2.0;
 	double AoA = 0.0;
-	double cfl = 0.5;
-	bool RK_M=0;
-	int RK_step = 1;
+	double cfl = 0.1;
+	bool RK_M=1;
+	int RK_step = 0;
 	int Order = 1;
-	int iterMax = 5;
+	int iterMax = 0;
 	double convergeCrit = pow(10,-13);
 
 	Reader_c FileContents;
@@ -43,29 +43,22 @@ int main() {
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
 	solve.SumNorm(FileContents, 1);	
-	cout << "**************\nEND OF PREMILINARY OPERATIONS FOR "<<solve.World.world_rank<<"\n**************\n";
-
-	// ---------------------------------HERE PAUL-------------------------------------------
-	for (int izone=0;izone<FileContents.nzone;++izone){
-		for (int j=FileContents.zoneIndex[izone];j<FileContents.zoneIndex[izone+1];++j) {
-			cout<<FileContents.zelem2jelem[j]<<endl;
-		}
-	}
-
+	//cout << "**************\nEND OF PREMILINARY OPERATIONS FOR "<<solve.World.world_rank<<"\n**************\n";
 
 	solve.InitMPIBuffer(FileContents);
 	solve.Compute();		//Necessary for no seg faults
+	solve.HighlightZoneBorder();
 	
 	// cout << "**************\nGG NO RE\n**************\n";
 
 
 	// //PURE EVIIIIIIIIIIIIIIIIIIIIIIIIIIIIL
-	// switch (solve.World.world_rank){
-	// 	case 0 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF0", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
-	// 	case 1 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF1", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
-	// 	case 2 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF2", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
-	// 	case 3 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF3", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
-	// }
+	switch (solve.World.world_rank){
+		case 0 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF0", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
+		case 1 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF1", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
+		case 2 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF2", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
+		case 3 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF3", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
+	}
 
 	return 1;
 }

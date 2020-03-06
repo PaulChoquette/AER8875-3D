@@ -316,11 +316,12 @@ void solver_c::ExchangePrimitive() {
     for (int izone=0;izone<World.ntgt;++izone) {
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
             ibelemIndx = ibelem + ZBoundIndex[izone];
-            primitivesSendBuffer[izone][ibelem] = rho[ibelemIndx];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = u[ibelemIndx];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = v[ibelemIndx];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*3] = w[ibelemIndx];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*4] = p[ibelemIndx];
+            ielem = elem2elem[ibelemIndx][0];
+            primitivesSendBuffer[izone][ibelem] = rho[ielem];
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = u[ielem];
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = v[ielem];
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*3] = w[ielem];
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*4] = p[ielem];
         }
     }
     //Send & Store
@@ -340,17 +341,17 @@ void solver_c::ExchangePrimitive() {
                     break;
                 }
             }
-            rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
-            u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
-            v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
-            w[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
-            p[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
+            // rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
+            // u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
+            // v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+            // w[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
+            // p[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
         }
     }
 }
 
 // exchange gradiant values between zones [Order 2 only]
-void solver_c::ExchangeGradiants() {
+void solver_c::ExchangeGradiants() {    // TO EDIT-----------------------------
     int ibelemIndx; //Local boundary element index
     // Populate Tx Buffer
     ibelemIndx = ZBoundIndex[nbc];
@@ -397,7 +398,7 @@ void solver_c::TimeStepEul() {
         u[ielem] -= ((residu_c[ielem][1]-residu_d[ielem][1])*dTi_sans_V)*invrho;
         v[ielem] -= ((residu_c[ielem][2]-residu_d[ielem][2])*dTi_sans_V)*invrho;
         w[ielem] -= ((residu_c[ielem][3]-residu_d[ielem][3])*dTi_sans_V)*invrho;
-		eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem])-(residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V;
+		eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem])-(residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V*invrho;
         p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 }
@@ -415,7 +416,7 @@ void solver_c::TimeStepRkM() {
         W_0[ielem][1] = rho[ielem]*u[ielem];
         W_0[ielem][2] = rho[ielem]*v[ielem];
         W_0[ielem][3] = rho[ielem]*w[ielem];
-        W_0[ielem][4] = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
+        W_0[ielem][4] = rho[ielem]*P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 
     for (int k=0;k<RK_step;++k) {
@@ -428,7 +429,6 @@ void solver_c::TimeStepRkM() {
             u[ielem] = (W_0[ielem][1] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d[ielem][1]))*invrho;
             v[ielem] = (W_0[ielem][2] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d[ielem][2]))*invrho;
             w[ielem] = (W_0[ielem][3] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d[ielem][3]))*invrho;
-			
 			eTempo= (W_0[ielem][4] - RKM_coef[RK_step][OIndx][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d[ielem][4]))*invrho;
             p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
         }
@@ -439,6 +439,7 @@ void solver_c::TimeStepRkM() {
             if (Order==1){ComputeFluxO1();}else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
             ComputeResidu();
         }
+        
     }
 }
 
@@ -455,7 +456,7 @@ void solver_c::TimeStepRkH() {
         W_0[ielem][1] = rho[ielem]*u[ielem];
         W_0[ielem][2] = rho[ielem]*v[ielem];
         W_0[ielem][3] = rho[ielem]*w[ielem];
-        W_0[ielem][4] = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
+        W_0[ielem][4] = rho[ielem]*P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 
     for (int k=0;k<RK_step;++k) {
@@ -746,17 +747,13 @@ void solver_c::ComputeFluxO2() {
 }
 
 void solver_c::UpwindFlux(int iface, double rhoL,double uL,double vL,double wL,double pL, double rhoR,double uR,double vR,double wR,double pR) {
-    double  UL, UR, WR, WL, HL, HR, nx, ny, nz;
-    double rhoAvg, uAvg, vAvg, wAvg, pAvg, Vavg, Havg;
+    double EL, ER, nx, ny, nz;
+    double rhoAvg, uAvg, vAvg, wAvg, pAvg, Vavg, Eavg;
     double Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
-    double gamma = 1.4;
     //Calcul des normales
     nx = face2norm[iface][0];  
     ny = face2norm[iface][1];
     nz = face2norm[iface][2];
-
-    UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
-    UR = sqrt(uR * uR + vR * vR + wR*wR);
 
     //Calcul des moyennes des variables 
     rhoAvg = 0.5 * (rhoL + rhoR);
@@ -766,28 +763,28 @@ void solver_c::UpwindFlux(int iface, double rhoL,double uL,double vL,double wL,d
     pAvg = 0.5 * (pL + pR);
     Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
 
-    HL = 0.5 * UL * UL + pL /rhoL /(gamma - 1) + pL / rhoL;
-    HR = 0.5 * UR * UR + pR /rhoR /(gamma - 1) + pR / rhoR;
-    Havg = 0.5 * (HL + HR);
+    EL = P2E(pL,rhoL,uL,vL,wL);
+    ER = P2E(pR,rhoR,uR,vR,wR);
+    Eavg = 0.5 * (ER + EL);
 
     //Calcul du flux conservatif
     Fcmass = rhoAvg * Vavg;
     Fcmom1 = rhoAvg * Vavg * uAvg + pAvg * nx;
     Fcmom2 = rhoAvg * Vavg * vAvg + pAvg * ny;
     Fcmom3 = rhoAvg * Vavg * wAvg + pAvg * nz;
-    Fcenergy = rhoAvg * Vavg * Havg;
+    Fcenergy = rhoAvg * Vavg * Eavg + pAvg * Vavg;
     
     // Flux dans les bonnes variables
-    flux_c[iface][0] = Fcmass*face2area[iface];   //rho
-    flux_c[iface][1] = Fcmom1*face2area[iface];   //u
-    flux_c[iface][2] = Fcmom2*face2area[iface];   //v
-    flux_c[iface][3] = Fcmom3*face2area[iface];   //w
-    flux_c[iface][4] = Fcenergy*face2area[iface]; //e
+    flux_c[iface][0] = Fcmass;   //rho
+    flux_c[iface][1] = Fcmom1;   //u
+    flux_c[iface][2] = Fcmom2;   //v
+    flux_c[iface][3] = Fcmom3;   //w
+    flux_c[iface][4] = Fcenergy; //e
 }
 
 void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double wL,double pL, double rhoR,double uR,double vR,double wR,double pR) {
     double dp, du, dv, dV, drho,dw,q2_t;
-    double VL, VR, UL, UR, cL, cR, HL, HR, nx, ny, nz, rhobar, ubar, vbar, wbar, hbar, cbar, Vbar, qbar, SR1, SR2, SR3, delta;
+    double VL, VR, cL, cR, HL, HR, nx, ny, nz, rhobar, ubar, vbar, wbar, hbar, cbar, Vbar, qbar, SR1, SR2, SR3, delta;
     double F1mass, F1mom1, F1mom2, F1mom3, F1energy, F234mass, F234mom1, F234mom2,F234mom3, F234energy, F5mass, F5mom1, F5mom2, F5mom3, F5energy;
     double AWW1, AWW2, AWW3, AWW4,AWW5;
     double c1, c2, c3, c4, c5;
@@ -798,14 +795,10 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     dv = vR - vL;
     dw = wR - wL; 
 
-
     //Calcul des normales
     nx = face2norm[iface][0];  
     ny = face2norm[iface][1];
     nz = face2norm[iface][2];
-    
-    UL = sqrt(uL * uL + vL * vL + wL*wL); //ajouter w??
-    UR = sqrt(uR * uR + vR * vR + wR*wR);
 
     VL = nx * uL + ny * vL + nz*wL;     //ajouter w?
     VR = nx * uR + ny * vR + nz*wR;
@@ -813,8 +806,8 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     dV = VR - VL;
     dp = pR - pL;
 
-    HL = 0.5 * UL * UL + pL / rhoL / (gamma - 1) + pL / rhoL;
-    HR = 0.5 * UR * UR + pR / rhoR / (gamma - 1) + pR / rhoR;
+    HL = P2E(pL,rhoL,uL,vL,wL) + pL / rhoL;
+    HR = P2E(pR,rhoR,uR,vR,wR) + pR / rhoR;
 
 
     //Calcul constantes pour simplifier la compilation 
@@ -839,20 +832,20 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     cR = sqrt(gamma * pR / rhoR);
 
     // Harten’s entropy correction
-    SR1 = abs(Vbar - cbar);
-    SR2 = abs(Vbar);
-    SR3 = abs(Vbar + cbar);
+    SR1 = fabs(Vbar - cbar);
+    SR2 = fabs(Vbar);
+    SR3 = fabs(Vbar + cbar);
 
     delta = 0.1 * (cL + cR) / 2;    // Potentielle erreur pour vitesse dus on locale
 
-    if (SR1 < delta && SR1>-delta) {         
-        SR1 = (SR1 + delta * delta) / (2 * delta);
+    if (fabs(SR1) <= delta) {         
+        SR1 = (SR1 * SR1 + delta * delta) / (2 * delta);
     }
-    if (SR2 < delta && SR2>-delta) {
-        SR2 = (SR2 + delta * delta) / (2 * delta);
+    if (fabs(SR2) <= delta) {
+        SR2 = (SR2 * SR2 + delta * delta) / (2 * delta);
     }
-    if (SR3 < delta && SR3>-delta) {
-        SR3 = (SR3 + delta * delta) / (2 * delta);
+    if (fabs(SR3) <= delta) {
+        SR3 = (SR3 * SR3 + delta * delta) / (2 * delta);
     }
         
     //Calcul des différents termes du flux dissipatif
@@ -862,7 +855,7 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     F1mom3 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (wbar - (cbar * nz));
     F1energy = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (hbar - (cbar * Vbar));
 
-    F234mass = SR2 * ((drho - (dp *c5)) * 1 + rhobar * 0); 
+    F234mass = SR2 * ((drho - (dp *c5)) ); 
     F234mom1 = SR2 * ((drho - (dp *c5)) * ubar + rhobar * (du - dV * nx));
     F234mom2 = SR2 * ((drho - (dp *c5)) * vbar + rhobar * (dv - dV * ny));
     F234mom3 = SR2 * ((drho - (dp *c5)) * wbar + rhobar * (dw - dV * nz));
@@ -875,11 +868,11 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     F5energy = SR3 * ((dp + rhobar * cbar * dV)*c4) * (hbar + cbar * Vbar);
 
     //Sommes des termes pour avoir le flux dissipatif
-    AWW1 = 0.5 * (F1mass + F234mass + F5mass)*face2area[iface];
-    AWW2 = 0.5 * (F1mom1 + F234mom1 + F5mom1)*face2area[iface];
-    AWW3 = 0.5 * (F1mom2 + F234mom2 + F5mom2)*face2area[iface];
-    AWW4 = 0.5 * (F1mom3 + F234mom3 + F5mom3)*face2area[iface];
-    AWW5 = 0.5 * (F1energy + F234energy + F5energy)*face2area[iface];
+    AWW1 = 0.5 * (F1mass + F234mass + F5mass);
+    AWW2 = 0.5 * (F1mom1 + F234mom1 + F5mom1);
+    AWW3 = 0.5 * (F1mom2 + F234mom2 + F5mom2);
+    AWW4 = 0.5 * (F1mom3 + F234mom3 + F5mom3);
+    AWW5 = 0.5 * (F1energy + F234energy + F5energy);
     
 
     flux_d[iface][0] = AWW1;   //rho
@@ -907,14 +900,34 @@ void solver_c::ComputeResidu() {
             iface = elem2face[ielem][jelemRel];
             fluxSign = double(face2elem[iface][1]==ielem)*2.0-1.0;
             for (int iflux=0;iflux<5;++iflux) {
-                residu_c[ielem][iflux] += fluxSign*flux_c[iface][iflux];
-                residu_d[ielem][iflux] += fluxSign*flux_d[iface][iflux];
+                residu_c[ielem][iflux] += fluxSign*flux_c[iface][iflux]*face2area[iface];
+                residu_d[ielem][iflux] += fluxSign*flux_d[iface][iflux]*face2area[iface];
             }
         }
     }
 }
 
 void solver_c::ComputeResiduConv() {
+        int iface,vtk,Nbr_of_face;
+    double fluxSign;
+    int Pre_ind = ndime-2;
+    for(int ielem=0;ielem<nelem;ielem++) {
+        //Reset Residu
+        for (int iflux=0;iflux<5;++iflux) {
+            residu_c[ielem][iflux] = 0;
+            residu_d[ielem][iflux] = 0;
+        }
+        //Update it
+        vtk = elem2vtk[ielem];
+	    Nbr_of_face = vtklookup[Pre_ind][vtk][0];
+        for (int jelemRel=0;jelemRel<Nbr_of_face;++jelemRel) {
+            iface = elem2face[ielem][jelemRel];
+            fluxSign = double(face2elem[iface][1]==ielem)*2.0-1.0;
+            for (int iflux=0;iflux<5;++iflux) {
+                residu_c[ielem][iflux] += fluxSign*flux_c[iface][iflux]*face2area[iface];
+            }
+        }
+    }
 }
 
 // Check if converged
@@ -949,5 +962,44 @@ void solver_c::ResidualSmoothing() {
 void solver_c::PrintPress() {
     for (int ielem=0;ielem<ncell;++ielem) {
         cout<<p[ielem]<<endl;;
+    }
+}
+
+void solver_c::HighlightZoneBorder() {
+    int ielem,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
+    int Pre_ind=ndime-2;
+    // Populate Tx Buffer
+    for (int izone=0;izone<World.ntgt;++izone) {
+        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+            jbelemIndx = ibelem + ZBoundIndex[izone];
+            ielem = elem2elem[jbelemIndx][0];
+            primitivesSendBuffer[izone][ibelem] = 0;
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = u[ielem];
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = v[ielem];
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*3] = w[ielem];
+            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*4] = p[ielem];
+            //rho[ielem] = 0;  //Sets THIS ZONE's borders to 0
+        }
+    }
+    //Send & Store
+    World.ExchangePrimitives(primitivesSendBuffer);
+// // //    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
+// // // PROBLEMATIC IF AN ELEMENTS SHARE TWO NEIGBHOORS IN THE SAME ZONE---------------------------------------------
+    for (int izone=0;izone<World.ntgt;++izone) {
+        BaseZoneIndxMin = ZBoundIndex[izone];
+        BaseZoneIndxMax = ZBoundIndex[izone+1];
+        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
+            ielem = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+            //cout<<World.world_rank<<"|"<<"From:"<<World.tgtList[izone]<<":=:"<<ielem<<endl;       //Good reception of SU2+ verified
+	        // Nbr_of_faceIndx = vtklookup[0][elem2vtk[ielem]][0]-1;
+            // for (int jelem=Nbr_of_faceIndx;jelem>-1;--jelem) {
+            //     jbelemIndx = elem2elem[ielem][jelem];
+            //     if((BaseZoneIndxMin<=jbelemIndx)&&(jbelemIndx<BaseZoneIndxMax)) {
+            //         break;
+            //     }
+            // }
+            rho[ielem] = 0;//World.primitivesBuffer[izone][ibelem];
+        }
     }
 }
