@@ -22,16 +22,14 @@ using namespace std;
 string fileName;
 
 int main() {
-	
-
 	// =================================== EXECUTABLE 2 ====================================================
 	double mach = 2.0;
-	double AoA = 0.0;
-	double cfl = 0.1;
+	double AoA = 0;
+	double cfl = 0.1;	//WTF
 	bool RK_M=1;
-	int RK_step = 0;
+	int RK_step = 1;
 	int Order = 1;
-	int iterMax = 0;
+	int iterMax = 300;
 	double convergeCrit = pow(10,-13);
 
 	Reader_c FileContents;
@@ -47,7 +45,7 @@ int main() {
 
 	solve.InitMPIBuffer(FileContents);
 	solve.Compute();		//Necessary for no seg faults
-	solve.HighlightZoneBorder();
+	//solve.HighlightZoneBorder();
 	
 	// cout << "**************\nGG NO RE\n**************\n";
 

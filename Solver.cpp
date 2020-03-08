@@ -80,7 +80,7 @@ solver_c::~solver_c() {
 void solver_c::Compute() {
     double Residu = pow(69,42); 
     double Old_Residu = pow(69,42);
-    double Residu_initial;
+    double Residu_initial,ResiduLocal;
     int iteration = 0;
     Initialisation();
     UpdateBound();
@@ -89,11 +89,12 @@ void solver_c::Compute() {
         ++iteration;
         if (Order==1){ComputeFluxO1();}else {ComputeFluxO2();}
         ComputeResidu();
-        Residu = CheckConvergence();
+        ResiduLocal = CheckConvergence();
+        Residu = World.UpdateConvergence(ResiduLocal);
         if (iteration==1) {
             Residu_initial = Residu;
         }
-        if (World.world_rank==0) {      //SUUUUUUUUUUUUUUUUUUUUUUUUUUUPER SKETCH!, SHOULD BE SUMMED WITH MPI
+        if (World.world_rank==0) {
         printf("Iteration : %d, \tREL R :  %e, \tABS R :  %e\n",iteration,Residu/Residu_initial,Residu);
         }
         if ((abs(Residu/Residu_initial)<convergeCrit)&&(abs(Old_Residu/Residu_initial)<convergeCrit)) {
@@ -160,7 +161,7 @@ void solver_c::UpdateBound() {
     double c0,l_r0c0,r0c0,udotn; //local sound speed
     string BoundType;
 	
-    for (int ibc=0;ibc<nbc;++ibc) {   // TO EDIT
+    for (int ibc=0;ibc<nbc;++ibc) { 
         BoundType = bound2tag[ibc];
         indxMin = BoundIndex[ibc];
         indxMax = BoundIndex[ibc+1];
@@ -178,15 +179,16 @@ void solver_c::UpdateBound() {
             }
         }
         else if (BoundType.substr(0,3)=="sym") {//If symmetry
-            // Symmetry
+            // Symmetry aka slip wall
             for (ig=indxMin;ig<indxMax;++ig) {
                 iface = elem2face[ig][0];
                 ir = elem2elem[ig][0];
-                p[ig] = p[ir];
+                udotn = 2.0*(face2norm[iface][0]*u[ir]+face2norm[iface][1]*v[ir]+face2norm[iface][2]*w[ir]);
+                p[ig] = p[ir];  
                 rho[ig] = rho[ir];
-                u[ig] = u[ir];  //p.285 8.38
-                v[ig] = v[ir];
-                w[ig] = w[ir];
+                u[ig] = u[ir]-udotn*face2norm[iface][0];    // p.273, eq 8.10
+                v[ig] = v[ir]-udotn*face2norm[iface][1];
+                w[ig] = w[ir]-udotn*face2norm[iface][2];
             }
         }
         else {
@@ -219,7 +221,7 @@ void solver_c::UpdateBound() {
                     if (udotn>0) {    //inlet
                         // Subsonic Inflow
                         p[ig] = 0.5*(1.0+p[ir]-c0*rho[ir]*(face2norm[iface][0]*(inf_speed_x-u[ir])+face2norm[iface][1]*(inf_speed_y-v[ir])+face2norm[iface][2]*(inf_speed_z-w[ir])));
-                        rho[ig] = rho[ir]+(p[ig]-1.0)/pow(c0,2);
+                        rho[ig] = 1.0+(p[ig]-1.0)/pow(c0,2);
                         u[ig] = inf_speed_x-face2norm[iface][0]*(1.0-p[ig])*l_r0c0;
                         v[ig] = inf_speed_y-face2norm[iface][1]*(1.0-p[ig])*l_r0c0;
                         w[ig] = inf_speed_z-face2norm[iface][2]*(1.0-p[ig])*l_r0c0;
@@ -228,10 +230,10 @@ void solver_c::UpdateBound() {
                     else {
                         // Subsonic Outflow
                         p[ig] = 1.0;
-                        rho[ig] = rho[ir]+(1.0-p[ir])/pow(c0,2);
-                        u[ig] = u[ir]+face2norm[iface][0]*(p[ir]-1.0)*l_r0c0;
-                        v[ig] = v[ir]+face2norm[iface][1]*(p[ir]-1.0)*l_r0c0;
-                        w[ig] = w[ir]+face2norm[iface][2]*(p[ir]-1.0)*l_r0c0;
+                        rho[ig] = rho[ir]+(p[ig]-p[ir])/pow(c0,2);
+                        u[ig] = u[ir]+face2norm[iface][0]*(p[ir]-p[ig])*l_r0c0;
+                        v[ig] = v[ir]+face2norm[iface][1]*(p[ir]-p[ig])*l_r0c0;
+                        w[ig] = w[ir]+face2norm[iface][2]*(p[ir]-p[ig])*l_r0c0;
                     }
                 }
             }
@@ -242,7 +244,6 @@ void solver_c::UpdateBound() {
 // Initialise MPI
 void solver_c::InitMPIBuffer(Reader_c& Read) {
     int* zone2nbelem,*tgtList,**localBorderID;   //number of element / zone boundary
-    ntgt;           //Number of zones to talk to
     
     ntgt = Read.nzone;
     //Build zone2nbelem; number of element / zone boundary
@@ -341,11 +342,11 @@ void solver_c::ExchangePrimitive() {
                     break;
                 }
             }
-            // rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
-            // u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
-            // v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
-            // w[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
-            // p[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
+            rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
+            u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
+            v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+            w[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
+            p[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
         }
     }
 }
@@ -389,16 +390,17 @@ void solver_c::TimeStepEul() {
     double c, eTempo,invrho;           //local sound speed
     double sumLambda;   // see blasek, sum of spectral radiuses
     double dTi_sans_V;         //dTi local time step
+
     for (int ielem=0;ielem<nelem;++ielem) {
         c = sqrt(1.4*p[ielem]/rho[ielem]);
         sumLambda = (fabs(u[ielem])+c)*elem2deltaSxyz[ielem][0]+(fabs(v[ielem])+c)*elem2deltaSxyz[ielem][1]+(fabs(w[ielem])+c)*elem2deltaSxyz[ielem][2];
         dTi_sans_V = cfl/sumLambda;
         rho[ielem] -= (residu_c[ielem][0]-residu_d[ielem][0])*dTi_sans_V;        // CAREFULL WITH SIGN OF DISSIPATIVE FLUX
         invrho=1/rho[ielem];
-        u[ielem] -= ((residu_c[ielem][1]-residu_d[ielem][1])*dTi_sans_V)*invrho;
-        v[ielem] -= ((residu_c[ielem][2]-residu_d[ielem][2])*dTi_sans_V)*invrho;
-        w[ielem] -= ((residu_c[ielem][3]-residu_d[ielem][3])*dTi_sans_V)*invrho;
-		eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem])-(residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V*invrho;
+        u[ielem] -= (residu_c[ielem][1]-residu_d[ielem][1])*dTi_sans_V*invrho;
+        v[ielem] -= (residu_c[ielem][2]-residu_d[ielem][2])*dTi_sans_V*invrho;
+        w[ielem] -= (residu_c[ielem][3]-residu_d[ielem][3])*dTi_sans_V*invrho;
+		eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]) - (residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V*invrho;
         p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 }
@@ -788,12 +790,13 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     double F1mass, F1mom1, F1mom2, F1mom3, F1energy, F234mass, F234mom1, F234mom2,F234mom3, F234energy, F5mass, F5mom1, F5mom2, F5mom3, F5energy;
     double AWW1, AWW2, AWW3, AWW4,AWW5;
     double c1, c2, c3, c4, c5;
-    double gamma=1.4;
+    double gamma=1.4,cmoy;
 
     drho = rhoR - rhoL;
     du = uR - uL;
     dv = vR - vL;
     dw = wR - wL; 
+    dp = pR - pL;
 
     //Calcul des normales
     nx = face2norm[iface][0];  
@@ -804,7 +807,7 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     VR = nx * uR + ny * vR + nz*wR;
 
     dV = VR - VL;
-    dp = pR - pL;
+    
 
     HL = P2E(pL,rhoL,uL,vL,wL) + pL / rhoL;
     HR = P2E(pR,rhoR,uR,vR,wR) + pR / rhoR;
@@ -823,20 +826,19 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     hbar = (HL * c1 + HR * c2) * c3;
     qbar = (ubar * ubar) + (vbar * vbar)+(wbar*wbar); // c'est le qbar au carré
     cbar = sqrt((gamma - 1) * (hbar - qbar * 0.5)); 
-    Vbar = ubar * nx + vbar * ny+ wbar * nz;
+    Vbar = ubar * nx + vbar * ny + wbar * nz;
 
     c4= 1/(2 * cbar * cbar); 
     c5= 1/(cbar * cbar);
 
-    cL = sqrt(gamma * pL / rhoL);
-    cR = sqrt(gamma * pR / rhoR);
+    cmoy = sqrt(gamma*(pL+pR)/(rhoL+rhoL));
 
     // Harten’s entropy correction
     SR1 = fabs(Vbar - cbar);
     SR2 = fabs(Vbar);
     SR3 = fabs(Vbar + cbar);
 
-    delta = 0.1 * (cL + cR) / 2;    // Potentielle erreur pour vitesse dus on locale
+    delta = 0.1 * (cmoy);    // Potentielle erreur pour vitesse dus on locale
 
     if (fabs(SR1) <= delta) {         
         SR1 = (SR1 * SR1 + delta * delta) / (2 * delta);
@@ -898,7 +900,7 @@ void solver_c::ComputeResidu() {
 	    Nbr_of_face = vtklookup[Pre_ind][vtk][0];
         for (int jelemRel=0;jelemRel<Nbr_of_face;++jelemRel) {
             iface = elem2face[ielem][jelemRel];
-            fluxSign = double(face2elem[iface][1]==ielem)*2.0-1.0;
+            fluxSign = double(face2elem[iface][0]==ielem)*2.0-1.0;
             for (int iflux=0;iflux<5;++iflux) {
                 residu_c[ielem][iflux] += fluxSign*flux_c[iface][iflux]*face2area[iface];
                 residu_d[ielem][iflux] += fluxSign*flux_d[iface][iflux]*face2area[iface];
@@ -942,14 +944,14 @@ double solver_c::CheckConvergence() {
 // Conversion from pressure to energy
 double solver_c::P2E(double p_loc,double rho_loc,double u_loc,double v_loc,double w_loc) {
 	double e_loc;double lSurgammaM1 = 2.5;
-    e_loc = p_loc*lSurgammaM1/rho_loc+0.5*sqrt(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2));
+    e_loc = p_loc*lSurgammaM1/rho_loc+0.5*(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2));
 	return e_loc;
 }
 	
 // Conversion from energy to pressure
 double solver_c::E2P(double e_loc,double rho_loc,double u_loc,double v_loc,double w_loc) {
 	double p_loc;double gammaM1 = 0.4;
-    p_loc = gammaM1*rho_loc*(e_loc-0.5*sqrt(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2)));
+    p_loc = gammaM1*rho_loc*(e_loc-0.5*(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2)));
 	return p_loc;
 }
 	
@@ -986,8 +988,8 @@ void solver_c::HighlightZoneBorder() {
 // // //    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
 // // // PROBLEMATIC IF AN ELEMENTS SHARE TWO NEIGBHOORS IN THE SAME ZONE---------------------------------------------
     for (int izone=0;izone<World.ntgt;++izone) {
-        BaseZoneIndxMin = ZBoundIndex[izone];
-        BaseZoneIndxMax = ZBoundIndex[izone+1];
+        // BaseZoneIndxMin = ZBoundIndex[izone];
+        // BaseZoneIndxMax = ZBoundIndex[izone+1];
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
         // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
             ielem = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
@@ -999,7 +1001,7 @@ void solver_c::HighlightZoneBorder() {
             //         break;
             //     }
             // }
-            rho[ielem] = 0;//World.primitivesBuffer[izone][ibelem];
+            rho[ielem] = World.primitivesBuffer[izone][ibelem];
         }
     }
 }

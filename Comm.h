@@ -20,6 +20,7 @@ class Comm {
     double** primitivesBuffer;  // Buffer for recieved primitives values
     double** gradientBuffer;    // Buffer for received gradient values
     int** rxOrder2localOrder;   // Local Index to store received values
+    double SumResidu;
     
 
     // Public methods
@@ -32,6 +33,7 @@ class Comm {
     void ExchangePrimitives(double**);//Exchanges primitives with relevent zones
     void ReclassPrimitives(double**rho,double**u,double**v,double**w,double**p);    //Updates primitives with new values
     void ExchangeGradients(double**);//Exchanges gradients
+    double UpdateConvergence(double);
 
     // Debugging Methods
     void PrintCellOrder(void);

@@ -131,6 +131,40 @@ void Comm::ExchangeMetrics(){
     // TODO ; Volumes & face>center2face
 }
 
+double Comm::UpdateConvergence(double LocalRes){
+    double GlobalRes,TempRes;
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (world_rank!=0) {
+        MPI_Request Request;
+        MPI_Isend(&LocalRes,1,MPI_DOUBLE,0,4,MPI_COMM_WORLD,&Request);
+        MPI_Wait(&Request,MPI_STATUS_IGNORE);
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Irecv(&GlobalRes,1,MPI_DOUBLE,0,4,MPI_COMM_WORLD,&Request);
+        MPI_Wait(&Request,MPI_STATUS_IGNORE);
+        SumResidu = GlobalRes;
+    }
+    else {
+        MPI_Request Request[world_size-1];double resArr[world_size-1];
+
+        GlobalRes = LocalRes;
+        for (int itgt=1;itgt<world_size;++itgt) {
+            MPI_Irecv(&resArr[itgt-1],1,MPI_DOUBLE,itgt,4,MPI_COMM_WORLD,&Request[itgt-1]);
+        }
+        MPI_Wait(Request,MPI_STATUS_IGNORE);
+        for (int itgt=1;itgt<world_size;++itgt) {
+            GlobalRes += resArr[itgt-1];
+        }
+        SumResidu = GlobalRes;
+        MPI_Barrier(MPI_COMM_WORLD);
+        for (int itgt=1;itgt<world_size;++itgt) {
+            MPI_Isend(&SumResidu,1,MPI_DOUBLE,itgt,4,MPI_COMM_WORLD,&Request[itgt-1]);
+        }
+        MPI_Wait(Request,MPI_STATUS_IGNORE);
+    }
+
+    return SumResidu;
+}
+
 void Comm::PrintCellOrder(void){
     for (int izone=0;izone<ntgt;++izone) {
         for (int ibelem=0;ibelem<zone2nbelem[izone];++ibelem) {

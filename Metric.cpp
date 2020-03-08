@@ -302,9 +302,9 @@ void Metric_c::Elem2DeltaS(Reader_c& read)
 		for (int iface=0; iface<Nbr_of_face; iface++)
 	{
 		int faceID = elem2face[ielem][iface];
-		somme_sX += abs(face2norm[faceID][0]*face2area[faceID]);
-		somme_sY += abs(face2norm[faceID][1]*face2area[faceID]);
-		somme_sZ += abs(face2norm[faceID][2]*face2area[faceID]);
+		somme_sX += fabs(face2norm[faceID][0]*face2area[faceID]);
+		somme_sY += fabs(face2norm[faceID][1]*face2area[faceID]);
+		somme_sZ += fabs(face2norm[faceID][2]*face2area[faceID]);
 	}
 		elem2deltaSxyz[ielem][0] = 0.5*somme_sX;
 	elem2deltaSxyz[ielem][1] = 0.5*somme_sY;
