@@ -67,6 +67,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 
     //Private methods
     void Initialisation();      // Initialise field to infinity 
+    void ExchangeMetrics();     // MPI exchange needed metrics for order 2
     void ExchangePrimitive();   // MPI exchange primitive values
     void ExchangeGradiants();   // MPI exchange gradiant values
     void UpdateBound();         // Update boundary conditions

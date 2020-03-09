@@ -25,16 +25,15 @@ int main() {
 	// =================================== EXECUTABLE 2 ====================================================
 	double mach = 2.0;
 	double AoA = 0;
-	double cfl = 0.1;	//WTF
-	bool RK_M=1;
-	int RK_step = 1;
-	int Order = 1;
-	int iterMax = 300;
+	double cfl = 1.8;
+	bool RK_M=0;
+	int RK_step = 5;
+	int Order = 2;
+	int iterMax = 10000;
 	double convergeCrit = pow(10,-13);
 
 	Reader_c FileContents;
 	solver_c solve(mach,AoA,Order,RK_step,RK_M,cfl,iterMax,convergeCrit);
-	cout << "Zone "<<solve.World.world_rank<<" Starting ..." << endl;
 	fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
 	cout<<fileName<<endl;
 	FileContents.read_file_local(fileName);

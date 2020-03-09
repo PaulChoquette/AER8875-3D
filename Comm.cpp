@@ -18,12 +18,14 @@ Comm::~Comm() {
         delete[] gradientBuffer[izone];
         delete[] primitivesBuffer[izone];
         delete[] rxOrder2localOrder[izone];
+        delete[] oneDBuffer[izone];
     }
     delete[] tgtList;
     delete[] gradientBuffer;
     delete[] primitivesBuffer;
     delete[] zone2nbelem;
     delete[] rxOrder2localOrder;
+    delete[] oneDBuffer;
     //Kill MPI process
     MPI_Finalize();
 }
@@ -49,11 +51,13 @@ void Comm::InitBuffer(int ntgt_in,int* tgtList_in,int* zone2nbelem_in) {
     }
     gradientBuffer =  new double*[ntgt];
     primitivesBuffer =  new double*[ntgt];
+    oneDBuffer =  new double*[ntgt];
     rxOrder2localOrder = new int*[ntgt];
     for (int izone=0;izone<ntgt;++izone) {
         gradientBuffer[izone] = new double[zone2nbelem[izone]*15];
         primitivesBuffer[izone] = new double[zone2nbelem[izone]*5];
         rxOrder2localOrder[izone] = new int[zone2nbelem[izone]];
+        oneDBuffer[izone] = new double[zone2nbelem[izone]*3];
     }
 }
 
@@ -127,19 +131,33 @@ void Comm::ExchangeGradients(double**gradientsTx) {
     MPI_Waitall(ntgt*2,Request,MPI_STATUSES_IGNORE);
 }
 
-void Comm::ExchangeMetrics(){
-    // TODO ; Volumes & face>center2face
+void Comm::Exchange1DBuffer(double ** Send1DBuff){
+        // Init requests
+    MPI_Request Request[int(ntgt*2)];
+    MPI_Barrier(MPI_COMM_WORLD);
+    int tempSize;
+    // Send Buffer
+    for (int itgt=0;itgt<ntgt;++itgt) {
+        tempSize = zone2nbelem[itgt]*3;
+        MPI_Isend(Send1DBuff[itgt],tempSize,MPI_DOUBLE,tgtList[itgt],42,MPI_COMM_WORLD,&Request[itgt]);
+    }
+    for (int itgt=0;itgt<ntgt;++itgt) {
+        tempSize = zone2nbelem[itgt]*3;
+        MPI_Irecv(oneDBuffer[itgt],tempSize,MPI_DOUBLE,tgtList[itgt],42,MPI_COMM_WORLD,&Request[itgt+ntgt]);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Waitall(ntgt*2,Request,MPI_STATUSES_IGNORE);
 }
 
 double Comm::UpdateConvergence(double LocalRes){
     double GlobalRes,TempRes;
-    MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank!=0) {
         MPI_Request Request;
         MPI_Isend(&LocalRes,1,MPI_DOUBLE,0,4,MPI_COMM_WORLD,&Request);
-        MPI_Wait(&Request,MPI_STATUS_IGNORE);
         MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Irecv(&GlobalRes,1,MPI_DOUBLE,0,4,MPI_COMM_WORLD,&Request);
+        MPI_Wait(&Request,MPI_STATUS_IGNORE);
+        MPI_Irecv(&GlobalRes,1,MPI_DOUBLE,0,5,MPI_COMM_WORLD,&Request);
+        MPI_Barrier(MPI_COMM_WORLD);
         MPI_Wait(&Request,MPI_STATUS_IGNORE);
         SumResidu = GlobalRes;
     }
@@ -150,18 +168,18 @@ double Comm::UpdateConvergence(double LocalRes){
         for (int itgt=1;itgt<world_size;++itgt) {
             MPI_Irecv(&resArr[itgt-1],1,MPI_DOUBLE,itgt,4,MPI_COMM_WORLD,&Request[itgt-1]);
         }
+        MPI_Barrier(MPI_COMM_WORLD);
         MPI_Wait(Request,MPI_STATUS_IGNORE);
         for (int itgt=1;itgt<world_size;++itgt) {
             GlobalRes += resArr[itgt-1];
         }
         SumResidu = GlobalRes;
-        MPI_Barrier(MPI_COMM_WORLD);
         for (int itgt=1;itgt<world_size;++itgt) {
-            MPI_Isend(&SumResidu,1,MPI_DOUBLE,itgt,4,MPI_COMM_WORLD,&Request[itgt-1]);
+            MPI_Isend(&SumResidu,1,MPI_DOUBLE,itgt,5,MPI_COMM_WORLD,&Request[itgt-1]);
         }
+        MPI_Barrier(MPI_COMM_WORLD);
         MPI_Wait(Request,MPI_STATUS_IGNORE);
     }
-
     return SumResidu;
 }
 
