@@ -3,13 +3,16 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <time.h>
+#include <omp.h>
 #include "Reader.h"
 #include "Solver.h"
 #include "main.h"
 using namespace std;
 
 void Reader_c::read_file(string filename) {
-	cout << "Reading of Global SU2 Starting ..." << endl;
+	double StartTime = omp_get_wtime();
+	cout << "Reading Global SU2 \tSTARTING...";
 	//Initialize mesh constants
 	ndime = 0; nelem = 0; npoint = 0; nhalo = 0;
 	ncell = 0; bclinen = 0;
@@ -114,7 +117,6 @@ void Reader_c::read_file(string filename) {
 						bc_nelem = Readcnst(line, "MARKER_ELEMS= ");
 						bc_nelemv[bc] = bc_nelem;
 						BoundIndex[bc + 1] =BoundIndex[bc]+ bc_nelem;
-						cout << "bc_nelem " << bc_nelem << endl;
 						bcnl += bc_nelem; //add nelem since each elem has 1 line
 						bc_elem2vtk[bc] = new int [bc_nelem];
 						bc_elem2node[bc] = new int* [bc_nelem];
@@ -132,11 +134,8 @@ void Reader_c::read_file(string filename) {
 					if (bc == nbc) {
 						nhalo = bcnl - 2 * nbc;
 						ncell = nelem + nhalo;
-						cout << "TEST Read 6.1 " << endl;
 						elem2node = new int* [ncell];
-						cout << "TEST Read 6.2 " << endl;
 						elem2vtk = new int [ncell];
-						cout << "TEST Read 6.3 " << endl;
 						for (int ielem = 0; ielem < nelem; ielem++)
 						{
 							elem2vtk[ielem] = elem2vtk_nh[ielem];
@@ -188,7 +187,9 @@ void Reader_c::read_file(string filename) {
 	else {
 		//ERROR 1 : File could not be opened
 	}
-	cout << "... Reading ENDING" << endl;
+	double EndTime = omp_get_wtime();
+	double WorkTime = EndTime - StartTime;
+	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
 }
 
 bool Reader_c::OpenFile(string filename)
@@ -330,8 +331,8 @@ void Reader_c::check()
 		cout << elem2vtk[i];cout << "\n";
 	}
 }
-void Reader_c::write_file(Reader_c& read, Solver_c& solve, int izone) {
-	string filename = "Zone"+to_string(izone)+".su2";
+void Reader_c::write_file(string FileName, Reader_c& read, Solver_c& solve, int izone) {
+	string filename = FileName+to_string(izone)+".su2";
 
 	ofstream outfile(filename, std::ios_base::binary | std::ios_base::out);
 	if (outfile.is_open()) {
@@ -374,7 +375,7 @@ void Reader_c::write_file(Reader_c& read, Solver_c& solve, int izone) {
 		
 		outfile << "NMARK= " << read.nbc << "\n";
 		for (int ibc = 0; ibc < read.nbc; ibc++) { 
-			//int jzone = solve.zone2ijzone[izone][ijzone];
+			//int jzone = solve.zone2jzone[izone][ijzone];
 			outfile << "MARKER_TAG= " << read.bound2tag[ibc] << "\n";
 			int nghost = solve.zone2boundIndex[izone][ibc + 1] - solve.zone2boundIndex[izone][ibc];
 			outfile << "MARKER_ELEMS= " << nghost <<"\n";
@@ -401,7 +402,7 @@ void Reader_c::write_file(Reader_c& read, Solver_c& solve, int izone) {
 		outfile << "NZONE= " << solve.nzone -1 << "\n";
 		int ighost = 0;
 		for (int ijzone = 0; ijzone < solve.nzone -1; ijzone++) { 
-			int jzone = solve.zone2ijzone[izone][ijzone];
+			int jzone = solve.zone2jzone[izone][ijzone];
 			outfile << "ZONE_TAG= " << to_string(jzone) << "\n";
 
 			int njzone = solve.zone2markelem[izone][ijzone];
@@ -429,23 +430,29 @@ void Reader_c::write_file(Reader_c& read, Solver_c& solve, int izone) {
 	}
 
 }
-void Reader_c::WriteAllZoneFile(Reader_c& read,Solver_c& solve ){
+void Reader_c::WriteAllZoneFile(string FileName, Reader_c& read,Solver_c& solve ){
+	double StartTime = omp_get_wtime();
+	cout << "Writting SU2++ File \tSTARTING...";
 	for (int izone = 0; izone < solve.nzone; izone++) {
-		write_file(read, solve, izone);
+		write_file(FileName, read, solve, izone);
 	}
+	double EndTime = omp_get_wtime();
+	double WorkTime = EndTime - StartTime;
+	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
 }
 
-void Reader_c::write_tecplot_METIS(Reader_c & read, Solver_c& solve){
+void Reader_c::write_tecplot_METIS(string FileName, Reader_c & read, Solver_c& solve){
 	
 
 	fstream outFile;
-	outFile.open("METISZONE.dat", ios::out);
+	outFile.open(FileName, ios::out);
 	outFile << "VARIABLES=\"X\",\"Y\",\"Z\",\"Zone\"" << endl;
 	//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
 	//Zone Carre pour le tecplot 
 
 	outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
-	outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
+	//outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
+	outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FETETRAHEDRON" << endl;
 	outFile << "DATAPACKING=BLOCK" << endl;
 	outFile << "VARLOCATION = ([4] = CELLCENTERED)" << endl;
 

@@ -79,7 +79,7 @@ AnyObjectFiles := $(notdir $(shell find ./ -regex .*.o))
 VPATH := $(AllDirs)
 
 # Default compilation configuration
-CXX = mpic++
+CXX = g++
 CXXFLAGS += -std=c++11 -Wall -Wno-unused-function -Wno-strict-overflow
 
 DEBUGFLAGS += -Og -g -pg

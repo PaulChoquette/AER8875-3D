@@ -40,7 +40,7 @@ public:
 	int** face2Nbr_of_node;
 	int** vtk2nnofa; int** vtk2facevtk;
 	int** elem2elem_g;
-	int** zone2node; int** zone2elem; int** elemglobal2local; int** nodeglobal2local; int** zone2markelem;  int** zone2zone; int** zone2ijzone;
+	int** zone2node; int** zone2elem; int** elemglobal2local; int** nodeglobal2local; int** zone2markelem;  int** zone2zone; int** zone2jzone; int** zone2ijzone;
 	int** elem2vtk; int** zelem2jelem; int** zone2boundIndex; int** zone2zoneIndex; int** zone2esup1; int** zone2esup2; int** zone2psup1; int** zone2psup2; int** zone2lpoin; 
 	// 3D Array of Integrer :
 	int*** elem2node; int*** vtk2lpofa; int*** belem2node; int*** elem2elem; int*** face2elem; int*** face2node; int*** face2fael; int*** elem2face;
@@ -63,7 +63,7 @@ public:
 	void Node2Nodes(Reader_c& read);
 	void Element2Elements(Reader_c& read);
 	void METISElement2Nodes(Reader_c& read);
-	void ComputeMETIS(int nzoneMETIS, Reader_c& read);
+	void ComputeMETIS(int nzoneMETIS, int ncommon, Reader_c& read);
 	int GetnelemArNode(int inode);
 	int GetielemArNode(int inode, int ielno);
 	void ComputeGlobalConnectivity(Reader_c& read);
@@ -90,11 +90,13 @@ public:
 	void ElementGlobal2Local();
 	void Zone2Coord(Reader_c& read);
 	void Zone2Bound(Reader_c& read);
+	void Zone2jZone();
 	void InitializeElem2Node(Reader_c& read);
 	void Element2Nodes(Reader_c& read);
 	void Zone2Zones();
 	void ComputeZoneConnectivity(Reader_c& read);
 
+    void ComputeElem2Zone();
 	// OTHER FUNCTION MEMBER
 	void Display1DArray(int V[], int size, string name);
 	void Display2DArray(int* V[], int nLine, int nColomn, string name);
