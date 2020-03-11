@@ -1,5 +1,5 @@
 
-export METISROOT=/home/cd/metis
+export METISROOT=/home/cd/metis-5.1.0
 
 export LD_LIBRARY_PATH=$METISROOT/lib:$LD_LIBRARY_PATH
 export CPATH=$METISROOT/include:$CPATH
