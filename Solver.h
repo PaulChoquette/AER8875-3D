@@ -10,25 +10,28 @@ using namespace std;
 
 class solver_c : public Metric_c {    // TBD wheter public or private
     public:
-    solver_c(double,double,int,int,bool,double,int,double);                   // Constructeur
-    ~solver_c();                // Destructeur
-    void InitMPIBuffer(Reader_c&);             // Declare necessary structures for MPI
-    void Compute();             // solve problem
-    Comm World;                 // MPI Cluster [World.world_rank to get thread ID]
+    solver_c(double,double,int,int,bool,double,int,double,double);                   // Constructeur
+    ~solver_c();                                // Destructeur
+    void InitMPIBuffer(Reader_c&);              // Declare necessary structures for MPI
+    void Compute();                             // solve problem
+    void PrintStylz();
+    Comm World;                                 // MPI Cluster [World.world_rank to get thread ID]
     // Simulation parametrisation
     double mach,AoA,cfl,convergeCrit;
     int Order,RK_step,iterMax;
+    double residuRel,convergeFixLimit;          // Residu, limit at which limitors will be fixed
     bool RK_M;
     double* rho;
     double* u;
     double* v;
     double* w;
     double* p;
-
-
+    int iteration;
     //Debugging Methods
     void PrintPress();
     void HighlightZoneBorder(); //Set density in MPI-received zone borders to 0
+    void SetAnalyticalGradiant(double,double,double);
+    void PrintGradiant();
 
 
 
@@ -46,6 +49,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     double** residu_d;          //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** residu_d_hyb;      //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** W_0;               //copy of initial state for RK
+    double** limit;             //Limitors per element and primary value
     double** primitivesSendBuffer;  //Buffer for Tx
     double** gradientSendBuffer;    //Gradient buffer for Tx
     double*** gradient;             // Array containing gradiant [ielem][dimention][conservative]
@@ -67,13 +71,14 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 
     //Private methods
     void Initialisation();      // Initialise field to infinity 
+    void ExchangeMetrics();     // MPI exchange needed metrics for order 2
     void ExchangePrimitive();   // MPI exchange primitive values
     void ExchangeGradiants();   // MPI exchange gradiant values
     void UpdateBound();         // Update boundary conditions
     void TimeStepEul();         // Euler explicit time integration
     void TimeStepRkM();         // Runge-Kutta Multistage time integration
     void TimeStepRkH();         // Runge-Kutta Hybride time integration
-    void ComputeGrandientsNLimit();// Computes gradiants WITH limitors INCLUDED
+    void ComputeGrandientsNLimit();// Computes gradiants WITH limitors INCLUDED. Bool true
     void UpwindFlux(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative flux [local]
     void RoeDissipation(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative flux [local]
     void ComputeFluxO1();       // Calcul des flux (Roe) ordre 1

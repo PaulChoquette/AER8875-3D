@@ -73,7 +73,7 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, d
 
 	for (int i = 0; i < FileContents.nelem; i++) {
 		for (int j = 0; j < 8; j++) {
-			int k = j - floor(j / vtklookup[1][FileContents.elem2vtk[i]][1]);
+			int k = j - vtklookup[1][FileContents.elem2vtk[i]][1]*floor(j / vtklookup[1][FileContents.elem2vtk[i]][1]);
 			NData[i * 8 + j] = FileContents.elem2node[i][k] + 1;
 		}
 	}

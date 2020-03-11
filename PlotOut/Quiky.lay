@@ -217,7 +217,7 @@ $!Page
     }
 ### Frame Number 1 ###
 $!ReadDataSet  '|LFDSFN1|'
-  InitialPlotType = Cartesian2D
+  InitialPlotType = Cartesian3D
   IncludeText = No
   IncludeGeom = No
   AssignStrandIDs = Yes
@@ -238,7 +238,7 @@ $!FrameLayout
 $!ThreeDAxis 
   AspectRatioLimit = 25
   BoxAspectRatioLimit = 25
-$!PlotType  = Cartesian2D
+$!PlotType  = Cartesian3D
 $!FrameName  = 'Frame 001'
 $!GlobalTime 
   SolutionTime = 0
@@ -682,7 +682,7 @@ $!FieldMap  [4]
     {
     LightingEffect = Gouraud
     }
-$!TwoDAxis 
+$!ThreeDAxis 
   XDetail
     {
     VarNum = 1
@@ -691,22 +691,48 @@ $!TwoDAxis
     {
     VarNum = 2
     }
+  ZDetail
+    {
+    VarNum = 3
+    }
 $!View Fit
-$!TwoDAxis 
+$!ThreeDAxis 
+  AxisMode = XYDependent
+  XYDepXToYRatio = 1
   DepXToYRatio = 1
-$!TwoDAxis 
+  DepXToZRatio = 0.00673155678278
+$!ThreeDAxis 
   XDetail
     {
-    RangeMin = -0.27967354131070865098
-    RangeMax = 1.1837401313966373628
-    GRSpacing = 0.5
+    RangeMin = -162.92270129999999995
+    RangeMax = 163.8979972999999859
+    GRSpacing = 50
+    AxisLine
+      {
+      Edge = 1
+      }
     }
-$!TwoDAxis 
+$!ThreeDAxis 
   YDetail
     {
-    RangeMin = -0.73956527061013410673
-    RangeMax = 0.59593520700131041856
+    RangeMin = -163.40945125999999732
+    RangeMax = 163.40945125999999732
+    GRSpacing = 50
+    AxisLine
+      {
+      Edge = 4
+      }
+    }
+$!ThreeDAxis 
+  ZDetail
+    {
+    RangeMin = -0.050000000000000002776
+    RangeMax = 1.0500000000000000444
     GRSpacing = 0.5
+    AxisLine
+      {
+      Edge = 2
+      }
     }
 $!IsoSurfaceAttributes  1
   IsoSurfaceSelection = OneSpecificValue
@@ -928,6 +954,30 @@ $!StreamAttributes
       }
     }
   MaxSteps = 10000
+$!GlobalThreeD 
+  AxisScaleFact
+    {
+    X = 1
+    Y = 1
+    Z = 148.5540466
+    }
+  RotateOrigin
+    {
+    X = 0.487647999999993
+    Y = 0
+    Z = 0.5
+    }
+  NearPlaneFraction = 0.1
+$!ThreeDView 
+  PSIAngle = 0
+  ThetaAngle = 0
+  ViewerPosition
+    {
+    X = 2.481419844178744
+    Y = 0.1237502890327416
+    Z = 21.30740427902684
+    }
+  ViewWidth = 9.90516
 $!FieldLayers 
   ShowContour = Yes
   ShowShade = Yes

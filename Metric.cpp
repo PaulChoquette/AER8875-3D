@@ -319,8 +319,8 @@ void Metric_c::Face2Center(Reader_c& read)
 	for(int face_i=0; face_i<nface; face_i++)
 	{
 		face2elemCenter[face_i] = new double*[2];
-		for (int idime=0;idime<ndime;++idime) {
-			face2elemCenter[face_i][idime] = new double;
+		for (int ix=0;ix<2;++ix) {
+			face2elemCenter[face_i][ix] = new double[ndime];
 		}
 	}
 	for(int ielem=0; ielem<nelem; ielem++)

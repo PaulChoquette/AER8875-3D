@@ -8,7 +8,7 @@
 #include <main.h>
 
 // constructor
-solver_c::solver_c(double mach_in,double AoA_in,int Order_in,int RK_step_in, bool RK_M_in,double cfl_in,int iterMax_in,double convergeCrit_in) {
+solver_c::solver_c(double mach_in,double AoA_in,int Order_in,int RK_step_in, bool RK_M_in,double cfl_in,int iterMax_in,double convergeCrit_in,double convergeFixLimit_in) {
     mach = mach_in;
     AoA = AoA_in;
     Order = Order_in;
@@ -17,12 +17,14 @@ solver_c::solver_c(double mach_in,double AoA_in,int Order_in,int RK_step_in, boo
     cfl = cfl_in;
     iterMax = iterMax_in;
     convergeCrit = convergeCrit_in;
+    convergeFixLimit = convergeFixLimit_in;
 
 
     inf_speed = mach*sqrt(1.4);
     inf_speed_x = inf_speed*cos(AoA);
     inf_speed_y = inf_speed*sin(AoA);
     inf_speed_z = 0;
+    iteration = 0;
     World.Init();    // Initialise MPI
 }
 
@@ -65,6 +67,10 @@ solver_c::~solver_c() {
             delete[] gradient[ielem];
         }
         delete[] gradient;
+        for (int ielem=0;ielem<nelem;++ielem) {
+            delete[] limit[ielem];
+        }
+        delete[] limit;
     }
 
     // Delete MPI-related variables
@@ -81,30 +87,31 @@ void solver_c::Compute() {
     double Residu = pow(69,42); 
     double Old_Residu = pow(69,42);
     double Residu_initial,ResiduLocal;
-    int iteration = 0;
     Initialisation();
     UpdateBound();
 
     while (iteration<iterMax) {
         ++iteration;
-        if (Order==1){ComputeFluxO1();}else {ComputeFluxO2();}
+        if (Order==1){ComputeFluxO1();}
+        else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
         ComputeResidu();
         ResiduLocal = CheckConvergence();
         Residu = World.UpdateConvergence(ResiduLocal);
         if (iteration==1) {
             Residu_initial = Residu;
         }
+        residuRel = Residu/Residu_initial;
         if (World.world_rank==0) {
-        printf("Iteration : %d, \tREL R :  %e, \tABS R :  %e\n",iteration,Residu/Residu_initial,Residu);
+        printf("Iteration : %d, \tREL R :  %e, \tABS R :  %e\n",iteration,residuRel,Residu);
         }
         if ((abs(Residu/Residu_initial)<convergeCrit)&&(abs(Old_Residu/Residu_initial)<convergeCrit)) {
             break;
         }
         Old_Residu = Residu;
         if (RK_step==1){TimeStepEul();}
-        else if(RK_M==0) {TimeStepRkH();}else {TimeStepRkM();}
+        else if(RK_M==0) {TimeStepRkH();}
+        else {TimeStepRkM();}
         ExchangePrimitive();
-        if (Order==2){ExchangeGradiants();}
         UpdateBound();
     }
 }
@@ -119,11 +126,15 @@ void solver_c::Initialisation() {
     p = new double [ncell]; 
     if (Order==2) {
         gradient = new double**[ncell];     //Needs to be ncell as boundaries [between zones] need gradients
+        limit = new double*[nelem];
         for (int ielem=0;ielem<ncell;++ielem) {
             gradient[ielem] = new double*[ndime];
             for (int idim=0;idim<ndime;++idim) {
                 gradient[ielem][idim] = new double[5];
             }
+        }
+        for (int ielem=0;ielem<nelem;++ielem) {
+            limit[ielem] = new double[5];
         }
     }
 
@@ -137,9 +148,9 @@ void solver_c::Initialisation() {
     for (int i=0;i<ncell;++i) {
         // initialise conservatives
         rho[i] = 1.0;
-        u[i] = inf_speed*cos(AoA);
-        v[i] = inf_speed*sin(AoA);
-        w[i] = 0;   // TBD?
+        u[i] = inf_speed_x;
+        v[i] = inf_speed_y;
+        w[i] = inf_speed_z;
         p[i] = 1.0;
     }
 
@@ -280,8 +291,6 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
         delete[] localBorderID[izone];
 	}
     delete[] localBorderID;
-    //To use ExchangeMetrics, a buffer needs to be created first...
-    if (Order==2){World.ExchangeMetrics();}
     delete[] zone2nbelem;delete[] tgtList;
 
 
@@ -307,6 +316,52 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
     for(int ielem=0;ielem<ncell;++ielem) {
         elem2vtk[ielem] = Read.elem2vtk[ielem];
     }
+    //To use ExchangeMetrics, a buffer needs to be created first...
+    if (Order==2){ExchangeMetrics();}
+}
+
+// exchange needed metrics values between zones
+void solver_c::ExchangeMetrics() {
+    int ielem,iface,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
+    int Pre_ind=ndime-2;
+    // Create needed buffer
+    double **metricBuffer;
+    metricBuffer = new double*[World.ntgt];
+    for (int izone=0;izone<World.ntgt;++izone) {
+        metricBuffer[izone] = new double[World.zone2nbelem[izone]*3];
+    }
+    // face2elemCenter : Only need to send [:][0][:]     || face2elemCenter[iface][0:side 0,1:side 1][idim]
+        // Populate Tx Buffer
+    for (int izone=0;izone<World.ntgt;++izone) {
+        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+            ibelemIndx = ibelem + ZBoundIndex[izone];
+            iface = elem2face[ibelemIndx][0];
+            metricBuffer[izone][ibelem] = face2elemCenter[iface][0][0];
+            metricBuffer[izone][ibelem+World.zone2nbelem[izone]] = face2elemCenter[iface][0][1];
+            metricBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = face2elemCenter[iface][0][2];
+        }
+    }
+        //Send & Store
+    World.Exchange1DBuffer(metricBuffer);
+    for (int izone=0;izone<World.ntgt;++izone) {
+        BaseZoneIndxMin = ZBoundIndex[izone];
+        BaseZoneIndxMax = ZBoundIndex[izone+1];
+        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
+            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+
+            iface = elem2face[jbelemIndx][0];
+            face2elemCenter[iface][1][0] = World.oneDBuffer[izone][ibelem];
+            face2elemCenter[iface][1][1] = World.oneDBuffer[izone][ibelem+World.zone2nbelem[izone]];
+            face2elemCenter[iface][1][2] = World.oneDBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+        }
+    }
+    // Delete needed buffer
+    for (int izone=0;izone<World.ntgt;++izone) {
+        delete[] metricBuffer[izone];
+    }
+    delete[] metricBuffer;
+    
 }
 
 // exchange primitive values between zones
@@ -334,14 +389,8 @@ void solver_c::ExchangePrimitive() {
         BaseZoneIndxMax = ZBoundIndex[izone+1];
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
         // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
-            ielem = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
-	        Nbr_of_faceIndx = vtklookup[0][elem2vtk[ielem]][0]-1;
-            for (int jelem=Nbr_of_faceIndx;jelem>-1;--jelem) {
-                jbelemIndx = elem2elem[ielem][jelem];
-                if((BaseZoneIndxMin<=jbelemIndx)&&(jbelemIndx<BaseZoneIndxMax)) {
-                    break;
-                }
-            }
+            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+
             rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
             u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
             v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
@@ -353,33 +402,38 @@ void solver_c::ExchangePrimitive() {
 
 // exchange gradiant values between zones [Order 2 only]
 void solver_c::ExchangeGradiants() {    // TO EDIT-----------------------------
-    int ibelemIndx; //Local boundary element index
+    int ielem,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
+    int Pre_ind=ndime-2;
     // Populate Tx Buffer
-    ibelemIndx = ZBoundIndex[nbc];
     for (int izone=0;izone<World.ntgt;++izone) {
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
             for (int idim;idim<3;++idim) {
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5] = gradient[ibelemIndx][idim][0];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]] = gradient[ibelemIndx][idim][1];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*2] = gradient[ibelemIndx][idim][2];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*3] = gradient[ibelemIndx][idim][3];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*4] = gradient[ibelemIndx][idim][4];
+                ibelemIndx = ibelem + ZBoundIndex[izone];
+                ielem = elem2elem[ibelemIndx][0];
+                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5] = gradient[ielem][idim][0];
+                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*1] = gradient[ielem][idim][1];
+                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*2] = gradient[ielem][idim][2];
+                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*3] = gradient[ielem][idim][3];
+                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*4] = gradient[ielem][idim][4];
             }
-            ++ibelemIndx;
         }
     }
-    // Exchange Values
+    //Send & Store
     World.ExchangeGradients(gradientSendBuffer);
-    //Store received values in local arrays
+// PROBLEMATIC IF AN ELEMENTS SHARE TWO NEIGBHOORS IN THE SAME ZONE---------------------------------------------
     for (int izone=0;izone<World.ntgt;++izone) {
+        BaseZoneIndxMin = ZBoundIndex[izone];
+        BaseZoneIndxMax = ZBoundIndex[izone+1];
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            ibelemIndx = World.rxOrder2localOrder[izone][ibelem];
+        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
+            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+
             for (int idim;idim<3;++idim) {
-                gradient[ibelemIndx][idim][0] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5];
-                gradient[ibelemIndx][idim][1] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]];
-                gradient[ibelemIndx][idim][2] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*2];
-                gradient[ibelemIndx][idim][3] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*3];
-                gradient[ibelemIndx][idim][4] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*4];
+                gradient[jbelemIndx][idim][0] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5];
+                gradient[jbelemIndx][idim][1] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*1];
+                gradient[jbelemIndx][idim][2] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*2];
+                gradient[jbelemIndx][idim][3] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*3];
+                gradient[jbelemIndx][idim][4] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*4];
             }
         }
     }
@@ -393,6 +447,7 @@ void solver_c::TimeStepEul() {
 
     for (int ielem=0;ielem<nelem;++ielem) {
         c = sqrt(1.4*p[ielem]/rho[ielem]);
+        eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
         sumLambda = (fabs(u[ielem])+c)*elem2deltaSxyz[ielem][0]+(fabs(v[ielem])+c)*elem2deltaSxyz[ielem][1]+(fabs(w[ielem])+c)*elem2deltaSxyz[ielem][2];
         dTi_sans_V = cfl/sumLambda;
         rho[ielem] -= (residu_c[ielem][0]-residu_d[ielem][0])*dTi_sans_V;        // CAREFULL WITH SIGN OF DISSIPATIVE FLUX
@@ -400,7 +455,7 @@ void solver_c::TimeStepEul() {
         u[ielem] -= (residu_c[ielem][1]-residu_d[ielem][1])*dTi_sans_V*invrho;
         v[ielem] -= (residu_c[ielem][2]-residu_d[ielem][2])*dTi_sans_V*invrho;
         w[ielem] -= (residu_c[ielem][3]-residu_d[ielem][3])*dTi_sans_V*invrho;
-		eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]) - (residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V*invrho;
+		eTempo -= (residu_c[ielem][4]-residu_d[ielem][4])*dTi_sans_V*invrho;
         p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
     }
 }
@@ -435,10 +490,11 @@ void solver_c::TimeStepRkM() {
             p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
         }
         // update residu
-        if (k!=RK_step) {
+        if ((k+1)!=RK_step) {
             ExchangePrimitive();
             UpdateBound();
-            if (Order==1){ComputeFluxO1();}else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
+            if (Order==1){ComputeFluxO1();}
+            else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
             ComputeResidu();
         }
         
@@ -488,19 +544,21 @@ void solver_c::TimeStepRkH() {
             v[ielem] = (W_0[ielem][2] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d_hyb[ielem][2]))*invrho;
             w[ielem] = (W_0[ielem][3] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d_hyb[ielem][3]))*invrho;
 			
-			eTempo= (W_0[ielem][4] - RKM_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d_hyb[ielem][4]))*invrho;
+			eTempo = (W_0[ielem][4] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d_hyb[ielem][4]))*invrho;
             p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
         }
         // update residu
-        if (k!=RK_step) {
+        if ((k+1)!=RK_step) {
             ExchangePrimitive();
             UpdateBound();
-			if (k==1 || k==3) {
-				if (Order==1){ComputeFluxO1();}else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
+			if ((k==1) || (k==3)) {
+				if (Order==1){ComputeFluxO1();}
+                else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
                 ComputeResidu();
             }
 			else {
-				if (Order==1){ComputeFluxO1Conv();}else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
+				if (Order==1){ComputeFluxO1Conv();}
+                else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
 			    ComputeResiduConv();
             }
         }
@@ -560,136 +618,101 @@ void solver_c::ComputeFluxO1() {
 
 // Computes grandients for order 2
 void solver_c::ComputeGrandientsNLimit() {
-    int ielem0,ielem1,locFaceIndx,Nbr_of_face,Pre_ind = ndime-2;
+    int jelem,jface,Nbr_of_face,Pre_ind = ndime-2;
     double TempDemiSurVol,sign;       
     double delta_2,UminRho,UmaxRho,UminU,UmaxU,UminV,UmaxV,UminP,UmaxP,UminW,UmaxW; //Barth & Jespersen p:166 Blasek
-    int locElem2;   //Index [0/1]
+    int faceSide;   //Index [0/1]
     double MachinePrecision = pow(10,-15);
     double GradU[3][5] = {{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}};
+    double U[5];
+    double UMax[5];
+    double UMin[5];
     double psi[5] = {1,1,1,1,1};
- 
-    for (int ielem0=0;ielem0<nelem;++ielem0) {
-        UminRho=rho[ielem0];
-        UmaxRho=rho[ielem0];
-        UminU=u[ielem0];
-        UmaxU=u[ielem0];
-        UminV=v[ielem0];
-        UmaxV=v[ielem0];
-        UminW=w[ielem0];
-        UmaxW=w[ielem0];
-        UminP=p[ielem0];
-        UmaxP=p[ielem0];
+
+    bool UpdateLim = ((residuRel>convergeFixLimit)||(iteration<10));
+
+    for (int ielem=0;ielem<nelem;++ielem) {
+        U[0] = rho[ielem];
+        U[1] = u[ielem];
+        U[2] = v[ielem];
+        U[3] = w[ielem];
+        U[4] = p[ielem];
+        for (int ivar=0;ivar<5;++ivar) {
+            UMax[ivar] = U[ivar];
+            UMin[ivar] = U[ivar];
+        }
 
         // Compute gradient
-	    Nbr_of_face = vtklookup[Pre_ind][elem2vtk[ielem0]][0];
-        for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {       //Edit to good termination index
-            ielem1 = elem2elem[ielem0][ineighbor];
-            if (ielem1>-1) {
-                locFaceIndx = elem2face[ielem0][ineighbor];
-                locElem2 = int(face2elem[locFaceIndx][0]!=ielem0);      //TBD if still is valid
-                sign = ((1-locElem2)*2.0-1);
-                // x
-                GradU[0][0] += sign*(rho[ielem0]+rho[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
-                GradU[0][1] += sign*(u[ielem0]+u[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
-                GradU[0][2] += sign*(v[ielem0]+v[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
-                GradU[0][3] += sign*(w[ielem0]+w[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
-                GradU[0][4] += sign*(p[ielem0]+p[ielem1])*face2norm[locFaceIndx][0]*face2area[locFaceIndx];
+	    Nbr_of_face = vtklookup[Pre_ind][elem2vtk[ielem]][0];
+        for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) { 
+            jelem = elem2elem[ielem][ineighbor];
+            jface = elem2face[ielem][ineighbor];
+            sign = ((double(face2elem[jface][0]==ielem))*2.0-1.0);  //jelem??
 
-                // y
-                GradU[1][0] += sign*(rho[ielem0]+rho[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
-                GradU[1][1] += sign*(u[ielem0]+u[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
-                GradU[1][2] += sign*(v[ielem0]+v[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
-                GradU[1][3] += sign*(w[ielem0]+w[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
-                GradU[1][4] += sign*(p[ielem0]+p[ielem1])*face2norm[locFaceIndx][1]*face2area[locFaceIndx];
-
-                // z
-                GradU[2][0] += sign*(rho[ielem0]+rho[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
-                GradU[2][1] += sign*(u[ielem0]+u[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
-                GradU[2][2] += sign*(v[ielem0]+v[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
-                GradU[2][3] += sign*(w[ielem0]+w[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
-                GradU[2][4] += sign*(p[ielem0]+p[ielem1])*face2norm[locFaceIndx][2]*face2area[locFaceIndx];
-
-                //Update Umax/Umin
-                UminRho=min(UminRho,rho[ielem1]);
-                UmaxRho=max(UmaxRho,rho[ielem1]);
-                UminU=min(UminU,u[ielem1]);
-                UmaxU=max(UmaxU,u[ielem1]);
-                UminV=min(UminV,v[ielem1]);
-                UmaxV=max(UmaxV,v[ielem1]);
-                UminW=min(UminW,w[ielem1]);
-                UmaxW=max(UmaxW,w[ielem1]);
-                UminP=min(UminP,p[ielem1]);
-                UmaxP=max(UmaxP,p[ielem1]);
+            for (int idime=0;idime<ndime;++idime) {
+                GradU[idime][0] += sign*(rho[ielem]+rho[jelem])*face2norm[jface][idime]*face2area[jface];
+                GradU[idime][1] += sign*(u[ielem]+u[jelem])*face2norm[jface][idime]*face2area[jface];
+                GradU[idime][2] += sign*(v[ielem]+v[jelem])*face2norm[jface][idime]*face2area[jface];
+                GradU[idime][3] += sign*(w[ielem]+w[jelem])*face2norm[jface][idime]*face2area[jface];
+                GradU[idime][4] += sign*(p[ielem]+p[jelem])*face2norm[jface][idime]*face2area[jface];
             }
+
+            //Update Umax/Umin
+            UMin[0]=min(UMin[0],rho[jelem]);
+            UMax[0]=max(UMax[0],rho[jelem]);
+            UMin[1]=min(UMin[1],u[jelem]);
+            UMax[1]=max(UMax[1],u[jelem]);
+            UMin[2]=min(UMin[2],v[jelem]);
+            UMax[2]=max(UMax[2],v[jelem]);
+            UMin[3]=min(UMin[3],w[jelem]);
+            UMax[3]=max(UMax[3],w[jelem]);
+            UMin[4]=min(UMin[4],p[jelem]);
+            UMax[4]=max(UMax[4],p[jelem]);
         }
-        TempDemiSurVol = 0.5/elem2vol[ielem0];
-        for (int i=0;i<3;++i){
-            for (int j=0;j<5;++j) {
-                GradU[i][j] = GradU[i][j]*TempDemiSurVol;
+        TempDemiSurVol = 0.5/elem2vol[ielem];
+        for (int idime=0;idime<ndime;++idime){
+            for (int ivar=0;ivar<5;++ivar) {
+                GradU[idime][ivar] = GradU[idime][ivar]*TempDemiSurVol;
             }
         }
         
-        // Compute Limiter  [NOTE THAT FOR EFFICIENCY AN ALTERNATIVE FORMULATION TO IFS SHOULD BE USED ONCE VALIDATED]
-        for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {   //For surrounding elements
-            ielem1 = elem2elem[ielem0][ineighbor];
-            locFaceIndx = elem2face[ielem0][ineighbor];
-            locElem2 = int(face2elem[locFaceIndx][0]!=ielem0);        //TBD if still is valid, see index of cent2face below
-            // rho
-            
-            delta_2 = 0.5*(GradU[0][0]*face2elemCenter[locFaceIndx][locElem2][0]+GradU[1][0]*face2elemCenter[locFaceIndx][locElem2][1]+GradU[2][0]*face2elemCenter[locFaceIndx][locElem2][2]);
-            if ((delta_2>0)) {
-                psi[0]  = min(psi[0],fabs((UmaxRho-rho[ielem0])/(delta_2+MachinePrecision)));
+        if (UpdateLim) {
+            // Compute Limiter
+            for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {   //For surrounding elements
+                jelem = elem2elem[ielem][ineighbor];
+                jface = elem2face[ielem][ineighbor];
+                faceSide = int(face2elem[jface][0]==jelem);        //jelem??
+                
+                for (int ivar=0;ivar<5;++ivar) {
+                    delta_2 = 0.5*(GradU[0][ivar]*face2elemCenter[jface][faceSide][0]+GradU[1][ivar]*face2elemCenter[jface][faceSide][1]+GradU[2][ivar]*face2elemCenter[jface][faceSide][2]);
+                    if ((delta_2>0)) {
+                        psi[ivar]  = min(psi[ivar],(UMax[ivar]-U[ivar])/(fabs(delta_2)+MachinePrecision));
+                    }
+                    else if ((delta_2<0)) {
+                        psi[ivar]  = min(psi[ivar],-(UMin[ivar]-U[ivar])/(fabs(delta_2)+MachinePrecision));
+                    }
+                }
             }
-            else if ((delta_2<0)) {
-                psi[0]  = min(psi[0],fabs((UminRho-rho[ielem0])/(delta_2-MachinePrecision)));
+            //store
+            for (int iflux=0;iflux<5;++iflux) {
+                limit[ielem][iflux] = psi[iflux];
             }
-
-            // U
-            delta_2 = 0.5*(GradU[0][1]*face2elemCenter[locFaceIndx][locElem2][0]+GradU[1][1]*face2elemCenter[locFaceIndx][locElem2][1]+GradU[2][1]*face2elemCenter[locFaceIndx][locElem2][2]);
-            if ((delta_2>0)) {
-                psi[1]  = min(psi[1],fabs((UmaxU-u[ielem0])/(delta_2+MachinePrecision)));
-            }
-            else if ((delta_2<0)) {
-                psi[1]  = min(psi[1],fabs((UminU-u[ielem0])/(delta_2-MachinePrecision)));
-            }
-
-            // V
-            delta_2 = 0.5*(GradU[0][2]*face2elemCenter[locFaceIndx][locElem2][0]+GradU[1][2]*face2elemCenter[locFaceIndx][locElem2][1]+GradU[2][2]*face2elemCenter[locFaceIndx][locElem2][2]);
-            if ((delta_2>0)) {
-                psi[2]  = min(psi[2],fabs((UmaxV-v[ielem0])/(delta_2+MachinePrecision)));
-            }
-            else if ((delta_2<0)) {
-                psi[2]  = min(psi[2],fabs((UminV-v[ielem0])/(delta_2-MachinePrecision)));
-            }
-
-            // w
-            delta_2 = 0.5*(GradU[0][3]*face2elemCenter[locFaceIndx][locElem2][0]+GradU[1][3]*face2elemCenter[locFaceIndx][locElem2][1]+GradU[2][3]*face2elemCenter[locFaceIndx][locElem2][2]);
-            if ((delta_2>0)) {
-                psi[3]  = min(psi[3],fabs((UmaxW-w[ielem0])/(delta_2+MachinePrecision)));
-            }
-            else if ((delta_2<0)) {
-                psi[3]  = min(psi[3],fabs((UminW-w[ielem0])/(delta_2-MachinePrecision)));
-            }
-
-            // E
-            delta_2 = 0.5*(GradU[0][4]*face2elemCenter[locFaceIndx][locElem2][0]+GradU[1][4]*face2elemCenter[locFaceIndx][locElem2][1]+GradU[2][4]*face2elemCenter[locFaceIndx][locElem2][2]);
-            if((delta_2>0)) {
-                psi[4]  = min(psi[4],fabs((UmaxP-p[ielem0])/(delta_2+MachinePrecision)));
-            }
-            else if ((delta_2<0)) {
-                psi[4]  = min(psi[4],fabs((UminP-p[ielem0])/(delta_2-MachinePrecision)));
+        }
+        else {  //Load last-computed limitor
+            for (int iflux=0;iflux<5;++iflux) {
+                psi[iflux] = limit[ielem][iflux];
             }
         }
 
         //Store & reset Gradients
         for (int idim=0;idim<3;++idim) {
-            for (int ivar;ivar<5;++ivar) {
-                gradient[ielem0][idim][ivar] = GradU[idim][ivar]*psi[ivar];
+            for (int ivar=0;ivar<5;++ivar) {
+                gradient[ielem][idim][ivar] = GradU[idim][ivar]*psi[ivar];
                 GradU[idim][ivar]=0;
             }
         }
         //Reset limitors
-        for (int ivar;ivar<5;++ivar) {
+        for (int ivar=0;ivar<5;++ivar) {
             psi[ivar] = 1;
         }
     }
@@ -742,7 +765,6 @@ void solver_c::ComputeFluxO2() {
         vR = v[ielemR]+gradient[ielemR][0][2]*face2elemCenter[iface][1][0]+gradient[ielemR][1][2]*face2elemCenter[iface][1][1]+gradient[ielemR][2][2]*face2elemCenter[iface][1][2];
         wR = w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0]+gradient[ielemR][1][3]*face2elemCenter[iface][1][1]+gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
         pR = p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1]+gradient[ielemR][2][4]*face2elemCenter[iface][1][2];
-        UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
         RoeDissipation(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);  
     }   
@@ -838,7 +860,7 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     SR2 = fabs(Vbar);
     SR3 = fabs(Vbar + cbar);
 
-    delta = 0.1 * (cmoy);    // Potentielle erreur pour vitesse dus on locale
+    delta = 0.1 * (cmoy);  
 
     if (fabs(SR1) <= delta) {         
         SR1 = (SR1 * SR1 + delta * delta) / (2 * delta);
@@ -910,21 +932,20 @@ void solver_c::ComputeResidu() {
 }
 
 void solver_c::ComputeResiduConv() {
-        int iface,vtk,Nbr_of_face;
+    int iface,vtk,Nbr_of_face;
     double fluxSign;
     int Pre_ind = ndime-2;
     for(int ielem=0;ielem<nelem;ielem++) {
         //Reset Residu
         for (int iflux=0;iflux<5;++iflux) {
             residu_c[ielem][iflux] = 0;
-            residu_d[ielem][iflux] = 0;
         }
         //Update it
         vtk = elem2vtk[ielem];
 	    Nbr_of_face = vtklookup[Pre_ind][vtk][0];
         for (int jelemRel=0;jelemRel<Nbr_of_face;++jelemRel) {
             iface = elem2face[ielem][jelemRel];
-            fluxSign = double(face2elem[iface][1]==ielem)*2.0-1.0;
+            fluxSign = double(face2elem[iface][0]==ielem)*2.0-1.0;
             for (int iflux=0;iflux<5;++iflux) {
                 residu_c[ielem][iflux] += fluxSign*flux_c[iface][iflux]*face2area[iface];
             }
@@ -1004,4 +1025,75 @@ void solver_c::HighlightZoneBorder() {
             rho[ielem] = World.primitivesBuffer[izone][ibelem];
         }
     }
+}
+
+void solver_c::SetAnalyticalGradiant(double dx,double dy,double dz) {
+    int realElem;
+    for (int ielem=0;ielem<nelem;++ielem) { //Real Elements Only!
+        rho[ielem] = elem2center[ielem][0]*dx+elem2center[ielem][1]*dy+elem2center[ielem][2]*dz;
+        u[ielem] = elem2center[ielem][0]*dx+elem2center[ielem][1]*dy+elem2center[ielem][2]*dz;
+        v[ielem] = elem2center[ielem][0]*dx+elem2center[ielem][1]*dy+elem2center[ielem][2]*dz;
+        w[ielem] = elem2center[ielem][0]*dx+elem2center[ielem][1]*dy+elem2center[ielem][2]*dz;
+        p[ielem] = elem2center[ielem][0]*dx+elem2center[ielem][1]*dy+elem2center[ielem][2]*dz;
+    }
+    for (int ielem=nelem;ielem<ncell;++ielem) { //Set null gradiant at borders
+        realElem = elem2elem[ielem][0];
+        rho[ielem] = rho[realElem];
+        u[ielem] = u[realElem];
+        v[ielem] = v[realElem];
+        w[ielem] = w[realElem];
+        p[ielem] = p[realElem];
+    }
+    //Cheat so that limitors aren't computed and are used as 1
+    residuRel = 0;
+    iteration = 100;
+    for (int ielem=0;ielem<nelem;ielem++) {
+        for (int ivar=0;ivar<5;++ivar) {
+            limit[ielem][ivar] = 1.0;
+        }
+    }
+    ComputeGrandientsNLimit();
+}
+
+void solver_c::PrintGradiant() {
+    int Nbr_of_face;bool hasGhost;
+    for (int ielem=0;ielem<nelem;++ielem) { //Real Elements Only!
+        hasGhost = 0;
+	    Nbr_of_face = vtklookup[Order-2][elem2vtk[ielem]][0];
+        for (int jface=Nbr_of_face-1;jface>0;jface--) {
+            if (elem2elem[ielem][jface]>=nelem) {
+                hasGhost = 1;
+                //cout<<elem2elem[ielem][jface]<<endl;
+                break;
+            }
+        }
+        if (hasGhost){
+            //cout<<World.world_rank<<"| dx:"<<gradient[ielem][0][0]<<" dy:"<<gradient[ielem][1][0]<<" dz:"<<gradient[ielem][2][0]<<" GHOSTED"<<endl;
+        }
+        else {
+            cout<<World.world_rank<<"| dx:"<<gradient[ielem][0][0]<<" dy:"<<gradient[ielem][1][0]<<" dz:"<<gradient[ielem][2][0]<<endl;
+        }
+    }
+}
+
+
+
+
+
+
+
+void solver_c::PrintStylz() {
+    // Mandatory ascii art
+    system("Color 2B");
+	cout<<"        "<< "\x1B[31m" << "|      ███▄    █ ▒█████   ██▓ ▄████▄ ▓█████   " << "\x1B[0m"<<"     "<< "\x1B[33m" << "______"<< "\x1B[0m"<<endl;
+	cout<<"       "<< "\x1B[31m" << "/ \\     ██ ▀█   █▒██▒  ██▒▓██▒▒██▀ ▀█ ▓█   ▀  " << "\x1B[0m"<<" "<< "\x1B[33m" << ".---<__. \\ \\"<< "\x1B[0m"<<endl;
+	cout<<"      "<< "\x1B[31m" << "/ "<< "\x1B[34m" << "_ " << "\x1B[0m"<<""<< "\x1B[31m" << "\\   ▓██  ▀█ ██▒██░  ██▒▒██▒▒▓█    ▄▒███    " << "\x1B[0m"<<" "<< "\x1B[33m" << "`---._  \\ \\ \\"<< "\x1B[0m"<<endl;
+	cout<<"     "<< "\x1B[31m" << "|" << "\x1B[0m"<<"\x1B[34m"<<".o '."<< "\x1B[31m" << "|" << "\x1B[0m"<<"  "<< "\x1B[31m" << "▓██▒  ▐▌██▒██   ██░░██░▒▓▓▄ ▄██▒▓█  ▄   " << "\x1B[0m"<<" "<< "\x1B[33m" << ",----`- `.))"<< "\x1B[0m"<<endl;
+	cout<<"     "<< "\x1B[31m" << "|" << "\x1B[0m"<<"\x1B[34m" <<"'._.'"<< "\x1B[31m" << "|" << "\x1B[0m"<<"  "<< "\x1B[31m" << "▒██░   ▓██░ ████▓▒░░██░▒ ▓███▀ ░▒████▒  " << "\x1B[0m"<<""<< "\x1B[33m" << "/ ,--.   )  |"<< "\x1B[0m"<<endl;
+	cout<<"     "<< "\x1B[31m" << "|     |  ░ ▒░   ▒ ▒░ ▒░▒░▒░ ░▓  ░ ░▒ ▒  ░░ ▒░ ░  " << "\x1B[0m"<<""<< "\x1B[33m" << "/_/    >     |"<< "\x1B[0m"<<endl;
+	cout<<"   "<< "\x1B[31m" << ",'|  |  |`.  ░ ░░   ░ ▒░ ░ ▒ ▒░  ▒ ░  ░  ▒   ░ ░  ░" << "\x1B[0m"<<" "<< "\x1B[33m" << "|,\\__-'      |"<< "\x1B[0m"<<endl;
+	cout<<"  "<< "\x1B[31m" << "/  |  |  |  \\     ░   ░ ░░ ░ ░ ▒   ▒ ░░          ░ " << "\x1B[0m"<<"    "<< "\x1B[33m" << "\\_           \\"<< "\x1B[0m"<<endl;
+	cout<<"  "<< "\x1B[31m" << "|,-'--|--'-.|           ░    ░ ░   ░  ░ ░        ░  ░" << "\x1B[0m"<<"    "<< "\x1B[33m" << "~~-___      )"<<"\x1B[0m"<<endl;
+	cout<<"     "<< "\x1B[33m" << " /|||\\ "<< "\x1B[33m" << "            "<< "\x1B[31m" << "                    ░          " << "\x1B[0m"<<"          "<< "\x1B[33m" << "\\      \\"<< "\x1B[0m"<<endl;
+    //cout<<" "<< "\x1B[43m" << "Hello World!\n" << "\x1B[0m"<<""<<endl;
 }
