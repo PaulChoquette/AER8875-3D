@@ -71,10 +71,15 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, d
 	INTEGER4 CC = FileContents.nelem * 8;
 	INTEGER4* NData = new INTEGER4[CC];
 
+	int nrepeat;
+
 	for (int i = 0; i < FileContents.nelem; i++) {
-		for (int j = 0; j < 8; j++) {
-			int k = j - vtklookup[1][FileContents.elem2vtk[i]][1]*floor(j / vtklookup[1][FileContents.elem2vtk[i]][1]);
-			NData[i * 8 + j] = FileContents.elem2node[i][k] + 1;
+		nrepeat = 8 - vtklookup[FileContents.ndime-2][FileContents.elem2vtk[i]][1];
+		for (int j = 0; j < nrepeat; j++) {
+			NData[i * 8 + j] = FileContents.elem2node[i][0] + 1;
+		}
+		for (int k = nrepeat; k < 8; k++) {
+			NData[i * 8 + k] = FileContents.elem2node[i][k-nrepeat] + 1;
 		}
 	}
 
@@ -82,4 +87,82 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, d
 
 	tecend142();
 
+}
+
+
+void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,double*v,double*w){
+    fstream outFile;
+    outFile.open(FileName, ios::out);
+    outFile << "VARIABLES=\"X\",\"Y\",\"Z\",\"p\",\"rho\",\"u\",\"v\",\"w\"" << endl;
+	//outFile << "VARIABLES=\"X\",\"Y\",\"Z\"" << endl;
+    //outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
+    //Zone Carre pour le tecplot
+    outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
+    //outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
+    outFile << "Nodes=" << npoint << ", Elements=" << nelem << ", ZONETYPE=FETETRAHEDRON" << endl;
+    outFile << "DATAPACKING=BLOCK" << endl;
+    outFile << "VARLOCATION = ([4,5,6,7,8] = CELLCENTERED)" << endl;
+    string a;                      //ecrire les coordonnees de laxe x a la suite
+    for (int j = 0; j < npoint; j++)
+    {
+        a = to_string(coord[j][0]);
+        outFile << a << endl;
+    }
+    string b;                      // ecrire les coordonnees de laxe y a la suite
+    for (int i = 0; i < npoint; i++)
+    {	
+        b = to_string(coord[i][1]);
+        outFile << b << endl;
+    }
+    string z;                      // ecrire les coordonnees de laxe y a la suite
+    for (int i = 0; i < npoint; i++)
+    {
+        z = to_string(coord[i][2]);
+        outFile << z << endl;
+    }
+    
+		// Conservatives
+	string C;
+	for (int i = 0; i < nelem; i++)
+    {
+        C = to_string(p[i]);
+        outFile << C << endl;
+    }
+	for (int i = 0; i < nelem; i++)
+    {
+        C = to_string(rho[i]);
+        outFile << C << endl;
+    }
+	for (int i = 0; i < nelem; i++)
+    {
+        C = to_string(u[i]);
+        outFile << C << endl;
+    }
+	for (int i = 0; i < nelem; i++)
+    {
+        C = to_string(v[i]);
+        outFile << C << endl;
+    }
+	for (int i = 0; i < nelem; i++)
+    {
+        C = to_string(w[i]);
+        outFile << C << endl;
+    }
+
+        // Ecriture des noeuds de chaque elements pour les carres
+    for (int ielem = 0; ielem <nelem; ielem++)
+    {
+        int vtk = elem2vtk[ielem];
+        int nnoel = vtklookup[ndime-2][vtk][1];
+        for (int icol = 0; icol <= nnoel - 1; icol++)
+        {
+            string icols = to_string(elem2node[ielem][icol]+1);
+            outFile << icols << " ";
+        }
+        outFile << endl;
+    }
+
+
+
+    outFile.close();
 }

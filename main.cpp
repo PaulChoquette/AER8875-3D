@@ -25,11 +25,11 @@ int main() {
 	// =================================== EXECUTABLE 2 ====================================================
 	double mach = 0.5;
 	double AoA = 0;
-	double cfl = 1.5;
-	bool RK_M=0;
+	double cfl = 2.5;
+	bool RK_M=1;
 	int RK_step =5;
-	int Order = 2;
-	int iterMax = 0;
+	int Order = 1;
+	int iterMax = 20000;
 	double convergeCrit = pow(10,-13);
 	double convergeFixLimit = pow(10,-4);
 
@@ -45,8 +45,8 @@ int main() {
 
 	solve.InitMPIBuffer(FileContents);
 	solve.Compute();		//Necessary for no seg faults
-	solve.SetAnalyticalGradiant(0.69,0.0,0.0);
-	solve.PrintGradiant();
+	//solve.SetAnalyticalGradiant(0.69,0.0,0.0);
+	//solve.PrintGradiant();
 	//solve.HighlightZoneBorder();
 
 
@@ -57,5 +57,8 @@ int main() {
 		case 2 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF2", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
 		case 3 : FileContents.write_tecplot(FileContents,"./PlotOut/IhAtEmYsElF3", solve.p, solve.rho, solve.u, solve.v, solve.w);break;
 	}
+
+	string OFileName = "./PlotOut/AsciiFile"+to_string(solve.World.world_rank)+".dat";
+	FileContents.write_tecplot_ASCII(OFileName,solve.p,solve.rho,solve.u,solve.v,solve.w);
 	return 1;
 }

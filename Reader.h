@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional> // std::divides
+
 using namespace std;
 class Solver_c;
 class Reader_c {
@@ -60,6 +61,7 @@ class Reader_c {
 		void WriteAllZoneFile(Reader_c& read,Solver_c& solve );
 		//Write Tecplot output
 		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
+		void write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,double*v,double*w);
 };
 
 #endif
