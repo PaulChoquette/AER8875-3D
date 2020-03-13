@@ -26,6 +26,11 @@ solver_c::solver_c(double mach_in,double AoA_in,int Order_in,int RK_step_in, boo
     inf_speed_z = 0;
     iteration = 0;
     World.Init();    // Initialise MPI
+    ofstream myfile ("ResiduLog.txt");  //Flash log
+    if (myfile.is_open())
+    {
+        myfile.close();
+    }
 }
 
 // destructor
@@ -102,6 +107,7 @@ void solver_c::Compute() {
         }
         residuRel = Residu/Residu_initial;
         if (World.world_rank==0) {
+        WriteResidu();
         printf("Iteration : %d, \tREL R :  %e, \tABS R :  %e\n",iteration,residuRel,Residu);
         }
         if ((abs(Residu/Residu_initial)<convergeCrit)&&(abs(Old_Residu/Residu_initial)<convergeCrit)) {
@@ -981,6 +987,17 @@ double solver_c::E2P(double e_loc,double rho_loc,double u_loc,double v_loc,doubl
 void solver_c::ResidualSmoothing() {
     
 }
+
+
+void solver_c::WriteResidu(){
+    ofstream myfile ("ResiduLog.txt",ios::app);
+    if (myfile.is_open())
+    {
+        myfile << residuRel<<endl;
+        myfile.close();
+    }
+}
+
 
 void solver_c::PrintPress() {
     for (int ielem=0;ielem<ncell;++ielem) {

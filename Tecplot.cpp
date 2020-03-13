@@ -75,11 +75,24 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, d
 
 	for (int i = 0; i < FileContents.nelem; i++) {
 		nrepeat = 8 - vtklookup[FileContents.ndime-2][FileContents.elem2vtk[i]][1];
-		for (int j = 0; j < nrepeat; j++) {
-			NData[i * 8 + j] = FileContents.elem2node[i][0] + 1;
+		if (nrepeat == 4) {
+			for (int j = 0; j < nrepeat; j++) {
+				NData[i * 8 + j] = FileContents.elem2node[i][0] + 1;
+			}
+
+			NData[i * 8 + 4] = FileContents.elem2node[i][1] + 1;
+
+			for (int k = 5; k < 8; k++) {
+				NData[i * 8 + k] = FileContents.elem2node[i][k - nrepeat] + 1;
+			}
 		}
-		for (int k = nrepeat; k < 8; k++) {
-			NData[i * 8 + k] = FileContents.elem2node[i][k-nrepeat] + 1;
+		else {
+			for (int j = 0; j < nrepeat; j++) {
+				NData[i * 8 + j] = FileContents.elem2node[i][0] + 1;
+			}
+			for (int k = nrepeat; k < 8; k++) {
+				NData[i * 8 + k] = FileContents.elem2node[i][k - nrepeat] + 1;
+			}
 		}
 	}
 
@@ -99,7 +112,8 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
     //Zone Carre pour le tecplot
     outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
     //outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
-    outFile << "Nodes=" << npoint << ", Elements=" << nelem << ", ZONETYPE=FETETRAHEDRON" << endl;
+    //outFile << "Nodes=" << npoint << ", Elements=" << nelem << ", ZONETYPE=FETETRAHEDRON" << endl;
+	outFile << "Nodes=" << npoint << ", Elements=" << nelem << ", ZONETYPE=FEBRICK" << endl;
     outFile << "DATAPACKING=BLOCK" << endl;
     outFile << "VARLOCATION = ([4,5,6,7,8] = CELLCENTERED)" << endl;
     string a;                      //ecrire les coordonnees de laxe x a la suite
@@ -154,7 +168,7 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
     {
         int vtk = elem2vtk[ielem];
         int nnoel = vtklookup[ndime-2][vtk][1];
-        for (int icol = 0; icol <= nnoel - 1; icol++)
+        for (int icol = 0; icol < nnoel; icol++)
         {
             string icols = to_string(elem2node[ielem][icol]+1);
             outFile << icols << " ";

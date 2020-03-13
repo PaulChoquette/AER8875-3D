@@ -91,4 +91,5 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     double CheckConvergence();  // Somme des résidus
 	double P2E(double,double,double,double,double);// Calcul pression vers Energie
 	double E2P(double,double,double,double,double);// Calcul  Energie vers pression
+    void WriteResidu();
 };
