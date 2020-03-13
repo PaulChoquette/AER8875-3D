@@ -6,7 +6,7 @@
 #include <time.h>
 #include <omp.h>
 #include "Reader.h"
-#include "Solver.h"
+#include "Connect.h"
 #include "main.h"
 using namespace std;
 
@@ -331,7 +331,7 @@ void Reader_c::check()
 		cout << elem2vtk[i];cout << "\n";
 	}
 }
-void Reader_c::write_file(string FileName, Reader_c& read, Solver_c& solve, int izone) {
+void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int izone) {
 	string filename = FileName+to_string(izone)+".su2";
 
 	ofstream outfile(filename, std::ios_base::binary | std::ios_base::out);
@@ -348,25 +348,25 @@ void Reader_c::write_file(string FileName, Reader_c& read, Solver_c& solve, int 
 		//=========================================== ELEM2NODES ===========================================
 		outfile << "% Inner element connectivity \n";
 		outfile << "% \n";
-		outfile << "NELEM= "<< solve.zone2nelem[izone] << "\n";
-		for (int ielem = 0; ielem < solve.zone2nelem[izone]; ielem++) {
+		outfile << "NELEM= "<< mesh.zone2nelem[izone] << "\n";
+		for (int ielem = 0; ielem < mesh.zone2nelem[izone]; ielem++) {
 			string temp_connec = "";
-			for (int inoel = 0; inoel < vtklookup[1][solve.elem2vtk[izone][ielem]][1]; inoel++) {
+			for (int inoel = 0; inoel < vtklookup[1][mesh.elem2vtk[izone][ielem]][1]; inoel++) {
 				temp_connec += "    ";
-				temp_connec += to_string(solve.elem2node[izone][ielem][inoel]);
+				temp_connec += to_string(mesh.elem2node[izone][ielem][inoel]);
 				
 			}
 			temp_connec += "    ";
-			outfile << solve.elem2vtk[izone][ielem]<< temp_connec <<"\n";
+			outfile << mesh.elem2vtk[izone][ielem]<< temp_connec <<"\n";
 		}
 		//============================================== COORD ==============================================
 		outfile << "% \n";
 		outfile << "% Node coordinates \n";
 		outfile << "% \n";
-		outfile << "NPOIN= " << solve.zone2nnode[izone] << "\n";
-		for (int i = 0; i < solve.zone2nnode[izone]; i++) {
+		outfile << "NPOIN= " << mesh.zone2nnode[izone] << "\n";
+		for (int i = 0; i < mesh.zone2nnode[izone]; i++) {
 			outfile << fixed;
-			outfile << setprecision(16) << solve.zone2coord[izone][i][0] <<"    "<< solve.zone2coord[izone][i][1] << "    " << solve.zone2coord[izone][i][2] << "\n";
+			outfile << setprecision(16) << mesh.zone2coord[izone][i][0] <<"    "<< mesh.zone2coord[izone][i][1] << "    " << mesh.zone2coord[izone][i][2] << "\n";
 		}
 		// ============================================= BOUNDARY =============================================
 		outfile << "% \n";
@@ -375,19 +375,19 @@ void Reader_c::write_file(string FileName, Reader_c& read, Solver_c& solve, int 
 		
 		outfile << "NMARK= " << read.nbc << "\n";
 		for (int ibc = 0; ibc < read.nbc; ibc++) { 
-			//int jzone = solve.zone2jzone[izone][ijzone];
+			//int jzone = mesh.zone2jzone[izone][ijzone];
 			outfile << "MARKER_TAG= " << read.bound2tag[ibc] << "\n";
-			int nghost = solve.zone2boundIndex[izone][ibc + 1] - solve.zone2boundIndex[izone][ibc];
+			int nghost = mesh.zone2boundIndex[izone][ibc + 1] - mesh.zone2boundIndex[izone][ibc];
 			outfile << "MARKER_ELEMS= " << nghost <<"\n";
-			int ielem1 = solve.zone2boundIndex[izone][ibc];
-			int ielem2 = solve.zone2boundIndex[izone][ibc+1];
+			int ielem1 = mesh.zone2boundIndex[izone][ibc];
+			int ielem2 = mesh.zone2boundIndex[izone][ibc+1];
 			for (int ighost = ielem1; ighost < ielem2; ighost++) {
 				string temp_connec = "";
-				int vtk = solve.elem2vtk[izone][ighost];
+				int vtk = mesh.elem2vtk[izone][ighost];
 				int nnoel = vtklookup[read.ndime-2][vtk][1]; 
 				for (int inoel = 0; inoel < nnoel; inoel++) {
 					temp_connec += "    ";
-					temp_connec += to_string(solve.elem2node[izone][ighost][inoel]);
+					temp_connec += to_string(mesh.elem2node[izone][ighost][inoel]);
 
 				}
 				outfile << vtk << temp_connec << "\n";
@@ -399,26 +399,26 @@ void Reader_c::write_file(string FileName, Reader_c& read, Solver_c& solve, int 
 		outfile << "% Zone Boundary elements \n";
 		outfile << "% \n";
 		
-		outfile << "NZONE= " << solve.nzone -1 << "\n";
+		outfile << "NZONE= " << mesh.nzone -1 << "\n";
 		int ighost = 0;
-		for (int ijzone = 0; ijzone < solve.nzone -1; ijzone++) { 
-			int jzone = solve.zone2jzone[izone][ijzone];
+		for (int ijzone = 0; ijzone < mesh.nzone -1; ijzone++) { 
+			int jzone = mesh.zone2jzone[izone][ijzone];
 			outfile << "ZONE_TAG= " << to_string(jzone) << "\n";
 
-			int njzone = solve.zone2markelem[izone][ijzone];
+			int njzone = mesh.zone2markelem[izone][ijzone];
 			outfile << "ZONE_ELEMS= " << njzone <<"\n";
 
-			int ielem1 = solve.zone2zoneIndex[izone][ijzone];
-			int ielem2 = solve.zone2zoneIndex[izone][ijzone+1];
+			int ielem1 = mesh.zone2zoneIndex[izone][ijzone];
+			int ielem2 = mesh.zone2zoneIndex[izone][ijzone+1];
 			
 			for (int ielem = ielem1; ielem < ielem2; ielem++) {
 				string temp_connec = "";
-				int vtk = solve.elem2vtk[izone][ielem];
+				int vtk = mesh.elem2vtk[izone][ielem];
 				int nnofa = vtklookup[read.ndime-2][vtk][1]; 
 
 				for (int inofa = 0; inofa < nnofa + 1; inofa++) {
 					temp_connec += "    ";
-					temp_connec += to_string(solve.elem2node[izone][ielem][inofa]);
+					temp_connec += to_string(mesh.elem2node[izone][ielem][inofa]);
 
 				}
 				outfile << to_string(vtk) << temp_connec  <<  "\n";
@@ -430,62 +430,106 @@ void Reader_c::write_file(string FileName, Reader_c& read, Solver_c& solve, int 
 	}
 
 }
-void Reader_c::WriteAllZoneFile(string FileName, Reader_c& read,Solver_c& solve ){
-	double StartTime = omp_get_wtime();
+void Reader_c::WriteAllZoneFile(string FileName, Reader_c& read,Connect_c& mesh ){
 	cout << "Writting SU2++ File \tSTARTING...";
-	for (int izone = 0; izone < solve.nzone; izone++) {
-		write_file(FileName, read, solve, izone);
+	double StartTime = omp_get_wtime();
+	for (int izone = 0; izone < mesh.nzone; izone++) {
+		write_file(FileName, read, mesh, izone);
 	}
 	double EndTime = omp_get_wtime();
 	double WorkTime = EndTime - StartTime;
 	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
 }
 
-void Reader_c::write_tecplot_METIS(string FileName, Reader_c & read, Solver_c& solve){
-	
+void Reader_c::write_tecplot_METIS(string FileName, Reader_c & read, Connect_c& mesh){
+	cout << "Writting Tecplot METIS \tSTARTING...";
+	double StartTime = omp_get_wtime();
+	int vtk = mesh.elem2vtk[0][0];
+	string ZONETYPE;
+	if (vtk == 10){
+		ZONETYPE = "FETETRAHEDRON";
+
+	}
+	else if (vtk == 12){
+		ZONETYPE = "FEBRICK";
+	}
+	else if (vtk == 9){
+		ZONETYPE = "FEQUADRILATERAL";
+	}
+	else if (vtk == 5){
+		ZONETYPE = "FETRIANGLE";
+	}
+	else {
+		ZONETYPE = "FEBRICK";
+	}
+	string DIME;
+	if (mesh.ndime == 2){
+		DIME = "\"X\",\"Y\",";
+	}
+	else {
+		DIME = "\"X\",\"Y\",\"Z\",";
+	}
+
+	int nvar = 1;
+	int *varlocation;
+	varlocation = new int[nvar];
+	varlocation[0] = mesh.ndime+1;
+	string varstring = "[" + to_string(varlocation[0]);
+	if (nvar > 1){
+		for (int ivar=1; ivar < nvar; ivar++){
+		varlocation[ivar] = varlocation[ivar-1] + 1;
+		varstring = varstring + "," + to_string(varlocation[ivar]) ;
+		}	
+	}
+	varstring = varstring + "]";
+
+
+
 
 	fstream outFile;
 	outFile.open(FileName, ios::out);
-	outFile << "VARIABLES=\"X\",\"Y\",\"Z\",\"Zone\"" << endl;
+	outFile << "VARIABLES=" << DIME << "\"Zone\"" << endl;
+
 	//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
-	//Zone Carre pour le tecplot 
 
 	outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
-	//outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
-	outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FETETRAHEDRON" << endl;
+	//outFile << "Nodes=" << mesh.nnode_g << ", Elements=" << mesh.nelem_g << ", ZONETYPE=FEBRICK" << endl;
+	outFile << "Nodes=" << mesh.nnode_g << ", Elements=" << mesh.nelem_g << ", ZONETYPE=" << ZONETYPE << endl;
 	outFile << "DATAPACKING=BLOCK" << endl;
-	outFile << "VARLOCATION = ([4] = CELLCENTERED)" << endl;
+	outFile << "VARLOCATION = (" << varstring << " = CELLCENTERED)" << endl;
 
 	string a;                      //ecrire les coordonnees de laxe x a la suite
-	for (int j = 0; j < solve.nnode_g; j++)
+	for (int j = 0; j < mesh.nnode_g; j++)
 	{
 		a = to_string(read.coord[j][0]);
 		outFile << a << endl;
 	}
 	string b;                      // ecrire les coordonnees de laxe y a la suite
-	for (int i = 0; i <= solve.nnode_g - 1; i++)
+	for (int i = 0; i <= mesh.nnode_g - 1; i++)
 	{
 		b = to_string(read.coord[i][1]);
 		outFile << b << endl;
 	}
-	string z;                      // ecrire les coordonnees de laxe y a la suite
-	for (int i = 0; i <= solve.nnode_g - 1; i++)
-	{
-		z = to_string(read.coord[i][2]);
-		outFile << z << endl;
+	if (mesh.ndime == 3){
+		string z;                      // ecrire les coordonnees de laxe y a la suite
+		for (int i = 0; i <= mesh.nnode_g - 1; i++)
+		{
+			z = to_string(read.coord[i][2]);
+			outFile << z << endl;
+		}
 	}
 
 	// Zone
 	string m;
-	for (int j = 0; j <= solve.nelem_g - 1; j++)
+	for (int j = 0; j <= mesh.nelem_g - 1; j++)
 	{
-		m = to_string(solve.elem2zone[j]);
+		m = to_string(mesh.elem2zone[j]);
 		outFile << m << endl;
 	}
 
 		// Ecriture des noeuds de chaque elements pour les carres
 
-	for (int ielem = 0; ielem <= solve.nelem_g - 1; ielem++)
+	for (int ielem = 0; ielem <= mesh.nelem_g - 1; ielem++)
 	{
 		int vtk = read.elem2vtk[ielem];
 		int nnoel = vtklookup[ndime-2][vtk][1];
@@ -499,9 +543,155 @@ void Reader_c::write_tecplot_METIS(string FileName, Reader_c & read, Solver_c& s
 		
 	}
 
-
+    delete[] varlocation;
 	outFile.close();
 
-
+	double EndTime = omp_get_wtime();
+	double WorkTime = EndTime - StartTime;
+	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
 
 }
+
+void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Reader_c & read, Connect_c& mesh){
+	cout << "Writting Tecplot Connect \tSTARTING...";
+	double StartTime = omp_get_wtime();
+	int ijzone = mesh.zone2ijzone[izone][jzone];
+	int njzone = mesh.zone2markelem[izone][ijzone];
+	int vtk = mesh.elem2vtk[0][mesh.zone2ncell[izone]-1];
+	string ZONETYPE;
+	if (vtk == 10){
+		ZONETYPE = "FETETRAHEDRON";
+
+	}
+	else if (vtk == 12){
+		ZONETYPE = "FEBRICK";
+	}
+	else if (vtk == 9){
+		ZONETYPE = "FEQUADRILATERAL";
+	}
+	else if (vtk == 5){
+		ZONETYPE = "FETRIANGLE";
+	}
+	else {
+		ZONETYPE = "FEBRICK";
+	}
+	string DIME;
+	if (mesh.ndime == 2){
+		DIME = "\"X\",\"Y\",";
+	}
+	else {
+		DIME = "\"X\",\"Y\",\"Z\",";
+	}
+	//ZONETYPE = "FEQUADRILATERAL";
+
+	int nvar = 2;
+	int *varlocation;
+	varlocation = new int[nvar];
+	varlocation[0] = mesh.ndime+1;
+	string varstring = "[" + to_string(varlocation[0]);
+	if (nvar > 1){
+		for (int ivar=1; ivar < nvar; ivar++){
+		varlocation[ivar] = varlocation[ivar-1] + 1;
+		varstring = varstring + "," + to_string(varlocation[ivar]) ;
+		}	
+	}
+	varstring = varstring + "]";
+
+
+
+
+	fstream outFile;
+	outFile.open(FileName, ios::out);
+	outFile << "VARIABLES=" << DIME << "\"Ghostcell in Other Zone\",\"Ghostcell\"" << endl;
+
+	//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
+
+	outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
+	//outFile << "Nodes=" << mesh.nnode_g << ", Elements=" << mesh.nelem_g << ", ZONETYPE=FEBRICK" << endl;
+	outFile << "Nodes=" << mesh.zone2nnode[jzone] << ", Elements=" << njzone << ", ZONETYPE=" << ZONETYPE << endl;
+	outFile << "DATAPACKING=BLOCK" << endl;
+	outFile << "VARLOCATION = (" << varstring << " = CELLCENTERED)" << endl;
+	
+	string a;                      //ecrire les coordonnees de laxe x a la suite
+	for (int j = 0; j < mesh.zone2nnode[jzone]; j++)
+	{
+		a = to_string(mesh.zone2coord[jzone][j][0]);
+		outFile << a << endl;
+	}
+	string b;                      // ecrire les coordonnees de laxe y a la suite
+	for (int i = 0; i <= mesh.zone2nnode[jzone] - 1; i++)
+	{
+		b = to_string(mesh.zone2coord[jzone][i][1]);
+		outFile << b << endl;
+	}
+	if (mesh.ndime == 3){
+		string z;                      // ecrire les coordonnees de laxe y a la suite
+		for (int i = 0; i <= mesh.zone2nnode[jzone] - 1; i++)
+		{
+			z = to_string(mesh.zone2coord[jzone][i][2]);
+			outFile << z << endl;
+		}
+	}
+	
+	// Elem in other zone
+	string m;
+	
+	int estart = mesh.zone2zoneIndex[izone][ijzone];
+	int estop = mesh.zone2zoneIndex[izone][ijzone+1];
+
+	for (int ielem = estart; ielem < estop; ielem++)
+	{
+		
+		int vtk = mesh.elem2vtk[izone][ielem];
+		int nnoel = vtklookup[ndime-2][vtk][1];
+		m = to_string(mesh.elem2node[izone][ielem][nnoel]);
+		outFile << m << endl;
+		
+	}
+	
+
+	// Elem
+	string m2;	
+	for (int ielem = estart; ielem < estop; ielem++)
+	{
+		
+		int vtk = mesh.elem2vtk[izone][ielem];
+		int nnoel = vtklookup[ndime-2][vtk][1];
+		m2 = to_string(ielem);
+		outFile << m2 << endl;
+		
+	}
+	
+
+	
+	
+		
+
+	for (int ielem = estart; ielem < estop; ielem++)
+	{
+		
+		
+		int vtk = mesh.elem2vtk[izone][ielem];
+		int nnoel = vtklookup[ndime-2][vtk][1];
+		int jelem = mesh.elem2node[izone][ielem][nnoel];
+		vtk = mesh.elem2vtk[jzone][jelem];
+		nnoel = vtklookup[ndime-2][vtk][1];
+		for (int icol = 0; icol <= nnoel - 1; icol++)
+		{
+			string icols = to_string(mesh.elem2node[jzone][jelem][icol]+1);
+			outFile << icols << " ";
+		}
+		outFile << endl;
+		
+	}
+	
+
+    delete[] varlocation;
+	outFile.close();
+
+	double EndTime = omp_get_wtime();
+	double WorkTime = EndTime - StartTime;
+	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
+
+}
+

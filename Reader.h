@@ -12,7 +12,7 @@
 #include <cmath>
 #include <functional> // std::divides
 using namespace std;
-class Solver_c;
+class Connect_c;
 class Reader_c {
 	public:
 		//Read Files
@@ -40,11 +40,13 @@ class Reader_c {
 		double** Fill_coord(const char* cline);
 		void check();
 		//Write SU2++ file
-		void write_file(string FileName, Reader_c& read, Solver_c& solve, int izone);
-		void WriteAllZoneFile(string FileName, Reader_c& read,Solver_c& solve );
+		void write_file(string FileName, Reader_c& read, Connect_c& solve, int izone);
+		void WriteAllZoneFile(string FileName, Reader_c& read,Connect_c& solve );
 		//Write Tecplot output
 		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
-		void write_tecplot_METIS(string FileName, Reader_c & read, Solver_c& solve);
+		void write_tecplot_METIS(string FileName, Reader_c & read, Connect_c& solve);
+		void write_tecplot_Connectivity(int izone, string FileName, Reader_c & read, Connect_c& solve);
+		void write_tecplot_OtherZone(int izone, int jzone, string FileName, Reader_c & read, Connect_c& solve);
 };
 
 #endif

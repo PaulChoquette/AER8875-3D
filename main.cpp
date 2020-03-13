@@ -1,3 +1,6 @@
+// Execute with CMD :  g++ *.cpp -lgomp -o out -I /home/charles/Documents/metis-5.1.0/include -L /home/charles/Documents/metis-5.1.0/lib -lmetis
+
+
 #include <string>
 #include <cctype>
 #include <iostream>
@@ -9,12 +12,8 @@
 #include <time.h>
 
 #include "main.h"
-#include "UI.h"
 #include "Reader.h"
 #include "Connect.h"
-#include "Metric.h"
-#include "Solver.h"
-
 
 //#include "./include/TECXXX.h"
 #include <metis.h>
@@ -25,8 +24,8 @@ void TEST_Exemple2D() {
 	cout << "\n============================== TEST 2D CONNECTIVITY ============================== " << endl;
     string File_Name = "block.su2";
     Reader_c File;
+	Connect_c test2D;
 	File.read_file(File_Name);
-	Solver_c test2D;
 	test2D.ComputeGlobalConnectivity(File);
 	test2D.ComputeElem2Zone();
 	test2D.ComputeZoneConnectivity(File);
@@ -45,100 +44,67 @@ void TEST_Exemple2D() {
 	}
 
 void TEST_NACA0012() {
-	cout << "\n============================== TEST NACA0012 ============================== " << endl;
+	cout << "\n================================== NACA0012 ================================== " << endl;
     string File_Name = "naca0012_euler_65x65x2_O_1B.su2";
     Reader_c File0012;
+	Connect_c NACA0012;
 	File0012.read_file(File_Name);
-	Solver_c NACA0012;
 	NACA0012.ComputeGlobalConnectivity(File0012);
 	NACA0012.ComputeMETIS(4, 4, File0012);
 	NACA0012.ComputeZoneConnectivity(File0012);
 	File0012.WriteAllZoneFile("NACA0012Zone", File0012, NACA0012);
 	File0012.write_tecplot_METIS("METISZONE_NACA0012.dat", File0012,NACA0012);	
+	File0012.write_tecplot_OtherZone(0, 1 ,"Tecplot_Connectivity_NACA0012_0.dat", File0012,NACA0012);	
+	File0012.write_tecplot_OtherZone(1, 0, "Tecplot_Connectivity_NACA0012_1.dat", File0012,NACA0012);	
+	}
+
+void TEST_ONERA() {
+	cout << "\n==================================== ONERA ==================================== " << endl;
+    string File_Name = "mesh_ONERAM6_inv_ffd.su2";
+    Reader_c FileONERA;
+	Connect_c ONERA;
+	FileONERA.read_file(File_Name);
+	ONERA.ComputeGlobalConnectivity(FileONERA);
+	ONERA.ComputeMETIS(4, 3, FileONERA);
+	ONERA.ComputeZoneConnectivity(FileONERA);
+	FileONERA.WriteAllZoneFile("ONERAZone", FileONERA, ONERA);
+	FileONERA.write_tecplot_METIS("METISZONE_ONERA.dat", FileONERA,ONERA);	
+	FileONERA.write_tecplot_OtherZone(0, 1 ,"Tecplot_Connectivity_ONERA_0_1.dat", FileONERA,ONERA);	
+	FileONERA.write_tecplot_OtherZone(1, 0, "Tecplot_Connectivity_ONERA_1_0.dat", FileONERA,ONERA);
 	}
 
 int main() {
-	cout << "Starting ..." << endl;
+	cout << "==================================== NOICE STARTING ====================================" << endl;
 
     TEST_Exemple2D();
 	TEST_NACA0012();
-
-	//string File_Name = "block.su2";
-	//string File_Name = "test_justSquare.su2";
-	//string File_Name = "test.su2";
-	//string File_Name = "2cube.su2";
-	string File_Name = "naca0012_euler_65x65x2_O_1B.su2";
-//	string File_Name = "mesh_ONERAM6_inv_ffd.su2";
-	Reader_c FileContents;
-	FileContents.read_file(File_Name);
-	Solver_c solve;
-	solve.ComputeGlobalConnectivity(FileContents);
-	solve.ComputeMETIS(2, 4, FileContents);
-	solve.ComputeZoneConnectivity(FileContents);
-	FileContents.WriteAllZoneFile("Zone", FileContents, solve);
-	FileContents.write_tecplot_METIS("METISZONE_ONERA.dat", FileContents,solve);
-
-	// =================================== EXECUTABLE 2 ====================================================
-
-	solve.ComputeLocalConnectivity();
-
-
-	// METRIC
-	//cout << "\nMetriques ..." << endl;
-	//Metric_c metric;
-	//metric.Compute(solve, FileContents);
-//	solve.Display3DArray(metric.Face2Norm, 0, solve.zone2nface[0], 3, "Face2Norm");
-//	solve.Display2DArray(metric.Face2Area, 1, solve.zone2nface[0], "Face2Area");
-//	solve.Display2DArray(metric.Elem2Vol, 1, solve.zone2nelem[0], "Elem2Vol");
-	//metric.SumNorm(solve, FileContents, 1);
-//	solve.Display3DArray(metric.Elem2DeltaS_xyz, 0, solve.zone2nelem[0], 3, "Elem2DeltaS_xyz");
-//	solve.Display3DArray(metric.Elem2Center, 0, solve.zone2nelem[0], 3, "Elem2Center");
-	// cout << "Face2ElemCenter[i_zone][faceID][0] : "; cout << metric.Face2ElemCenter[0][2][0] <<endl;
-	// cout << "Face2ElemCenter[i_zone][faceID][1] : "; cout << metric.Face2ElemCenter[0][2][1] <<endl;
-
-    //TEST_Exemple2D();
+	TEST_ONERA();
 	
-   
-	
-
-	//cout << "Face2ElemCenter : " << endl;
-	// for(int face_i=0; face_i<solve.zone2nface[0]; face_i++)
-	// {
-	// 	cout << metric.Face2ElemCenter[0][face_i][0]; cout << " ; ";cout << metric.Face2ElemCenter[0][face_i][1] << endl;
-	// }
 
 	 // DISPLAY OF GLOBAL
-	cout << "\n========================================= DISPLAY OF GLOBAL ========================================= " << endl;
-	//solve.Display2DArray(FileContents.elem2node, FileContents.ncell, 8, "elem2node_g");
-	//solve.Display1DArray(solve.esup1, solve.mesup1, "esup1");
-	//solve.Display1DArray(solve.esup2, solve.nnode_g+1, "esup2");
-	//solve.Display1DArray(solve.psup1, solve.mpsup, "psup1");
-	//solve.Display1DArray(solve.psup2, solve.nnode_g+1, "psup2");
-	//solve.Display2DArray(solve.elem2elem_g, solve.ncell_g, 6, "elem2elem_g");
+	//mesh.Display2DArray(FileContents.elem2node, FileContents.ncell, 8, "elem2node_g");
+	//mesh.Display1DArray(mesh.esup1, mesh.mesup1, "esup1");
+	//mesh.Display1DArray(mesh.esup2, mesh.nnode_g+1, "esup2");
+	//mesh.Display1DArray(mesh.psup1, mesh.mpsup, "psup1");
+	//mesh.Display1DArray(mesh.psup2, mesh.nnode_g+1, "psup2");
+	//mesh.Display2DArray(mesh.elem2elem_g, mesh.ncell_g, 6, "elem2elem_g");
 
 	//// DISPLAY OF ZONE
-	cout << "\n========================================= DISPLAY OF ZONE ========================================= " << endl;
-	int izone = 0; // iZone to Display
-	// solve.Display1DArray(solve.zone2nnode, solve.nzone, "zone2nnode");
-	// solve.Display1DArray(solve.zone2nelem, solve.nzone, "zone2nelem");
-	// solve.Display2DArray(solve.zone2node, solve.nzone, solve.zone2nnode[izone], "zone2node");
-	// solve.Display2DArray(solve.zone2elem, solve.nzone, solve.zone2nelem[izone], "zone2elem");
-	// solve.Display2DArray(solve.nodeglobal2local, solve.nnode_g, solve.nzone, "nodeglobal2local");
-	// solve.Display2DArray(solve.elemglobal2local, solve.nelem_g, 2, "elemglobal2local");
-	// solve.Display3DArray(solve.belem2node, izone, solve.zone2nbelem[izone],6, "belem2node");
-	// solve.Display3DArray(solve.elem2node, izone, solve.zone2ncell[izone], 6, "elem2node");
-	//solve.Display3DArray(solve.elem2elem, izone, solve.zone2ncell[izone], 4, "elem2elem");
-	//solve.Display2DArray(solve.elem2vtk, solve.nzone, solve.zone2ncell[izone], "elem2vtk");
-	//solve.Display3DArray(solve.zone2coord, 0, solve.zone2nnode[0], 2, "zone2coord");
-	//solve.Display3DArray(solve.face2node, 0, solve.zone2nface[0], 5, "face2node");
-	// solve.Display3DArray(solve.face2elem, 0, solve.zone2nface[0], 2, "face2elem");
-	// solve.Display3DArray(solve.face2fael, 0, solve.zone2nface[0], 2, "face2fael");
-	//solve.Display3DArray(solve.elem2face, 0, solve.zone2ncell[0], 6, "elem2face");
+	//int izone = 0; // iZone to Display
+	// mesh.Display1DArray(mesh.zone2nnode, mesh.nzone, "zone2nnode");
+	// mesh.Display1DArray(mesh.zone2nelem, mesh.nzone, "zone2nelem");
+	// mesh.Display2DArray(mesh.zone2node, mesh.nzone, mesh.zone2nnode[izone], "zone2node");
+	// mesh.Display2DArray(mesh.zone2elem, mesh.nzone, mesh.zone2nelem[izone], "zone2elem");
+	// mesh.Display2DArray(mesh.nodeglobal2local, mesh.nnode_g, mesh.nzone, "nodeglobal2local");
+	// mesh.Display2DArray(mesh.elemglobal2local, mesh.nelem_g, 2, "elemglobal2local");
+	// mesh.Display3DArray(mesh.belem2node, izone, mesh.zone2nbelem[izone],6, "belem2node");
+	// mesh.Display3DArray(mesh.elem2node, izone, mesh.zone2ncell[izone], 6, "elem2node");
+	//mesh.Display3DArray(mesh.elem2elem, izone, mesh.zone2ncell[izone], 4, "elem2elem");
+	//mesh.Display2DArray(mesh.elem2vtk, mesh.nzone, mesh.zone2ncell[izone], "elem2vtk");
+	//mesh.Display3DArray(mesh.zone2coord, 0, mesh.zone2nnode[0], 2, "zone2coord");
+
 	cout << "**************\nEnd\n**************\n";
 	
-
-
-//FileContents.write_tecplot(FileContents, "test2", p, Rho, u, v, w);
 
 	return 0;
 }

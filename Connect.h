@@ -31,19 +31,18 @@ public:
 
 
 	// Integrer :
-	int nzone, ndime, mesup1, mpsup, neind;
+	int nzone, ndime, mesup1, mpsup, neind; 
 	int nelem_g, nnode_g, ncell_g;
 	// 1D Array of Integrer :
 	int* esup2; int* esup1; int* psup1; int* psup2; int* lpoin; int* eptr; int* eind;
-	int* zone2nelem; int* zone2nnode; int* checkzone;  int* zone2nbelem; int* zone2nbound; int* zone2ncell; int* zone2nface;
+	int* zone2nelem; int* zone2nnode; int* checkzone;  int* zone2nbelem; int* zone2nbound; int* zone2ncell; 
 	// 2D Array of Integrer :
-	int** face2Nbr_of_node;
 	int** vtk2nnofa; int** vtk2facevtk;
 	int** elem2elem_g;
 	int** zone2node; int** zone2elem; int** elemglobal2local; int** nodeglobal2local; int** zone2markelem;  int** zone2zone; int** zone2jzone; int** zone2ijzone;
 	int** elem2vtk; int** zelem2jelem; int** zone2boundIndex; int** zone2zoneIndex; int** zone2esup1; int** zone2esup2; int** zone2psup1; int** zone2psup2; int** zone2lpoin; 
 	// 3D Array of Integrer :
-	int*** elem2node; int*** vtk2lpofa; int*** belem2node; int*** elem2elem; int*** face2elem; int*** face2node; int*** face2fael; int*** elem2face;
+	int*** elem2node; int*** vtk2lpofa; int*** belem2node; 
 	// Double :
 
 	// 1D Array of Double :
@@ -57,6 +56,7 @@ public:
 	vector<vector<vector<int>>> zone2idmark;
 
 	// =========================================== CONNECTIVITY FUNCTION MEMBERS ============================================
+	~Connect_c();
 	// ELEMENTS CONNECTIVITY:
 	void InitializeGlobal(Reader_c& read);
 	void Node2Elements(Reader_c& read);
@@ -68,16 +68,7 @@ public:
 	int GetielemArNode(int inode, int ielno);
 	void ComputeGlobalConnectivity(Reader_c& read);
 
-	// ZONE ELEMENTS CONNECTIVITY:
-	void Node2Elements(int izone);
-	void Node2Nodes(int izone);
-	void Element2Elements(int izone);
-
-	// FACES CONNECTIVITY:
-	void Findnface(int izone);
-	void Face2ElementsNodes(int izone);
-	void Element2Faces(int izone);
-	void ComputeLocalConnectivity();
+	
 
 	// ZONES CONNECTIVITY:
 	void Findnzone();
@@ -95,8 +86,8 @@ public:
 	void Element2Nodes(Reader_c& read);
 	void Zone2Zones();
 	void ComputeZoneConnectivity(Reader_c& read);
-
     void ComputeElem2Zone();
+
 	// OTHER FUNCTION MEMBER
 	void Display1DArray(int V[], int size, string name);
 	void Display2DArray(int* V[], int nLine, int nColomn, string name);

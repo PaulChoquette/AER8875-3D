@@ -338,299 +338,12 @@ void Connect_c::ComputeGlobalConnectivity(Reader_c& read) {
 	double EndTime = omp_get_wtime();
 	double WorkTime = EndTime - StartTime;
 	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
+
+	//Connect_c::Display2DArray(elem2elem_g,ncell_g,4,"elem2elem");
 }
 
 // ============================================= ZONE ELEMENTS CONNECTIVITY ================================================
 // === ELEMENT === 
-void Connect_c::Node2Elements(int izone) {
-	int mesup1 = 0;
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		mesup1 += vtklookup[ndime-2][vtk][1];
-	}
-
-	// Initializing esup and other parameters :
-	zone2esup2[izone] = new int[zone2nnode[izone] + 1]();
-	zone2esup1[izone] = new int[mesup1]();
-	int ipoil;
-	//
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nnode = vtklookup[ndime-2][vtk][1];
-		for (int inode = 0; inode < nnode; inode++) {
-			ipoil = elem2node[izone][ielem][inode] + 2; // elem2node en 0 base 
-			zone2esup2[izone][ipoil - 1] = zone2esup2[izone][ipoil - 1] + 1;
-		}
-	}
-	for (int ipoin = 2; ipoin <= zone2nnode[izone] + 1; ipoin++) {
-		zone2esup2[izone][ipoin - 1] = zone2esup2[izone][ipoin - 1] + zone2esup2[izone][ipoin - 1 - 1];
-	}
-	int ipoin, istor;
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nnode = vtklookup[ndime-2][vtk][1];
-
-		for (int inode = 0; inode <= nnode - 1; inode++) {
-			ipoin = elem2node[izone][ielem][inode] + 1; // elem2node en 0 base
-			istor = zone2esup2[izone][ipoin - 1] + 1;
-			zone2esup2[izone][ipoin - 1] = istor;
-			zone2esup1[izone][istor - 1] = ielem + 1;
-		}
-	}
-	for (int ipoin = zone2nnode[izone] + 1; ipoin >= 2; --ipoin) {
-		zone2esup2[izone][ipoin - 1] = zone2esup2[izone][ipoin - 1 - 1];
-	}
-	zone2esup2[izone][0] = 0;
-
-}
-void Connect_c::Node2Nodes(int izone) {
-	zone2lpoin[izone] = new int[zone2nnode[izone]]();
-	zone2psup2[izone] = new int[zone2nnode[izone] + 1]();
-	int istor{ 0 };
-	for (int ipoin = 1; ipoin <= zone2nnode[izone]; ipoin++) {
-		for (int iesup = zone2esup2[izone][ipoin - 1] + 1; iesup <= zone2esup2[izone][ipoin + 1 - 1]; iesup++) {
-			int ielem = zone2esup1[izone][iesup - 1] - 1;
-			int vtk = elem2vtk[izone][ielem];
-			int nnode = vtklookup[ndime-2][vtk][1];
-			for (int inode = 1; inode <= nnode; inode++) {
-				int jpoin = elem2node[izone][ielem][inode - 1] + 1; // elem2node en 9 base
-				if (jpoin != ipoin && zone2lpoin[izone][jpoin - 1] != ipoin) {
-					istor = istor + 1;
-					zone2lpoin[izone][jpoin - 1] = ipoin;
-				}
-			}
-		}
-		zone2psup2[izone][ipoin + 1 - 1] = istor;
-	}
-
-	zone2lpoin[izone] = new int[zone2nnode[izone]]();
-	istor = 0; int jpoin = 0;
-	int mpsup = zone2psup2[izone][zone2nnode[izone]];
-	zone2psup1[izone] = new int[mpsup]();
-	for (int ipoin = 1; ipoin <= zone2nnode[izone]; ipoin++) {
-		for (int iesup = zone2esup2[izone][ipoin - 1] + 1; iesup <= zone2esup2[izone][ipoin + 1 - 1]; iesup++) {
-			int ielem = zone2esup1[izone][iesup - 1] - 1;																		// 1 based
-			int vtk = elem2vtk[izone][ielem];
-			int nnode = vtklookup[ndime-2][vtk][1];
-			for (int inode = 1; inode <= nnode; inode++) {
-				jpoin = elem2node[izone][ielem][inode - 1] + 1; // elem2node en 9 base
-				if (jpoin != ipoin && zone2lpoin[izone][jpoin - 1] != ipoin) {
-					istor = istor + 1;
-					zone2psup1[izone][istor - 1] = jpoin;
-					zone2lpoin[izone][jpoin - 1] = ipoin;
-				}
-			}
-		}
-	}
-}
-void Connect_c::Element2Elements(int izone) {
-	elem2elem[izone] = new int* [zone2ncell[izone]];
-
-	vector<int> lhelp;
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nfael = vtklookup[ndime-2][vtk][0];
-		elem2elem[izone][ielem] = new int[nfael]();
-		for (int ifael = 0; ifael <= nfael - 1; ifael++) {
-			int nnofa = vtk2nnofa[vtk][ifael];
-			lhelp.resize(nnofa);															// vecteur a enlever
-
-			for (int inofa = 0; inofa <= nnofa - 1; inofa++) {
-				int ilpofa = vtk2lpofa[vtk][ifael][inofa] + 1;
-				lhelp[inofa] = elem2node[izone][ielem][ilpofa - 1] + 1;	// elem2node en 0 base 
-				zone2lpoin[izone][lhelp[inofa] - 1] = 1;
-			}
-			int ipoin = lhelp[0] - 1;
-			for (int istor = zone2esup2[izone][ipoin]; istor <= zone2esup2[izone][ipoin + 1] - 1; istor++) {
-				int jelem = zone2esup1[izone][istor];
-				int jvtk = elem2vtk[izone][jelem - 1];
-				int nfael = vtklookup[ndime-2][jvtk][0];
-				if (jelem != ielem + 1) {
-					for (int jfael = 0; jfael <= nfael - 1; jfael++) {
-						int nnofj = vtk2nnofa[jvtk][jfael];
-						if (nnofj == nnofa) {
-							int icoun = 0;
-							for (int jnofa = 0; jnofa <= nnofa - 1; jnofa++) {
-								int jpoin = elem2node[izone][jelem - 1][vtk2lpofa[jvtk][jfael][jnofa] + 1 - 1] + 1; // elem2node en 0 base 
-								icoun = icoun + zone2lpoin[izone][jpoin - 1];
-							}
-							if (icoun == nnofa) {
-								elem2elem[izone][ielem][ifael] = jelem - 1;
-
-							}
-						}
-					}
-				}
-			}
-			int vtk2 = elem2vtk[izone][ielem];
-			nnofa = vtk2nnofa[vtk2][ifael];
-			for (int inova = 0; inova <= nnofa - 1; inova++) {
-				zone2lpoin[izone][lhelp[inova] - 1] = 0;
-			}
-		}
-	}
-
-}
-
-// ==== FACE ====
-void Connect_c::Findnface(int izone) {
-	int nfaeltot = 0;
-	for (int ielem = 0; ielem < zone2nelem[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nfael = vtklookup[ndime-2][vtk][0];
-		nfaeltot += nfael;
-	}
-	int ngcell = zone2nbound[izone] + zone2nbelem[izone];
-	zone2nface[izone] = 0.5 * (nfaeltot - ngcell) + ngcell;
-	//cout << "nface = " << zone2nface[izone] << endl;
-}
-void Connect_c::Face2ElementsNodes(int izone) {
-	
-	face2elem[izone] = new int* [zone2nface[izone]];
-	face2node[izone] = new int* [zone2nface[izone]];
-	face2fael[izone] = new int* [zone2nface[izone]];
-	face2Nbr_of_node[izone] = new int [zone2nface[izone]];
-
-	// Creation d'une matrice d'aide identique a elem2elem
-	int** elem2elemHelp;
-	elem2elemHelp = new int* [zone2ncell[izone]];
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nfael = vtklookup[ndime-2][vtk][0];
-		elem2elemHelp[ielem] = new int[nfael];
-		for (int ifael = 0; ifael < nfael; ifael++) {
-			elem2elemHelp[ielem][ifael] = elem2elem[izone][ielem][ifael];
-		}
-	}
-	
-    int iface = 0; int LeftCheck = 1;
-	for (int ielem = 0; ielem < zone2nelem[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nfael = vtklookup[ndime-2][vtk][0];
-
-		for (int ifael = 0; ifael <= nfael - 1; ifael++) {
-			// jelem = elem2elemHelp[ielem][ifael] - 1;   // 1 based
-			int jelem = elem2elemHelp[ielem][ifael];   // 0 based
-
-			if (jelem != -2) {
-
-				int nnofa = vtk2nnofa[vtk][ifael];
-				face2node[izone][iface] = new int[nnofa];
-				face2Nbr_of_node[izone][iface] = nnofa;
-				face2elem[izone][iface] = new int[2];
-				face2fael[izone][iface] = new int[2];
-
-				if (ielem < jelem) {         // element i est a gauche de j  // 1 based
-					LeftCheck = 1;
-					
-					for (int inofa = 0; inofa < nnofa; inofa++) {	
-						int inoel = vtk2lpofa[vtk][ifael][inofa];
-						face2node[izone][iface][inofa] = elem2node[izone][ielem][inoel];
-					}
-					face2elem[izone][iface][0] = ielem;
-					face2elem[izone][iface][1] = jelem;
-					face2fael[izone][iface][0] = ifael;
-					iface++;
-				}
-				else if (ielem > jelem) {      // element i est a droite de j    // 1 based
-					LeftCheck = 0;
-
-					for (int inofa = 0; inofa < nnofa; inofa++) {
-						int inoel = vtk2lpofa[vtk][ifael][inofa];
-						face2node[izone][iface][inofa] = elem2node[izone][ielem][inoel];
-					}
-					face2elem[izone][iface][0] = jelem;
-					face2elem[izone][iface][1] = ielem;
-					face2fael[izone][iface][1] = ifael;
-					iface++;
-				}
-
-				int jvtk = elem2vtk[izone][jelem];
-				int njfael = vtklookup[ndime-2][jvtk][0];
-
-				for (int jfael = 0; jfael < njfael; jfael++) {
-					int kelem = elem2elemHelp[jelem][jfael];   // 0 based
-					if (kelem == ielem) {
-						elem2elemHelp[jelem][jfael] = -2; 
-
-						face2fael[izone][iface - 1][LeftCheck] = jfael;
-
-						//if (LeftCheck == 1) { // element i est a gauche de k 
-						//	face2fael[izone][iface - 1][1] = jfael;
-						//}
-						//else {
-						//	face2fael[izone][iface - 1][0] = jfael;
-						//}
-						break;
-					}
-				}
-			}
-		}
-	}
-	delete[] elem2elemHelp;
-	/*Display3DArray(face2fael, 0, zone2nface[0], 5, "face2fael");
-	Display3DArray(face2elem, 0, zone2nface[0], 5, "face2elem");*/
-
-}
-void Connect_c::Element2Faces(int izone) 
-{
-	elem2face[izone] = new int* [zone2ncell[izone]];
-	for (int ielem = 0; ielem < zone2ncell[izone]; ielem++) {
-		int vtk = elem2vtk[izone][ielem];
-		int nfael = vtklookup[ndime-2][vtk][0];
-		elem2face[izone][ielem] = new int[nfael];
-	}
-	
-	for (int iface = 0; iface < zone2nface[izone]; iface++) 
-	{
-		int ielemL = face2elem[izone][iface][0];
-		int ielemR = face2elem[izone][iface][1];
-		int ifaelL = face2fael[izone][iface][0];
-		int ifaelR = face2fael[izone][iface][1];
-		elem2face[izone][ielemL][ifaelL] = iface;
-		elem2face[izone][ielemR][ifaelR] = iface;
-	}
-}
-void Connect_c::ComputeLocalConnectivity() 
-{
-	double StartTime = omp_get_wtime();
-	cout << "Local Connectivity \tSTARTING...";
-	
-	zone2esup1	= new int* [nzone];
-	zone2esup2	= new int* [nzone];
-	zone2psup1	= new int* [nzone];
-	zone2psup2	= new int* [nzone];
-	zone2lpoin	= new int* [nzone];
-	elem2elem	= new int** [nzone];
-	zone2nface	= new int [nzone];
-	face2elem	= new int** [nzone];
-	face2node	= new int** [nzone];
-	face2Nbr_of_node	= new int* [nzone];
-	face2fael	= new int** [nzone];
-	elem2face	= new int** [nzone];
-
-	for (int izone = 0; izone < nzone; izone++) {
-		Connect_c::Node2Elements(izone);
-		Connect_c::Node2Nodes(izone);
-		Connect_c::Element2Elements(izone);
-		Connect_c::Findnface(izone);
-		Connect_c::Face2ElementsNodes(izone);
-		Connect_c::Element2Faces(izone);
-	}
-
-	delete[] zone2esup1;
-	delete[] zone2esup2;
-	delete[] zone2psup1;
-	delete[] zone2psup2;
-	delete[] zone2lpoin;
-
-	/*Display3DArray(face2node, 0, zone2nface[0], 5, "face2node");
-	Display3DArray(face2elem, 0, zone2nface[0], 2, "face2elem");
-	Display3DArray(face2fael, 0, zone2nface[0], 2, "face2fael");*/
-	double EndTime = omp_get_wtime();
-	double WorkTime = EndTime - StartTime;
-	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
-}
 
 
 // ================================================= ZONES CONNECTIVITY ====================================================
@@ -829,7 +542,6 @@ void Connect_c::InitializeElem2Node(Reader_c& read) {
 			// Si jelem nest pas un ghostcell:
 			if (jelem_g < nelem_g) {
 				int jzone = elem2zone[jelem_g];
-				int jelem_z = elemglobal2local[jelem_g][0];
 
 				// Detection d'une frontiere auvec une autre zone:
 				if (jzone != izone) {
@@ -1154,8 +866,7 @@ void Connect_c::ComputeZoneConnectivity(Reader_c& read) {
 	// delete[] elemglobal2local;
 	double EndTime = omp_get_wtime();
 	double WorkTime = EndTime - StartTime;
-	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;
-	
+	cout << "...............DONE\t (took " << WorkTime << " sec)" << endl;	
 }
 
 void Connect_c::ComputeElem2Zone() {
@@ -1172,6 +883,60 @@ void Connect_c::ComputeElem2Zone() {
 
 }
 
+Connect_c::~Connect_c(void){
+
+	
+	
+	// int* zone2nelem; int* zone2nnode;  int* zone2nbelem; int* zone2nbound; int* zone2ncell; 
+	
+	
+	// int** zone2markelem;  int** zone2zone; int** zone2jzone; int** zone2ijzone;
+	 //int** zelem2jelem; int** zone2boundIndex; int** zone2zoneIndex; int** zone2esup1; int** zone2esup2; int** zone2psup1; int** zone2psup2; int** zone2lpoin; 
+	// // 3D Array of Integrer :
+  // int*** belem2node; 
+
+	
+	delete[] esup2;
+	delete[] esup1;
+
+    for (int izone =0; izone < nzone; izone++){
+		delete[] zone2elem[izone];
+		delete[] zone2node[izone];
+		delete[] elem2vtk[izone];
+		for (int ielem=0; ielem < zone2ncell[izone]; ielem++){
+			delete elem2node[izone][ielem];			
+		}
+		delete elem2node[izone];	
+	}
+
+	delete[] zone2node;
+	delete[] zone2elem;
+	delete[] elem2node;
+	delete[] elem2vtk;
+	delete[] zone2ncell;
+
+    for (int ielem=0; ielem < ncell_g; ielem++){
+		delete[] elem2elem_g[ielem];
+	 	if (ielem < nelem_g){
+	 		delete[] elemglobal2local[ielem];
+	 	}
+	}
+	delete[] elem2elem_g;
+	delete[] elemglobal2local;
+ 	
+	for (int inode=0; inode < nnode_g; inode++){
+	 	delete[] nodeglobal2local[inode];
+	}
+	delete[] nodeglobal2local;
+
+
+
+	delete[] vtk2nnofa;
+	delete[] vtk2lpofa;
+	delete[] vtk2facevtk;
+
+
+ }
 
 // ================================================= OTHER FUNCTION MEMBERS ====================================================
 void	Connect_c::Display1DArray(int V[], int size, string name) {
@@ -1186,7 +951,9 @@ void	Connect_c::Display2DArray(int* V[], int nLine, int nColomn, string name) {
 	for (int i = 0; i <= nLine - 1; i++) {
 		cout << "\n";
 		for (int j = 0; j <= nColomn - 1; j++) {
+			
 			cout << V[i][j] << ", ";
+			
 		}
 	}
 	cout << "]\n";
