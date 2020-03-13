@@ -71,6 +71,21 @@ void TEST_ONERA() {
 	FileONERA.write_tecplot_METIS("METISZONE_ONERA.dat", FileONERA,ONERA);	
 	FileONERA.write_tecplot_OtherZone(0, 1 ,"Tecplot_Connectivity_ONERA_0_1.dat", FileONERA,ONERA);	
 	FileONERA.write_tecplot_OtherZone(1, 0, "Tecplot_Connectivity_ONERA_1_0.dat", FileONERA,ONERA);
+
+	FileONERA.write_tecplot_OtherZone(0, 2 ,"Tecplot_Connectivity_ONERA_0_2.dat", FileONERA,ONERA);	
+	FileONERA.write_tecplot_OtherZone(2, 0, "Tecplot_Connectivity_ONERA_2_0.dat", FileONERA,ONERA);
+	
+	FileONERA.write_tecplot_OtherZone(0, 3 ,"Tecplot_Connectivity_ONERA_1_2.dat", FileONERA,ONERA);	
+	FileONERA.write_tecplot_OtherZone(3, 0, "Tecplot_Connectivity_ONERA_2_1.dat", FileONERA,ONERA);
+
+	FileONERA.write_tecplot_OtherZone(1, 2 ,"Tecplot_Connectivity_ONERA_1_2.dat", FileONERA,ONERA);	
+	FileONERA.write_tecplot_OtherZone(2, 1, "Tecplot_Connectivity_ONERA_2_1.dat", FileONERA,ONERA);
+
+	FileONERA.write_tecplot_OtherZone(1, 3 ,"Tecplot_Connectivity_ONERA_1_2.dat", FileONERA,ONERA);	
+	FileONERA.write_tecplot_OtherZone(3, 1, "Tecplot_Connectivity_ONERA_2_1.dat", FileONERA,ONERA);
+
+	FileONERA.write_tecplot_OtherZone(2, 3 ,"Tecplot_Connectivity_ONERA_2_3.dat", FileONERA,ONERA);	
+	FileONERA.write_tecplot_OtherZone(3, 2, "Tecplot_Connectivity_ONERA_3_2.dat", FileONERA,ONERA);
 	}
 
 int main() {

@@ -553,7 +553,7 @@ void Reader_c::write_tecplot_METIS(string FileName, Reader_c & read, Connect_c& 
 }
 
 void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Reader_c & read, Connect_c& mesh){
-	cout << "Writting Tecplot Connect \tSTARTING...";
+	cout << "Writting Tecplot Zone \tSTARTING...";
 	double StartTime = omp_get_wtime();
 	int ijzone = mesh.zone2ijzone[izone][jzone];
 	int njzone = mesh.zone2markelem[izone][ijzone];
@@ -584,7 +584,7 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 	}
 	//ZONETYPE = "FEQUADRILATERAL";
 
-	int nvar = 2;
+	int nvar = 3;
 	int *varlocation;
 	varlocation = new int[nvar];
 	varlocation[0] = mesh.ndime+1;
@@ -602,7 +602,7 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 
 	fstream outFile;
 	outFile.open(FileName, ios::out);
-	outFile << "VARIABLES=" << DIME << "\"Ghostcell in Other Zone\",\"Ghostcell\"" << endl;
+	outFile << "VARIABLES=" << DIME << "\"Ghostcell in Other Zone\",\"Ghostcell\",\"iZone-jZone\"" << endl;
 
 	//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
 
@@ -662,6 +662,27 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 		
 	}
 	
+	// Elem
+	int z1;
+	int z2;
+	if (izone < jzone){
+		z1 = izone;
+		z2 = jzone;
+	}
+	else {
+		z2 = izone;
+		z1 = jzone;
+	}
+	string zz = to_string(z1)+to_string(z2);
+	for (int ielem = estart; ielem < estop; ielem++)
+	{
+		
+		int vtk = mesh.elem2vtk[izone][ielem];
+		int nnoel = vtklookup[ndime-2][vtk][1];
+
+		outFile << zz << endl;
+		
+	}
 
 	
 	
