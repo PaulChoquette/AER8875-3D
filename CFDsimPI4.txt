@@ -1,0 +1,23 @@
+------------------------------------------------------------
+                    Input File                             
+------------------------------------------------------------
+
+SimName= CFDsimPI4.txt
+choiceMESH= IMPORT
+su2FilePath= /media/sf_SHARE_FOLDER/GitKraken_folder/AER8875-3D/Zone0(1).su2
+NbrPartition= 4
+alpha= 8
+mach= 0.8
+gamma= 1.4
+TemporelMethod= Runge-Kutta
+stgaeNbr= 5
+cflVAR_str= 1.5
+ResidualSmooth= No
+SpatialMethod= Roe
+SpatialMethodORDER= 1
+grad= 
+iterMAX= 5
+convergenceCriterea= 1e-14
+graph= 
+alpha_0= 0.0
+alpha_inf= 0.0

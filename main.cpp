@@ -22,25 +22,17 @@ using namespace std;
 string fileName;
 
 int main() {
-	// =================================== EXECUTABLE 2 ====================================================
-	double mach = 2.0;
-	double AoA = 0.0;
-	double cfl = 2.3;
-	bool RK_M=1;
-	int RK_step =5;
-	int Order = 1;
-	int iterMax = 2000;
-	double convergeCrit = pow(10,-13);
-	double convergeFixLimit = pow(10,-4);
-
 	Reader_c FileContents;
-	solver_c solve(mach,AoA,Order,RK_step,RK_M,cfl,iterMax,convergeCrit,convergeFixLimit);
+	string parametreFile = "CFDsimPI4.txt";
+	double convergeFixLimit = pow(10,-4);
+	//////////////////////////////////////////////////////////////////////////////
+	solver_c solve(FileContents, convergeFixLimit);
 	//solve.PrintStylz();
 	fileName = "Zone"+to_string(solve.World.world_rank)+" (1).su2";
 	FileContents.read_file_local(fileName);
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
-	solve.SumNorm(FileContents, 1);	
+	solve.SumNorm(FileContents, 1);
 
 	solve.InitMPIBuffer(FileContents);
 	solve.Compute();		//Necessary for no seg faults

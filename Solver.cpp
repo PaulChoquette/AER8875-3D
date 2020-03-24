@@ -8,29 +8,45 @@
 #include <main.h>
 
 // constructor
-solver_c::solver_c(double mach_in,double AoA_in,int Order_in,int RK_step_in, bool RK_M_in,double cfl_in,int iterMax_in,double convergeCrit_in,double convergeFixLimit_in) {
-    mach = mach_in;
-    AoA = AoA_in;
-    Order = Order_in;
-    RK_step = RK_step_in;
-    RK_M = RK_M_in;
-    cfl = cfl_in;
-    iterMax = iterMax_in;
-    convergeCrit = convergeCrit_in;
-    convergeFixLimit = convergeFixLimit_in;
-
-
-    inf_speed = mach*sqrt(1.4);
-    inf_speed_x = inf_speed*cos(AoA);
-    inf_speed_y = inf_speed*sin(AoA);
-    inf_speed_z = 0;
-    iteration = 0;
-    World.Init();    // Initialise MPI
-    ofstream myfile ("ResiduLog.txt");  //Flash log
-    if (myfile.is_open())
-    {
-        myfile.close();
-    }
+solver_c::solver_c(Reader_c& FileContents, double convergeFixLimit_in)
+{
+  convergeFixLimit = convergeFixLimit_in;
+  string parametreFile = "CFDsimPI4.txt";
+  cout << "---------- Parametres... ----------\n";
+  FileContents.computePrmt(parametreFile);
+  cout << "**************\nEnd\n**************\n";
+  mach = FileContents.mach;
+  AoA = FileContents.AoA;
+  cfl = FileContents.cfl;
+  bool RK_M;
+  if(FileContents.tempMethod=="Runge-Kutta")
+  {
+    RK_M=1;
+    RK_step = FileContents.Nstage;
+  }
+  else if(FileContents.tempMethod=="Euler explicite")
+  {
+    RK_step = 1;
+  }
+  else
+  {
+    cout << "ERROR METHOD NOT SUPPORTED";
+    exit( 3 );
+  }
+  Order = FileContents.spatMethod_ordre;
+  iterMax  = FileContents.iterMax;
+  convergeCrit = FileContents.convCrit;
+  inf_speed = mach*sqrt(1.4);
+  inf_speed_x = inf_speed*cos(AoA);
+  inf_speed_y = inf_speed*sin(AoA);
+  inf_speed_z = 0;
+  iteration = 0;
+  World.Init();    // Initialise MPI
+  ofstream myfile ("ResiduLog.txt");  //Flash log
+  if (myfile.is_open())
+  {
+      myfile.close();
+  }
 }
 
 // destructor
@@ -46,7 +62,7 @@ solver_c::~solver_c() {
     delete[] u;
     delete[] v;
     delete[] w;
-    delete[] p; 
+    delete[] p;
     for (int i=0;i<nface;++i) {
         delete[] flux_c[i];
         delete[] flux_d[i];
@@ -63,7 +79,7 @@ solver_c::~solver_c() {
     delete[] residu_d;
     delete[] W_0;
     delete[] residu_d_hyb;
-    
+
     if (Order==2) {
         for (int ielem=0;ielem<ncell;++ielem) {
             for (int idim=0;idim<ndime;++idim) {
@@ -89,7 +105,7 @@ solver_c::~solver_c() {
 
 // call all other methods in order while not converged
 void solver_c::Compute() {
-    double Residu = pow(69,42); 
+    double Residu = pow(69,42);
     double Old_Residu = pow(69,42);
     double Residu_initial,ResiduLocal;
     Initialisation();
@@ -125,11 +141,11 @@ void solver_c::Compute() {
 // set every element to infinity and initialise other stuff
 void solver_c::Initialisation() {
 // initialise arrays
-    rho = new double [ncell]; 
-    u = new double [ncell]; 
-    v = new double [ncell]; 
-    w = new double [ncell]; 
-    p = new double [ncell]; 
+    rho = new double [ncell];
+    u = new double [ncell];
+    v = new double [ncell];
+    w = new double [ncell];
+    p = new double [ncell];
     if (Order==2) {
         gradient = new double**[ncell];     //Needs to be ncell as boundaries [between zones] need gradients
         limit = new double*[nelem];
@@ -177,8 +193,8 @@ void solver_c::UpdateBound() {
  int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
     double c0,l_r0c0,r0c0,udotn; //local sound speed
     string BoundType;
-	
-    for (int ibc=0;ibc<nbc;++ibc) { 
+
+    for (int ibc=0;ibc<nbc;++ibc) {
         BoundType = bound2tag[ibc];
         indxMin = BoundIndex[ibc];
         indxMax = BoundIndex[ibc+1];
@@ -201,7 +217,7 @@ void solver_c::UpdateBound() {
                 iface = elem2face[ig][0];
                 ir = elem2elem[ig][0];
                 udotn = 2.0*(face2norm[iface][0]*u[ir]+face2norm[iface][1]*v[ir]+face2norm[iface][2]*w[ir]);
-                p[ig] = p[ir];  
+                p[ig] = p[ir];
                 rho[ig] = rho[ir];
                 u[ig] = u[ir]-udotn*face2norm[iface][0];    // p.273, eq 8.10
                 v[ig] = v[ir]-udotn*face2norm[iface][1];
@@ -242,7 +258,7 @@ void solver_c::UpdateBound() {
                         u[ig] = inf_speed_x-face2norm[iface][0]*(1.0-p[ig])*l_r0c0;
                         v[ig] = inf_speed_y-face2norm[iface][1]*(1.0-p[ig])*l_r0c0;
                         w[ig] = inf_speed_z-face2norm[iface][2]*(1.0-p[ig])*l_r0c0;
-                        
+
                     }
                     else {
                         // Subsonic Outflow
@@ -261,7 +277,7 @@ void solver_c::UpdateBound() {
 // Initialise MPI
 void solver_c::InitMPIBuffer(Reader_c& Read) {
     int* zone2nbelem,*tgtList,**localBorderID;   //number of element / zone boundary
-    
+
     ntgt = Read.nzone;
     //Build zone2nbelem; number of element / zone boundary
     zone2nbelem = new int[ntgt];
@@ -279,7 +295,7 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
         if (Order==2){gradientSendBuffer[izone] = new double[zone2nbelem[izone]*15];}
         primitivesSendBuffer[izone] = new double[zone2nbelem[izone]*5];
     }
-    
+
     // Handshake order in which boundary elements will be sent between zones
     localBorderID = new int*[ntgt];
     int IndxMax,IndxMin;
@@ -367,7 +383,7 @@ void solver_c::ExchangeMetrics() {
         delete[] metricBuffer[izone];
     }
     delete[] metricBuffer;
-    
+
 }
 
 // exchange primitive values between zones
@@ -472,7 +488,7 @@ void solver_c::TimeStepRkM() {
     double c,invrho,eTempo;           //local sound speed
     double sumLambda;   // see blasek, sum of spectral radiuses
     double dTi_sans_V;         //dTi local time step
-    
+
     // update W_0 with initial results
     for (int ielem=0;ielem<nelem;++ielem) {
         W_0[ielem][0] = rho[ielem];
@@ -503,7 +519,7 @@ void solver_c::TimeStepRkM() {
             else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
             ComputeResidu();
         }
-        
+
     }
 }
 
@@ -549,7 +565,7 @@ void solver_c::TimeStepRkH() {
             u[ielem] = (W_0[ielem][1] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][1]-residu_d_hyb[ielem][1]))*invrho;
             v[ielem] = (W_0[ielem][2] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][2]-residu_d_hyb[ielem][2]))*invrho;
             w[ielem] = (W_0[ielem][3] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][3]-residu_d_hyb[ielem][3]))*invrho;
-			
+
 			eTempo = (W_0[ielem][4] - RKH_coef[RK_step][0][k]*dTi_sans_V*(residu_c[ielem][4]-residu_d_hyb[ielem][4]))*invrho;
             p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
         }
@@ -573,7 +589,7 @@ void solver_c::TimeStepRkH() {
 
 
 void solver_c::ComputeFluxO1Conv() {
-    for (int iface = 0; iface < nface; iface++) {    
+    for (int iface = 0; iface < nface; iface++) {
         int ielemL, ielemR;
         double rhoL, rhoR, uL, uR, vL, vR, wR, wL, pL, pR;
 
@@ -583,7 +599,7 @@ void solver_c::ComputeFluxO1Conv() {
         //Update L/R values [order 2]
         rhoL = rho[ielemL];
         rhoR = rho[ielemR];
-        uL = u[ielemL];   
+        uL = u[ielemL];
         vL = v[ielemL];
         wL = w[ielemL];
         uR = u[ielemR];
@@ -593,12 +609,12 @@ void solver_c::ComputeFluxO1Conv() {
         pR = p[ielemR];
 
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
-    }  
+    }
 }
 
 // Roe fluxes, order 1 [REMEMBER TO SPLIT CONVECTIVE AND DIFFUSIVE FLUXES]
 void solver_c::ComputeFluxO1() {
-    for (int iface = 0; iface < nface; iface++) {    
+    for (int iface = 0; iface < nface; iface++) {
         int ielemL, ielemR;
         double rhoL, rhoR, uL, uR, vL, vR, wR, wL, pL, pR;
 
@@ -608,7 +624,7 @@ void solver_c::ComputeFluxO1() {
         //Update L/R values [order 2]
         rhoL = rho[ielemL];
         rhoR = rho[ielemR];
-        uL = u[ielemL];   
+        uL = u[ielemL];
         vL = v[ielemL];
         wL = w[ielemL];
         uR = u[ielemR];
@@ -618,14 +634,14 @@ void solver_c::ComputeFluxO1() {
         pR = p[ielemR];
 
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
-        RoeDissipation(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);   
-    }   
+        RoeDissipation(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
+    }
 }
 
 // Computes grandients for order 2
 void solver_c::ComputeGrandientsNLimit() {
     int jelem,jface,Nbr_of_face,Pre_ind = ndime-2;
-    double TempDemiSurVol,sign;       
+    double TempDemiSurVol,sign;
     double delta_2,UminRho,UmaxRho,UminU,UmaxU,UminV,UmaxV,UminP,UmaxP,UminW,UmaxW; //Barth & Jespersen p:166 Blasek
     int faceSide;   //Index [0/1]
     double MachinePrecision = pow(10,-15);
@@ -650,7 +666,7 @@ void solver_c::ComputeGrandientsNLimit() {
 
         // Compute gradient
 	    Nbr_of_face = vtklookup[Pre_ind][elem2vtk[ielem]][0];
-        for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) { 
+        for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {
             jelem = elem2elem[ielem][ineighbor];
             jface = elem2face[ielem][ineighbor];
             sign = ((double(face2elem[jface][0]==ielem))*2.0-1.0);  //jelem??
@@ -681,14 +697,14 @@ void solver_c::ComputeGrandientsNLimit() {
                 GradU[idime][ivar] = GradU[idime][ivar]*TempDemiSurVol;
             }
         }
-        
+
         if (UpdateLim) {
             // Compute Limiter
             for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {   //For surrounding elements
                 jelem = elem2elem[ielem][ineighbor];
                 jface = elem2face[ielem][ineighbor];
                 faceSide = int(face2elem[jface][0]==jelem);        //jelem??
-                
+
                 for (int ivar=0;ivar<5;++ivar) {
                     delta_2 = 0.5*(GradU[0][ivar]*face2elemCenter[jface][faceSide][0]+GradU[1][ivar]*face2elemCenter[jface][faceSide][1]+GradU[2][ivar]*face2elemCenter[jface][faceSide][2]);
                     if ((delta_2>0)) {
@@ -727,8 +743,8 @@ void solver_c::ComputeGrandientsNLimit() {
 
 
 // Roe fluxes, order 2 [REMEMBER TO SPLIT CONVECTIVE AND DIFFUSIVE FLUXES]
-void solver_c::ComputeFluxO2Conv() {  
-for (int iface = 0; iface < nface; iface++) {    
+void solver_c::ComputeFluxO2Conv() {
+for (int iface = 0; iface < nface; iface++) {
         int ielemL, ielemR;
         double rhoL, rhoR, uL, uR, vL, vR, wR, wL, pL, pR;
 
@@ -748,15 +764,15 @@ for (int iface = 0; iface < nface; iface++) {
         wR = w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0]+gradient[ielemR][1][3]*face2elemCenter[iface][1][1]+gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
         pR = p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1]+gradient[ielemR][2][4]*face2elemCenter[iface][1][2];
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
-    }   
+    }
 }
 
 void solver_c::ComputeFluxO2() {
-    for (int iface = 0; iface < nface; iface++) {    
+    for (int iface = 0; iface < nface; iface++) {
         int ielemL, ielemR;
         double rhoL, rhoR, uL, uR, vL, vR, wR, wL, pL, pR;
 
-        ielemL = face2elem[iface][0];		
+        ielemL = face2elem[iface][0];
         ielemR = face2elem[iface][1];
 
         //Update L/R values [order 2]
@@ -772,8 +788,8 @@ void solver_c::ComputeFluxO2() {
         wR = w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0]+gradient[ielemR][1][3]*face2elemCenter[iface][1][1]+gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
         pR = p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1]+gradient[ielemR][2][4]*face2elemCenter[iface][1][2];
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
-        RoeDissipation(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);  
-    }   
+        RoeDissipation(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
+    }
 }
 
 void solver_c::UpwindFlux(int iface, double rhoL,double uL,double vL,double wL,double pL, double rhoR,double uR,double vR,double wR,double pR) {
@@ -781,17 +797,17 @@ void solver_c::UpwindFlux(int iface, double rhoL,double uL,double vL,double wL,d
     double rhoAvg, uAvg, vAvg, wAvg, pAvg, Vavg, Eavg;
     double Fcmass, Fcmom1, Fcmom2,Fcmom3, Fcenergy;
     //Calcul des normales
-    nx = face2norm[iface][0];  
+    nx = face2norm[iface][0];
     ny = face2norm[iface][1];
     nz = face2norm[iface][2];
 
-    //Calcul des moyennes des variables 
+    //Calcul des moyennes des variables
     rhoAvg = 0.5 * (rhoL + rhoR);
     uAvg = 0.5 * (uL + uR);
     vAvg = 0.5 * (vL + vR);
     wAvg = 0.5 * (wL + wR);
     pAvg = 0.5 * (pL + pR);
-    Vavg = uAvg * nx + vAvg * ny + wAvg*nz;  
+    Vavg = uAvg * nx + vAvg * ny + wAvg*nz;
 
     EL = P2E(pL,rhoL,uL,vL,wL);
     ER = P2E(pR,rhoR,uR,vR,wR);
@@ -803,7 +819,7 @@ void solver_c::UpwindFlux(int iface, double rhoL,double uL,double vL,double wL,d
     Fcmom2 = rhoAvg * Vavg * vAvg + pAvg * ny;
     Fcmom3 = rhoAvg * Vavg * wAvg + pAvg * nz;
     Fcenergy = rhoAvg * Vavg * Eavg + pAvg * Vavg;
-    
+
     // Flux dans les bonnes variables
     flux_c[iface][0] = Fcmass;   //rho
     flux_c[iface][1] = Fcmom1;   //u
@@ -823,11 +839,11 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     drho = rhoR - rhoL;
     du = uR - uL;
     dv = vR - vL;
-    dw = wR - wL; 
+    dw = wR - wL;
     dp = pR - pL;
 
     //Calcul des normales
-    nx = face2norm[iface][0];  
+    nx = face2norm[iface][0];
     ny = face2norm[iface][1];
     nz = face2norm[iface][2];
 
@@ -835,28 +851,28 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     VR = nx * uR + ny * vR + nz*wR;
 
     dV = VR - VL;
-    
+
 
     HL = P2E(pL,rhoL,uL,vL,wL) + pL / rhoL;
     HR = P2E(pR,rhoR,uR,vR,wR) + pR / rhoR;
 
 
-    //Calcul constantes pour simplifier la compilation 
-    c1=sqrt(rhoL); 
+    //Calcul constantes pour simplifier la compilation
+    c1=sqrt(rhoL);
     c2=sqrt(rhoR);
     c3= 1/(c1+c2);
 
     //Calcul des variables bar du schéma ROE
     rhobar = sqrt(rhoL * rhoR);
     ubar = (uL * c1 + uR * c2) * c3;
-    vbar = (vL * c1 + vR * c2) * c3; 
+    vbar = (vL * c1 + vR * c2) * c3;
     wbar = (wL * c1 + wR * c2) * c3;
     hbar = (HL * c1 + HR * c2) * c3;
     qbar = (ubar * ubar) + (vbar * vbar)+(wbar*wbar); // c'est le qbar au carré
-    cbar = sqrt((gamma - 1) * (hbar - qbar * 0.5)); 
+    cbar = sqrt((gamma - 1) * (hbar - qbar * 0.5));
     Vbar = ubar * nx + vbar * ny + wbar * nz;
 
-    c4= 1/(2 * cbar * cbar); 
+    c4= 1/(2 * cbar * cbar);
     c5= 1/(cbar * cbar);
 
     cmoy = sqrt(gamma*(pL+pR)/(rhoL+rhoL));
@@ -866,9 +882,9 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     SR2 = fabs(Vbar);
     SR3 = fabs(Vbar + cbar);
 
-    delta = 0.1 * (cmoy);  
+    delta = 0.1 * (cmoy);
 
-    if (fabs(SR1) <= delta) {         
+    if (fabs(SR1) <= delta) {
         SR1 = (SR1 * SR1 + delta * delta) / (2 * delta);
     }
     if (fabs(SR2) <= delta) {
@@ -877,7 +893,7 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     if (fabs(SR3) <= delta) {
         SR3 = (SR3 * SR3 + delta * delta) / (2 * delta);
     }
-        
+
     //Calcul des différents termes du flux dissipatif
     F1mass = SR1 * ((dp - rhobar * cbar * dV) *c4) * 1;
     F1mom1 = (SR1 * ((dp - rhobar * cbar * dV)*c4)) * (ubar - (cbar * nx));
@@ -885,11 +901,11 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     F1mom3 = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (wbar - (cbar * nz));
     F1energy = (SR1 * ((dp - rhobar * cbar * dV) *c4)) * (hbar - (cbar * Vbar));
 
-    F234mass = SR2 * ((drho - (dp *c5)) ); 
+    F234mass = SR2 * ((drho - (dp *c5)) );
     F234mom1 = SR2 * ((drho - (dp *c5)) * ubar + rhobar * (du - dV * nx));
     F234mom2 = SR2 * ((drho - (dp *c5)) * vbar + rhobar * (dv - dV * ny));
     F234mom3 = SR2 * ((drho - (dp *c5)) * wbar + rhobar * (dw - dV * nz));
-    F234energy = SR2 * ((drho - (dp*c5)) * (qbar * 0.5) + rhobar * (ubar * du + vbar * dv +wbar * dw - Vbar * dV)); 
+    F234energy = SR2 * ((drho - (dp*c5)) * (qbar * 0.5) + rhobar * (ubar * du + vbar * dv +wbar * dw - Vbar * dV));
 
     F5mass = SR3 * ((dp + rhobar * cbar * dV) *c4) * 1;
     F5mom1 = SR3 * ((dp + rhobar * cbar * dV) *c4) * (ubar + cbar * nx);
@@ -903,7 +919,7 @@ void solver_c::RoeDissipation(int iface, double rhoL,double uL,double vL,double 
     AWW3 = 0.5 * (F1mom2 + F234mom2 + F5mom2);
     AWW4 = 0.5 * (F1mom3 + F234mom3 + F5mom3);
     AWW5 = 0.5 * (F1energy + F234energy + F5energy);
-    
+
 
     flux_d[iface][0] = AWW1;   //rho
     flux_d[iface][1] = AWW2;   //u
@@ -974,18 +990,18 @@ double solver_c::P2E(double p_loc,double rho_loc,double u_loc,double v_loc,doubl
     e_loc = p_loc*lSurgammaM1/rho_loc+0.5*(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2));
 	return e_loc;
 }
-	
+
 // Conversion from energy to pressure
 double solver_c::E2P(double e_loc,double rho_loc,double u_loc,double v_loc,double w_loc) {
 	double p_loc;double gammaM1 = 0.4;
     p_loc = gammaM1*rho_loc*(e_loc-0.5*(pow(u_loc,2)+pow(v_loc,2)+pow(w_loc,2)));
 	return p_loc;
 }
-	
+
 
 
 void solver_c::ResidualSmoothing() {
-    
+
 }
 
 

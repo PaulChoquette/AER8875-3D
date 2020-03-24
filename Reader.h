@@ -51,7 +51,7 @@ class Reader_c {
 		int* z_nelemv;
 
 		string* zone2tag;
-		
+
 		void read_file_local(string filename);
 		void Fill_ZN_E2N_VTK(const char* cline, int zoneid);
 
@@ -62,6 +62,45 @@ class Reader_c {
 		//Write Tecplot output
 		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
 		void write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,double*v,double*w);
+
+
+
+
+
+
+
+
+		///////////////////////////////////////////////////////////////////////////////
+				string SimName;
+				string su2FilePath;
+				int Npartition;
+		    double AoA;
+		    double mach;
+		    double gamma;
+				string tempMethod;
+				int Nstage;
+				double cfl;
+				string Smoothing;
+				string spatMethod;
+				int spatMethod_ordre;
+				double grad;
+				int iterMax;
+				double convCrit;
+				double AoA_i;
+				double AoA_f;
+		///////////////////////////////////////////////////////////////////////////////
+
+				ifstream file_2;
+				int linen_2;
+				string line_2;
+				const char* cline_2;
+
+				void computePrmt(string filename);
+		    bool OpenFile_2(string filename);
+
+				int inputInt(const string& line_2, const string& tofind);
+				double inputDouble(const string& line_2, const string& tofind);
+				string inputStr(const string& line_2, const string& tofind);
 };
 
 #endif

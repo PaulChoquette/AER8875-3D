@@ -101,21 +101,21 @@ void Reader_c::read_file_local(string filename) {
 				}
 			}
 
-			if (bclinen != 0) {		
+			if (bclinen != 0) {
 				if (linen > bclinen && linen <= bclinen + bcnl) {
 					//3 steps : step 0 is reading marker tag, step 1 is reading marker elemn and final step is filling bc_elem2nnode
 					if (step == 0) {
-						bound2tag[bc] = line.substr(12,8);	
+						bound2tag[bc] = line.substr(12,8);
 						//cout << "================ STEP 0 : " << line.substr(12,8) << endl;
 						step++;
 					}
 					else if (step == 1) {
 						bc_nelem = Readcnst(line, "MARKER_ELEMS= ");
 						//cout << "================ Step 1 : bc_nelem =  " << bc_nelem << "  Line = " << line << endl;
-						
+
 						bc_nelemv[bc] = bc_nelem;
 						BoundIndex[bc + 1] =BoundIndex[bc]+ bc_nelem;
-						
+
 						nhalo += bc_nelem;
 						bc_elem2vtk[bc] = new int [bc_nelem];
 						bc_elem2node[bc] = new int* [bc_nelem];
@@ -129,18 +129,18 @@ void Reader_c::read_file_local(string filename) {
 							continue;
 						}
 						else {
-							
+
 							bcnl += bc_nelem; //add nelem since each elem has 1 line
 						}
 					}
 					else if (step == 2) {
 						//cout << "================ Step 2 = " << endl;
-						
+
 						Fill_BC_E2N_VTK(cline, bc);
 						if (bc_e2n_counter == bc_nelem) {
 							bc++;
 							step = 0;
-						}		
+						}
 					}
 				}
 			}
@@ -238,14 +238,14 @@ void Reader_c::read_file_local(string filename) {
 						}
 
 					}
-					
+
 				}
-				
+
 			}
-			
+
 
 		}
-		
+
 
 		//Boundary condition array deletion
 
@@ -458,4 +458,175 @@ void Reader_c::check()
 	// {
 	// 	cout << zelem2jelem[i]; cout << "\n";
 	// }
+}
+
+
+void Reader_c::computePrmt(string filename) {
+
+	//Open the file and continue if file is succesfully opened
+	if (OpenFile_2(filename))
+	{
+		SimName = "666";
+		su2FilePath = "666";
+		Npartition = 666;
+    AoA = 666;
+    mach = 666;
+    gamma = 666;
+		tempMethod = "666";
+		Nstage = 666;
+		cfl = 666;
+		Smoothing = "666";
+		spatMethod = "666";
+		spatMethod_ordre = 666;
+		iterMax = 666;
+		convCrit = 666;
+		AoA_i = 666;
+		AoA_f = 666;
+		//Read file line_2 by line_2
+		while (getline(file_2, line_2))
+		{
+			//Tick line_2 number and store line_2 as character array
+			linen_2++;
+			cline_2 = line_2.c_str();
+      //cout << cline_2 <<endl;
+			if(SimName=="666"){
+        SimName = inputStr(cline_2, "SimName= ");
+				continue;
+      }
+			if(su2FilePath=="666"){
+        su2FilePath = inputStr(cline_2, "su2FilePath= ");
+				continue;
+      }
+			if(Npartition==666){
+        Npartition = inputInt(cline_2, "NbrPartition= ");
+				continue;
+      }
+			if(AoA==666){
+        AoA = inputDouble(cline_2, "alpha= ");
+				continue;
+      }
+      if(mach==666){
+        mach = inputDouble(cline_2, "mach= ");
+				continue;
+      }
+      if(gamma==666){
+        gamma = inputDouble(cline_2, "gamma= ");
+				continue;
+      }
+      if(tempMethod=="666"){
+        tempMethod = inputStr(cline_2, "TemporelMethod= ");
+				continue;
+      }
+			if(Nstage==666){
+        Nstage = inputInt(cline_2, "stgaeNbr= ");
+				continue;
+      }
+			if(cfl==666){
+        cfl = inputDouble(cline_2, "cflVAR_str= ");
+				continue;
+      }
+			if(Smoothing=="666"){
+        Smoothing = inputStr(cline_2, "ResidualSmooth= ");
+				continue;
+      }
+			if(spatMethod=="666"){
+        spatMethod = inputStr(cline_2, "SpatialMethod= ");
+				continue;
+      }
+			if(spatMethod_ordre==666){
+        spatMethod_ordre = inputInt(cline_2, "SpatialMethodORDER= ");
+				continue;
+      }
+			if(iterMax==666){
+        iterMax = inputInt(cline_2, "iterMAX= ");
+				continue;
+      }
+			if(convCrit==666){
+        convCrit = inputDouble(cline_2, "convergenceCriterea= ");
+				continue;
+      }
+			if(AoA_i==666){
+        AoA_i = inputDouble(cline_2, "alpha_0= ");
+				continue;
+      }
+			if(AoA_f==666){
+        AoA_f = inputDouble(cline_2, "alpha_inf= ");
+				continue;
+      }
+		}
+
+		file_2.close();
+	}
+	else {
+		//ERROR 1 : File could not be opened
+	}
+}
+bool Reader_c::OpenFile_2(string filename)
+{
+	file_2.open(filename);
+
+	if (file_2.is_open()) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+int Reader_c::inputInt(const string& line_2, const string& tofind)
+{
+	size_t cnstpos = line_2.find(tofind);
+	int cnst = 0;
+	if (cnstpos != string::npos) {
+		//cout << "cnstpos : "; cout << cnstpos<<endl;
+		cnstpos = line_2.find_last_of(" ") + 1;
+
+		string cnstch;
+
+		cnstch = line_2.substr(cnstpos, line_2.length() - cnstpos);
+		cnst = stoul(cnstch);
+		cout << tofind; cout << " "; cout << cnst<<endl;
+	}
+	else {
+		return 666;
+	}
+	//cout << tofind; cout << " "; cout << cnst; cout << "\n";
+	return cnst;
+}
+double Reader_c::inputDouble(const string& line_2, const string& tofind)
+{
+	size_t cnstpos = line_2.find(tofind);
+	double cnst = 0;
+	if (cnstpos != string::npos) {
+		cnstpos = line_2.find_last_of(" ") + 1;
+
+		string cnstch;
+
+		cnstch = line_2.substr(cnstpos, line_2.length() - cnstpos);
+		cnst = stod(cnstch);
+		cout << tofind; cout << " "; cout << cnst<<endl;
+	}
+	else {
+		return 666;
+	}
+	//cout << tofind; cout << " "; cout << cnst; cout << "\n";
+	return cnst;
+}
+
+string Reader_c::inputStr(const string& line_2, const string& tofind)
+{
+	size_t cnstpos = line_2.find(tofind);
+	string cnst = "0";
+	if (cnstpos != string::npos) {
+		cnstpos = line_2.find_last_of(" ") + 1;
+
+		string cnstch;
+
+		cnstch = line_2.substr(cnstpos, line_2.length() - cnstpos);
+		cnst = cnstch;
+		cout << tofind; cout << " "; cout << cnst<<endl;
+	}
+	else {
+		return "666";
+	}
+	return cnst;
 }

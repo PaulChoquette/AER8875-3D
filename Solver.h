@@ -10,7 +10,7 @@ using namespace std;
 
 class solver_c : public Metric_c {    // TBD wheter public or private
     public:
-    solver_c(double,double,int,int,bool,double,int,double,double);                   // Constructeur
+    solver_c(Reader_c&, double);                   // Constructeur
     ~solver_c();                                // Destructeur
     void InitMPIBuffer(Reader_c&);              // Declare necessary structures for MPI
     void Compute();                             // solve problem
@@ -63,14 +63,14 @@ class solver_c : public Metric_c {    // TBD wheter public or private
         {{0.0533,0.1263,0.2375,0.4414,1.0},{0.0695,0.1602,0.2898,0.5060,1.0}}};
     double RKH_coef[6][2][5] =     // RKH [Stages][0=alpha,1=beta][step]
     {   {{0,0,0,0,0                     },{0,0,0,0,0}},                     //Order 0 ; Filler
-        {{0,0,0,0,0                     },{0,0,0,0,0}},       
-        {{0,0,0,0,0                     },{0,0,0,0,0}},  
+        {{0,0,0,0,0                     },{0,0,0,0,0}},
+        {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0.2742,0.2069,0.5020,0.5142,1.0},{1.0,0.0,0.56,0.0,0.44}}};   //Only order 5 in blasek
 
     //Private methods
-    void Initialisation();      // Initialise field to infinity 
+    void Initialisation();      // Initialise field to infinity
     void ExchangeMetrics();     // MPI exchange needed metrics for order 2
     void ExchangePrimitive();   // MPI exchange primitive values
     void ExchangeGradiants();   // MPI exchange gradiant values
@@ -85,7 +85,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 	void ComputeFluxO1Conv();   // Calcul flux convectifs Ordre 1
     void ComputeFluxO2();       // Calcul des flux (Roe) ordre 2
     void ComputeFluxO2Conv();   // Calcul flux convectifs Ordre 2
-    void ResidualSmoothing();   // 
+    void ResidualSmoothing();   //
     void ComputeResidu();       // Calcul des résidu
     void ComputeResiduConv();   // Calcul des résidus convectifs seulement
     double CheckConvergence();  // Somme des résidus
