@@ -17,6 +17,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void PrintStylz();
     Comm World;                                 // MPI Cluster [World.world_rank to get thread ID]
     // Simulation parametrisation
+    string smoothOrNah;
     double mach,AoA,cfl,convergeCrit;
     int Order,RK_step,iterMax;
     double residuRel,convergeFixLimit;          // Residu, limit at which limitors will be fixed
@@ -46,8 +47,11 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     double** flux_c;            //convective flux  flux[iface][variable (rho=0,u,v,w,p=4)]
     double** flux_d;            //dissipative flux flux[iface][variable (rho=0,u,v,w,p=4)]
     double** residu_c;          //convective residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
+    double** FLUX;
+    double** SmootyRezi;
     double** residu_d;          //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** residu_d_hyb;      //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
+    double** W_0_;
     double** W_0;               //copy of initial state for RK
     double** limit;             //Limitors per element and primary value
     double** primitivesSendBuffer;  //Buffer for Tx
@@ -92,4 +96,5 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 	double P2E(double,double,double,double,double);// Calcul pression vers Energie
 	double E2P(double,double,double,double,double);// Calcul  Energie vers pression
     void WriteResidu();
+    void SaveConservative(int ielem);
 };
