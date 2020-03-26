@@ -33,6 +33,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void HighlightZoneBorder(); //Set density in MPI-received zone borders to 0
     void SetAnalyticalGradiant(double,double,double);
     void PrintGradiant();
+    void LimitTecplot();
 
 
 

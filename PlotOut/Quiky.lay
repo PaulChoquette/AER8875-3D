@@ -1,6 +1,6 @@
 #!MC 1410
-$!VarSet |LFDSFN1| = '"IhAtEmYsElF0.plt" "IhAtEmYsElF1.plt" "IhAtEmYsElF2.plt" "IhAtEmYsElF3.plt"'
-$!VarSet |LFDSVL1| = '"X" "Y" "Z" "P" "Rho" "U" "V" "W"'
+$!VarSet |LFDSFN1| = '"AsciiFile3.dat" "AsciiFile2.dat" "AsciiFile1.dat" "AsciiFile0.dat"'
+$!VarSet |LFDSVL1| = '"X" "Y" "Z" "p" "rho" "u" "v" "w"'
 $!SetStyleBase Factory
 $!CreateColorMap 
   Name = 'Sequential - Viridis'
@@ -250,9 +250,9 @@ $!GlobalRGB
   RangeMin = 0
   RangeMax = 1
 $!GlobalContour  1
-  Var = 5
+  Var = 4
   ColorMapName = 'Sequential - Viridis'
-  DefNumLevels = 13
+  DefNumLevels = 11
   Legend
     {
     Show = Yes
@@ -263,38 +263,36 @@ $!GlobalContour  1
     }
   ColorCutoff
     {
-    RangeMin = 0.66935469413
-    RangeMax = 1.02139682445
+    RangeMin = 1.900607
+    RangeMax = 4.395939
     }
   ColorMapFilter
     {
     ContinuousColor
       {
-      CMin = 0.493333628969
-      CMax = 1.19741788961
+      CMin = 0.652941
+      CMax = 5.643605
       }
     }
 $!ContourLevels New
   ContourGroup = 1
   RawData
-13
-0.55
-0.6
-0.65
-0.7
-0.75
-0.8
-0.85
-0.9
-0.95
+11
 1
-1.05
-1.1
-1.15
+1.10879781818
+1.52003163636
+1.93126545455
+2.34249927273
+2.75373309091
+3.16496690909
+3.57620072727
+3.98743454545
+4.39866836364
+4.80990218182
 $!GlobalContour  2
   Var = 5
   ColorMapName = 'Sequential - Viridis'
-  DefNumLevels = 13
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -314,20 +312,19 @@ $!GlobalContour  2
 $!ContourLevels New
   ContourGroup = 2
   RawData
-13
-0.55
-0.6
-0.65
-0.7
-0.75
+12
 0.8
-0.85
-0.9
-0.95
 1
-1.05
-1.1
-1.15
+1.2
+1.4
+1.6
+1.8
+2
+2.2
+2.4
+2.6
+2.8
+3
 $!GlobalContour  3
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -352,16 +349,16 @@ $!ContourLevels New
   ContourGroup = 3
   RawData
 10
-0.2
-0.4
-0.6
-0.8
 1
-1.2
-1.4
-1.6
-1.8
+1.5
 2
+2.5
+3
+3.5
+4
+4.5
+5
+5.5
 $!GlobalContour  4
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -386,16 +383,16 @@ $!ContourLevels New
   ContourGroup = 4
   RawData
 10
-0.2
-0.4
-0.6
-0.8
 1
-1.2
-1.4
-1.6
-1.8
+1.5
 2
+2.5
+3
+3.5
+4
+4.5
+5
+5.5
 $!GlobalContour  5
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -420,16 +417,16 @@ $!ContourLevels New
   ContourGroup = 5
   RawData
 10
-0.2
-0.4
-0.6
-0.8
 1
-1.2
-1.4
-1.6
-1.8
+1.5
 2
+2.5
+3
+3.5
+4
+4.5
+5
+5.5
 $!GlobalContour  6
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -454,16 +451,16 @@ $!ContourLevels New
   ContourGroup = 6
   RawData
 10
-0.2
-0.4
-0.6
-0.8
 1
-1.2
-1.4
-1.6
-1.8
+1.5
 2
+2.5
+3
+3.5
+4
+4.5
+5
+5.5
 $!GlobalContour  7
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -488,16 +485,16 @@ $!ContourLevels New
   ContourGroup = 7
   RawData
 10
-0.2
-0.4
-0.6
-0.8
 1
-1.2
-1.4
-1.6
-1.8
+1.5
 2
+2.5
+3
+3.5
+4
+4.5
+5
+5.5
 $!GlobalContour  8
   Var = 4
   ColorMapName = 'Sequential - Viridis'
@@ -522,16 +519,16 @@ $!ContourLevels New
   ContourGroup = 8
   RawData
 10
-0.2
-0.4
-0.6
-0.8
 1
-1.2
-1.4
-1.6
-1.8
+1.5
 2
+2.5
+3
+3.5
+4
+4.5
+5
+5.5
 $!GlobalScatter 
   Legend
     {
@@ -545,10 +542,56 @@ $!GlobalScatter
     Color = Red
     FillColor = Red
     }
-$!FieldMap  [1-2]
+$!FieldMap  [1]
   Mesh
     {
+    Color = Blue
+    }
+  Contour
+    {
+    ContourType = PrimaryValue
     Color = Black
+    UseLightingEffect = Yes
+    }
+  Vector
+    {
+    Color = Black
+    }
+  Scatter
+    {
+    Color = Black
+    }
+  Shade
+    {
+    Color = Custom2
+    }
+  EdgeLayer
+    {
+    Show = Yes
+    Color = Black
+    LineThickness = 0.1
+    }
+  Points
+    {
+    PointsToPlot = SurfaceNodes
+    }
+  Surfaces
+    {
+    SurfacesToPlot = BoundaryFaces
+    IRange
+      {
+      Max = 1
+      }
+    }
+  Effects
+    {
+    LightingEffect = Gouraud
+    }
+$!FieldMap  [2]
+  Mesh
+    {
+    Color = Custom1
+    LinePattern = DashDot
     }
   Contour
     {
@@ -593,8 +636,7 @@ $!FieldMap  [1-2]
 $!FieldMap  [3]
   Mesh
     {
-    Color = Black
-    LinePattern = Dashed
+    Color = Red
     }
   Contour
     {
@@ -640,7 +682,6 @@ $!FieldMap  [4]
   Mesh
     {
     Color = Black
-    LinePattern = Dotted
     }
   Contour
     {
@@ -700,10 +741,11 @@ $!ThreeDAxis
   AxisMode = XYDependent
   XYDepXToYRatio = 1
   DepXToYRatio = 1
-  DepXToZRatio = 0.00673155678278
+  DepXToZRatio = 0.00673155676466
 $!ThreeDAxis 
   XDetail
     {
+    ShowAxis = No
     RangeMin = -162.92270129999999995
     RangeMax = 163.8979972999999859
     GRSpacing = 50
@@ -715,8 +757,9 @@ $!ThreeDAxis
 $!ThreeDAxis 
   YDetail
     {
-    RangeMin = -163.40945125999999732
-    RangeMax = 163.40945125999999732
+    ShowAxis = No
+    RangeMin = -163.4094517000000053
+    RangeMax = 163.4094517000000053
     GRSpacing = 50
     AxisLine
       {
@@ -726,6 +769,7 @@ $!ThreeDAxis
 $!ThreeDAxis 
   ZDetail
     {
+    ShowAxis = No
     RangeMin = -0.050000000000000002776
     RangeMax = 1.0500000000000000444
     GRSpacing = 0.5
@@ -736,9 +780,9 @@ $!ThreeDAxis
     }
 $!IsoSurfaceAttributes  1
   IsoSurfaceSelection = OneSpecificValue
-  Isovalue1 = 0.66935469413
-  Isovalue2 = 0.845375759291
-  Isovalue3 = 1.02139682445
+  Isovalue1 = 1.900607
+  Isovalue2 = 3.148273
+  Isovalue3 = 4.395939
   Effects
     {
     LightingEffect = Gouraud
@@ -836,6 +880,18 @@ $!SliceAttributes  1
     I = 1
     J = 1
     K = 1
+    }
+  StartPosition
+    {
+    X = -133.2117287
+    Y = -133.6986423
+    Z = 0.05
+    }
+  EndPosition
+    {
+    X = 134.1870247
+    Y = 133.6986423
+    Z = 0.95
     }
   EdgeLayer
     {
@@ -959,7 +1015,7 @@ $!GlobalThreeD
     {
     X = 1
     Y = 1
-    Z = 148.5540466
+    Z = 148.554047
     }
   RotateOrigin
     {
@@ -967,17 +1023,34 @@ $!GlobalThreeD
     Y = 0
     Z = 0.5
     }
+  LightSource
+    {
+    XYZDirection
+      {
+      X = -0.2
+      Y = -0.2
+      Z = 0.9591663046625438
+      }
+    Intensity = 75
+    BackgroundLight = 25
+    IncludeSpecular = Yes
+    SpecularIntensity = 40
+    SpecularShininess = 60
+    }
+  LineLiftFraction = 0.2
+  SymbolLiftFraction = 0.6
+  VectorLiftFraction = 0.7
   NearPlaneFraction = 0.1
 $!ThreeDView 
   PSIAngle = 0
   ThetaAngle = 0
   ViewerPosition
     {
-    X = 2.481419844178744
-    Y = 0.1237502890327416
-    Z = 21.30740427902684
+    X = 0.3429866458251943
+    Y = 0.06397080036181156
+    Z = 17.6962018592595
     }
-  ViewWidth = 9.90516
+  ViewWidth = 1.79932
 $!FieldLayers 
   ShowContour = Yes
   ShowShade = Yes

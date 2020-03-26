@@ -24,6 +24,11 @@ solver_c::solver_c(Reader_c& FileContents, double convergeFixLimit_in)
     RK_M=1;
     RK_step = FileContents.Nstage;
   }
+  else if(FileContents.tempMethod=="Runge-Kutta-H")
+  {
+    RK_M=0;
+    RK_step = FileContents.Nstage;
+  }
   else if(FileContents.tempMethod=="Euler-explicite")
   {
     RK_step = 1;
@@ -350,7 +355,7 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
     for(int ielem=0;ielem<ncell;++ielem) {
         elem2vtk[ielem] = Read.elem2vtk[ielem];
     }
-    //To use ExchangeMetrics, a buffer needs to be created first...
+
     if (Order==2){ExchangeMetrics();}
 }
 
@@ -365,7 +370,7 @@ void solver_c::ExchangeMetrics() {
         metricBuffer[izone] = new double[World.zone2nbelem[izone]*3];
     }
     // face2elemCenter : Only need to send [:][0][:]     || face2elemCenter[iface][0:side 0,1:side 1][idim]
-        // Populate Tx Buffer
+    // Populate Tx Buffer
     for (int izone=0;izone<World.ntgt;++izone) {
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
             ibelemIndx = ibelem + ZBoundIndex[izone];
@@ -373,6 +378,7 @@ void solver_c::ExchangeMetrics() {
             metricBuffer[izone][ibelem] = face2elemCenter[iface][0][0];
             metricBuffer[izone][ibelem+World.zone2nbelem[izone]] = face2elemCenter[iface][0][1];
             metricBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = face2elemCenter[iface][0][2];
+            
         }
     }
         //Send & Store
@@ -381,8 +387,7 @@ void solver_c::ExchangeMetrics() {
         BaseZoneIndxMin = ZBoundIndex[izone];
         BaseZoneIndxMax = ZBoundIndex[izone+1];
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
-            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Gost Element in current zone
 
             iface = elem2face[jbelemIndx][0];
             face2elemCenter[iface][1][0] = World.oneDBuffer[izone][ibelem];
@@ -417,13 +422,11 @@ void solver_c::ExchangePrimitive() {
     //Send & Store
     World.ExchangePrimitives(primitivesSendBuffer);
 //    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
-// PROBLEMATIC IF AN ELEMENTS SHARE TWO NEIGBHOORS IN THE SAME ZONE---------------------------------------------
     for (int izone=0;izone<World.ntgt;++izone) {
         BaseZoneIndxMin = ZBoundIndex[izone];
         BaseZoneIndxMax = ZBoundIndex[izone+1];
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
-            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Ghost Element in current zone
 
             rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
             u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
@@ -454,13 +457,11 @@ void solver_c::ExchangeGradiants() {    // TO EDIT-----------------------------
     }
     //Send & Store
     World.ExchangeGradients(gradientSendBuffer);
-// PROBLEMATIC IF AN ELEMENTS SHARE TWO NEIGBHOORS IN THE SAME ZONE---------------------------------------------
     for (int izone=0;izone<World.ntgt;++izone) {
         BaseZoneIndxMin = ZBoundIndex[izone];
         BaseZoneIndxMax = ZBoundIndex[izone+1];
         for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
-            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
+            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Ghost Element in current zone
 
             for (int idim;idim<3;++idim) {
                 gradient[jbelemIndx][idim][0] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5];
@@ -900,6 +901,13 @@ void solver_c::ComputeGrandientsNLimit() {
             // Compute Limiter
             for (int ineighbor=0;ineighbor<Nbr_of_face;++ineighbor) {   //For surrounding elements
                 jelem = elem2elem[ielem][ineighbor];
+                // Update U
+                U[0] = rho[jelem];
+                U[1] = u[jelem];
+                U[2] = v[jelem];
+                U[3] = w[jelem];
+                U[4] = p[jelem];
+                
                 jface = elem2face[ielem][ineighbor];
                 faceSide = int(face2elem[jface][0]==jelem);        //jelem??
 
@@ -909,7 +917,7 @@ void solver_c::ComputeGrandientsNLimit() {
                         psi[ivar]  = min(psi[ivar],(UMax[ivar]-U[ivar])/(fabs(delta_2)+MachinePrecision));
                     }
                     else if ((delta_2<0)) {
-                        psi[ivar]  = min(psi[ivar],-(UMin[ivar]-U[ivar])/(fabs(delta_2)+MachinePrecision));
+                        psi[ivar]  = min(psi[ivar],(U[ivar]-UMin[ivar])/(fabs(delta_2)+MachinePrecision));
                     }
                 }
             }
@@ -1304,6 +1312,23 @@ void solver_c::PrintGradiant() {
     }
 }
 
+void solver_c::LimitTecplot() {
+    for (int ielem = 0;ielem<nelem;++ielem) {
+        rho[ielem] = limit[ielem][0];
+    }
+    for (int ielem = 0;ielem<nelem;++ielem) {
+        u[ielem] = limit[ielem][1];
+    }
+    for (int ielem = 0;ielem<nelem;++ielem) {
+        v[ielem] = limit[ielem][2];
+    }
+    for (int ielem = 0;ielem<nelem;++ielem) {
+        w[ielem] = limit[ielem][3];
+    }
+    for (int ielem = 0;ielem<nelem;++ielem) {
+        p[ielem] = limit[ielem][4];
+    }
+}
 
 
 
