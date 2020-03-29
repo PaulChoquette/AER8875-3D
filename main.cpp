@@ -27,20 +27,18 @@ int main() {
 	double convergeFixLimit = pow(10,-4);
 	//////////////////////////////////////////////////////////////////////////////
 	solver_c solve(FileContents, convergeFixLimit);
-	//solve.PrintStylz();
 	fileName = "Zone"+to_string(solve.World.world_rank)+" (1).su2";
+	//fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
 	FileContents.read_file_local(fileName);
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
 	solve.SumNorm(FileContents, 1);
-
 	solve.InitMPIBuffer(FileContents);
 	solve.Compute();		//Necessary for no seg faults
+
 	//solve.SetAnalyticalGradiant(0.69,0.0,0.0);
 	//solve.PrintGradiant();
 	//solve.HighlightZoneBorder();
-
-
 	// To change
 	switch (solve.World.world_rank){
 		case 0 : FileContents.write_tecplot(FileContents,"./PlotOut/Tecio0", solve.elem2vol, solve.rho, solve.u, solve.v, solve.w);solve.PrintStylz();break;
@@ -51,5 +49,6 @@ int main() {
 
 	string OFileName = "./PlotOut/AsciiFile"+to_string(solve.World.world_rank)+".dat";
 	FileContents.write_tecplot_ASCII(OFileName,solve.p,solve.rho,solve.u,solve.v,solve.w);
+
 	return 1;
 }

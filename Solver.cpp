@@ -24,9 +24,14 @@ solver_c::solver_c(Reader_c& FileContents, double convergeFixLimit_in)
     RK_M=1;
     RK_step = FileContents.Nstage;
   }
-  else if(FileContents.tempMethod=="Euler-explicite")
+  else if(FileContents.tempMethod=="Euler_explicite")
   {
     RK_step = 1;
+  }
+  else if(FileContents.tempMethod=="Runge-Kutta_Hybride")
+  {
+    RK_M = 0;
+    RK_step = FileContents.Nstage;
   }
   else
   {
@@ -48,7 +53,6 @@ solver_c::solver_c(Reader_c& FileContents, double convergeFixLimit_in)
       myfile.close();
   }
 }
-
 // destructor
 solver_c::~solver_c() {
 // DELETE ALL CREATED ARRAYS
@@ -70,20 +74,23 @@ solver_c::~solver_c() {
     for (int i=0;i<nelem;++i) {
         delete[] residu_c[i];
         delete[] residu_d[i];
-        delete[] FLUX[i];
         delete[] SmootyRezi[i];
         delete[] residu_d_hyb[i];
+        delete[] F_lux[i];
+        delete[] SmootyRezi[i];
         delete[] W_0[i];
-        delete[] W_0_[i];
+        delete[] cons[i];
+        delete[] cons_[i];
     }
     delete[] flux_c;
     delete[] flux_d;
     delete[] residu_c;
     delete[] residu_d;
-    delete[] FLUX;
     delete[] SmootyRezi;
+    delete[] F_lux;
     delete[] W_0;
-    delete[] W_0_;
+    delete[] cons;
+    delete[] cons_;
     delete[] residu_d_hyb;
 
     if (Order==2) {
@@ -108,6 +115,7 @@ solver_c::~solver_c() {
     if (Order==2){delete[] gradientSendBuffer;}
     delete[] primitivesSendBuffer;
 }
+
 
 // call all other methods in order while not converged
 void solver_c::Compute() {
@@ -145,59 +153,62 @@ void solver_c::Compute() {
 }
 
 // set every element to infinity and initialise other stuff
-void solver_c::Initialisation() {
+void solver_c::Initialisation()
+{
 // initialise arrays
-    rho = new double [ncell];
-    u = new double [ncell];
-    v = new double [ncell];
-    w = new double [ncell];
-    p = new double [ncell];
-    if (Order==2) {
-        gradient = new double**[ncell];     //Needs to be ncell as boundaries [between zones] need gradients
-        limit = new double*[nelem];
-        for (int ielem=0;ielem<ncell;++ielem) {
-            gradient[ielem] = new double*[ndime];
-            for (int idim=0;idim<ndime;++idim) {
-                gradient[ielem][idim] = new double[5];
-            }
-        }
-        for (int ielem=0;ielem<nelem;++ielem) {
-            limit[ielem] = new double[5];
-        }
-    }
+  rho = new double [ncell];
+  u = new double [ncell];
+  v = new double [ncell];
+  w = new double [ncell];
+  p = new double [ncell];
+  if (Order==2) {
+      gradient = new double**[ncell];     //Needs to be ncell as boundaries [between zones] need gradients
+      limit = new double*[nelem];
+      for (int ielem=0;ielem<ncell;++ielem) {
+          gradient[ielem] = new double*[ndime];
+          for (int idim=0;idim<ndime;++idim) {
+              gradient[ielem][idim] = new double[5];
+          }
+      }
+      for (int ielem=0;ielem<nelem;++ielem) {
+          limit[ielem] = new double[5];
+      }
+  }
+  flux_c = new double*[nface];
+  flux_d = new double*[nface];
+  for (int i=0;i<nface;++i) {
+      flux_c[i] = new double [5];
+      flux_d[i] = new double [5];
+  }
 
-    flux_c = new double*[nface];
-    flux_d = new double*[nface];
-    for (int i=0;i<nface;++i) {
-        flux_c[i] = new double [5];
-        flux_d[i] = new double [5];
-    }
-
-    for (int i=0;i<ncell;++i) {
-        // initialise conservatives
-        rho[i] = 1.0;
-        u[i] = inf_speed_x;
-        v[i] = inf_speed_y;
-        w[i] = inf_speed_z;
-        p[i] = 1.0;
-    }
-
-    W_0 = new double*[nelem];
-    W_0_ = new double*[nelem];
-    residu_c = new double*[nelem];
-    residu_d = new double*[nelem];
-    FLUX = new double*[nelem];
-    SmootyRezi = new double*[nelem];
-    residu_d_hyb = new double*[nelem];
-     for (int i=0;i<nelem;++i) {
-        W_0[i] = new double [5];
-        W_0_[i] = new double [5];
-        residu_c[i] = new double [5];
-        residu_d[i] = new double [5];
-        FLUX[i] = new double [5];
-        SmootyRezi[i] = new double [5];
-        residu_d_hyb[i] = new double [5];
-     }
+  for (int i=0;i<ncell;++i) {
+      // initialise conservatives
+      rho[i] = 1.0;
+      u[i] = inf_speed_x;
+      v[i] = inf_speed_y;
+      w[i] = inf_speed_z;
+      p[i] = 1.0;
+  }
+  W_0 = new double*[nelem];
+  cons = new double*[nelem];
+  cons_ = new double*[nelem];
+  SmootyRezi = new double*[nelem];
+  F_lux = new double*[nelem];
+  residu_c = new double*[nelem];
+  residu_d = new double*[nelem];
+  residu_d_hyb = new double*[nelem];
+  for (int i=0;i<nelem;++i)
+  {
+    W_0[i] = new double [5];
+    cons[i] = new double [5];
+    cons_[i] = new double [5];
+    SmootyRezi[i] = new double [5];
+    F_lux[i] = new double [5];
+    residu_c[i] = new double [5];
+    residu_d[i] = new double [5];
+    residu_d_hyb[i] = new double [5];
+  }
+  SaveConservative();
 }
 
 // update boundary conditions
@@ -472,182 +483,88 @@ void solver_c::ExchangeGradiants() {    // TO EDIT-----------------------------
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void solver_c::SaveConservative(int ielem)
+void solver_c::SaveFlux()
 {
-  W_0[ielem][0] = rho[ielem];
-  W_0[ielem][1] = rho[ielem]*u[ielem];
-  W_0[ielem][2] = rho[ielem]*v[ielem];
-  W_0[ielem][3] = rho[ielem]*w[ielem];
-  W_0[ielem][4] = rho[ielem]*P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
-}
-
-void solver_c::ResidualSmoothing()
-{
-  if(smoothOrNah=="Yes")
+  for(int ielem=0; ielem<nelem; ++ielem)
   {
-    int NeiBoar;
-    double S0, S1, S2, S3, S4;
-    double epsilon = 0.6;
-    for (int iter = 0; iter < 2; ++iter)
-		{
-			for (int ielem = 0; ielem < nelem; ++ielem)
-			{
-        S0 = 0.0;
-        S1 = 0.0;
-        S2 = 0.0;
-        S3 = 0.0;
-        S4 = 0.0;
-        SmootyRezi[ielem][0] = 0.0;
-        SmootyRezi[ielem][1] = 0.0;
-        SmootyRezi[ielem][2] = 0.0;
-        SmootyRezi[ielem][3] = 0.0;
-        SmootyRezi[ielem][4] = 0.0;
-        int vtk = elem2vtk[ielem];
-	    	int Nbr_of_face = vtklookup[ndime-2][vtk][0];
-        int FennTom = 0;
-        for(int iface=0; iface<Nbr_of_face; ++iface)
-        {
-          NeiBoar = elem2elem[ielem][iface];
-          if(NeiBoar<nelem)
-          {
-            S0 += epsilon * SmootyRezi[NeiBoar][0];
-            S1 += epsilon * SmootyRezi[NeiBoar][1];
-						S2 += epsilon * SmootyRezi[NeiBoar][2];
-						S3 += epsilon * SmootyRezi[NeiBoar][3];
-						S4 += epsilon * SmootyRezi[NeiBoar][4];
-          }
-          else
-          {
-            FennTom +=1;
-          }
-        }
-
-				Nbr_of_face -= FennTom;
-				SmootyRezi[ielem][0] = (FLUX[ielem][0] + S0) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][1] = (FLUX[ielem][1] + S1) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][2] = (FLUX[ielem][2] + S2) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][3] = (FLUX[ielem][3] + S3) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][4] = (FLUX[ielem][4] + S4) / (1.0 + epsilon * Nbr_of_face);
-      }
-    }
-    for (int i = 0; i < nelem; ++i)
-		{
-			FLUX[i][0] = SmootyRezi[i][0];
-			FLUX[i][1] = SmootyRezi[i][1];
-			FLUX[i][2] = SmootyRezi[i][2];
-			FLUX[i][3] = SmootyRezi[i][3];
-			FLUX[i][4] = SmootyRezi[i][4];
-		}
+    F_lux[ielem][0] = (residu_c[ielem][0]-residu_d[ielem][0]);
+    F_lux[ielem][1] = (residu_c[ielem][1]-residu_d[ielem][1]);
+    F_lux[ielem][2] = (residu_c[ielem][2]-residu_d[ielem][2]);
+    F_lux[ielem][3] = (residu_c[ielem][3]-residu_d[ielem][3]);
+    F_lux[ielem][4] = (residu_c[ielem][4]-residu_d[ielem][4]);
   }
 }
+
+void solver_c::SaveConservative()
+{
+  for(int ielem=0; ielem<nelem; ielem++)
+  {
+    cons[ielem][0] = rho[ielem];
+    cons[ielem][1] = rho[ielem]*u[ielem];
+    cons[ielem][2] = rho[ielem]*v[ielem];
+    cons[ielem][3] = rho[ielem]*w[ielem];
+    cons[ielem][4] = rho[ielem]*P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
+    cons_[ielem][0] = cons[ielem][0];
+    cons_[ielem][1] = cons[ielem][1];
+    cons_[ielem][2] = cons[ielem][2];
+    cons_[ielem][3] = cons[ielem][3];
+    cons_[ielem][4] = cons[ielem][4];
+  }
+}
+void solver_c::SavePrimitive(int ielem)
+{
+  rho[ielem] = cons[ielem][0];
+  invrho = 1.0/rho[ielem];
+  u[ielem] = cons[ielem][1]*invrho;
+  v[ielem] = cons[ielem][2]*invrho;
+  w[ielem] = cons[ielem][3]*invrho;
+  eTempo = cons[ielem][4]*invrho;
+  p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
+}
+void solver_c::SavePrimitiveRK(int ielem)
+{
+  rho[ielem] = cons_[ielem][0];
+  invrho = 1.0/rho[ielem];
+  u[ielem] = cons_[ielem][1]*invrho;
+  v[ielem] = cons_[ielem][2]*invrho;
+  w[ielem] = cons_[ielem][3]*invrho;
+  eTempo = cons_[ielem][4]*invrho;
+  p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
+}
+
 // euler explicit time integration
 void solver_c::TimeStepEul()
 {
-  double c, eTempo,invrho;           //local sound speed
+  double c;           //local sound speed
   double sumLambda;   // see blasek, sum of spectral radiuses
   double dTi_sans_V;         //dTi local time step
-
+  SaveFlux();
   ResidualSmoothing();
   for (int ielem=0;ielem<nelem;++ielem)
   {
     c = sqrt(1.4*p[ielem]/rho[ielem]);
+    eTempo = P2E(p[ielem],rho[ielem],u[ielem],v[ielem],w[ielem]);
     sumLambda = (fabs(u[ielem])+c)*elem2deltaSxyz[ielem][0]+(fabs(v[ielem])+c)*elem2deltaSxyz[ielem][1]+(fabs(w[ielem])+c)*elem2deltaSxyz[ielem][2];
     dTi_sans_V = cfl/sumLambda;
-
-    SaveConservative(ielem);
-
-    W_0[ielem][0] = W_0[ielem][0] - FLUX[ielem][0]*dTi_sans_V;
-    W_0[ielem][1] = W_0[ielem][1] - FLUX[ielem][1]*dTi_sans_V;
-    W_0[ielem][2] = W_0[ielem][2] - FLUX[ielem][2]*dTi_sans_V;
-    W_0[ielem][3] = W_0[ielem][3] - FLUX[ielem][3]*dTi_sans_V;
-    W_0[ielem][4] = W_0[ielem][4] - FLUX[ielem][4]*dTi_sans_V;
-
-    rho[ielem] = W_0[ielem][0];
-    invrho=1/rho[ielem];
-    u[ielem] = W_0[ielem][1]*invrho;
-    v[ielem] = W_0[ielem][2]*invrho;
-    w[ielem] = W_0[ielem][3]*invrho;
-    eTempo = W_0[ielem][4]*invrho;
-    p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
+    cons[ielem][0] -= (F_lux[ielem][0])*dTi_sans_V;
+    cons[ielem][1] -= (F_lux[ielem][1])*dTi_sans_V;
+    cons[ielem][2] -= (F_lux[ielem][2])*dTi_sans_V;
+    cons[ielem][3] -= (F_lux[ielem][3])*dTi_sans_V;
+    cons[ielem][4] -= (F_lux[ielem][4])*dTi_sans_V;
+    SavePrimitive(ielem);
   }
 }
+
 // Runge-Kutta Multistage time integration
 void solver_c::TimeStepRkM()
 {
   int OIndx = Order-1;
-  double c,invrho,eTempo;           //local sound speed
+  double c,invrho;           //local sound speed
   double sumLambda;   // see blasek, sum of spectral radiuses
   double dTi_sans_V;         //dTi local time step
-  int kk;
-
   for (int k=0;k<RK_step-1;++k)
   {
+    SaveFlux();
     ResidualSmoothing();
     for (int ielem=0;ielem<nelem;++ielem)
     {
@@ -655,21 +572,12 @@ void solver_c::TimeStepRkM()
       sumLambda = (fabs(u[ielem])+c)*elem2deltaSxyz[ielem][0]+(fabs(v[ielem])+c)*elem2deltaSxyz[ielem][1]+(fabs(w[ielem])+c)*elem2deltaSxyz[ielem][2];
       dTi_sans_V = cfl/sumLambda;
 
-      SaveConservative(ielem);
-
-      W_0_[ielem][0] = W_0[ielem][0] - FLUX[ielem][0]*dTi_sans_V*RKM_coef[RK_step][OIndx][k];
-      W_0_[ielem][1] = W_0[ielem][1] - FLUX[ielem][1]*dTi_sans_V*RKM_coef[RK_step][OIndx][k];
-      W_0_[ielem][2] = W_0[ielem][2] - FLUX[ielem][2]*dTi_sans_V*RKM_coef[RK_step][OIndx][k];
-      W_0_[ielem][3] = W_0[ielem][3] - FLUX[ielem][3]*dTi_sans_V*RKM_coef[RK_step][OIndx][k];
-      W_0_[ielem][4] = W_0[ielem][4] - FLUX[ielem][4]*dTi_sans_V*RKM_coef[RK_step][OIndx][k];
-
-      rho[ielem] = W_0_[ielem][0];
-      invrho=1/rho[ielem];
-      u[ielem] = W_0_[ielem][1]*invrho;
-      v[ielem] = W_0_[ielem][2]*invrho;
-      w[ielem] = W_0_[ielem][3]*invrho;
-      eTempo = W_0_[ielem][4]*invrho;
-      p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
+      cons_[ielem][0] = cons[ielem][0] - dTi_sans_V*RKM_coef[RK_step][OIndx][k]*(F_lux[ielem][0]);
+      cons_[ielem][1] = cons[ielem][1] - dTi_sans_V*RKM_coef[RK_step][OIndx][k]*(F_lux[ielem][1]);
+      cons_[ielem][2] = cons[ielem][2] - dTi_sans_V*RKM_coef[RK_step][OIndx][k]*(F_lux[ielem][2]);
+      cons_[ielem][3] = cons[ielem][3] - dTi_sans_V*RKM_coef[RK_step][OIndx][k]*(F_lux[ielem][3]);
+      cons_[ielem][4] = cons[ielem][4] - dTi_sans_V*RKM_coef[RK_step][OIndx][k]*(F_lux[ielem][4]);
+      SavePrimitiveRK(ielem);
     }
     // update residu
     if ((k+1)!=RK_step)
@@ -680,50 +588,144 @@ void solver_c::TimeStepRkM()
       else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
       ComputeResidu();
     }
-    kk = k;
   }
+  SaveFlux();
+  ResidualSmoothing();
   for (int ielem=0;ielem<nelem;++ielem)
   {
     c = sqrt(1.4*p[ielem]/rho[ielem]);
     sumLambda = (fabs(u[ielem])+c)*elem2deltaSxyz[ielem][0]+(fabs(v[ielem])+c)*elem2deltaSxyz[ielem][1]+(fabs(w[ielem])+c)*elem2deltaSxyz[ielem][2];
     dTi_sans_V = cfl/sumLambda;
 
-    SaveConservative(ielem);
-
-    W_0[ielem][0] = W_0[ielem][0] - FLUX[ielem][0]*dTi_sans_V*RKM_coef[RK_step][OIndx][kk];
-    W_0[ielem][1] = W_0[ielem][1] - FLUX[ielem][1]*dTi_sans_V*RKM_coef[RK_step][OIndx][kk];
-    W_0[ielem][2] = W_0[ielem][2] - FLUX[ielem][2]*dTi_sans_V*RKM_coef[RK_step][OIndx][kk];
-    W_0[ielem][3] = W_0[ielem][3] - FLUX[ielem][3]*dTi_sans_V*RKM_coef[RK_step][OIndx][kk];
-    W_0[ielem][4] = W_0[ielem][4] - FLUX[ielem][4]*dTi_sans_V*RKM_coef[RK_step][OIndx][kk];
-
-    rho[ielem] = W_0[ielem][0];
-    invrho=1/rho[ielem];
-    u[ielem] = W_0[ielem][1]*invrho;
-    v[ielem] = W_0[ielem][2]*invrho;
-    w[ielem] = W_0[ielem][3]*invrho;
-    eTempo = W_0[ielem][4]*invrho;
-    p[ielem] = E2P(eTempo,rho[ielem],u[ielem],v[ielem],w[ielem]);
+    cons[ielem][0] = cons[ielem][0] - dTi_sans_V*RKM_coef[RK_step][OIndx][RK_step - 1]*(F_lux[ielem][0]);
+    cons[ielem][1] = cons[ielem][1] - dTi_sans_V*RKM_coef[RK_step][OIndx][RK_step - 1]*(F_lux[ielem][1]);
+    cons[ielem][2] = cons[ielem][2] - dTi_sans_V*RKM_coef[RK_step][OIndx][RK_step - 1]*(F_lux[ielem][2]);
+    cons[ielem][3] = cons[ielem][3] - dTi_sans_V*RKM_coef[RK_step][OIndx][RK_step - 1]*(F_lux[ielem][3]);
+    cons[ielem][4] = cons[ielem][4] - dTi_sans_V*RKM_coef[RK_step][OIndx][RK_step - 1]*(F_lux[ielem][4]);
+    SavePrimitive(ielem);
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Runge-Kutta Hybrid time integration
+void solver_c::TimeStepRkH() {
+    double c, eTempo, invrho;           //local sound speed
+    double sumLambda;   // see blasek, sum of spectral radiuses
+    double dTi_sans_V;  //dTi local time step
+    int kk;
+    // update W_0 with initial results
+    SaveConservative();
+
+    for (int k=0;k<RK_step-1;++k)
+    {
+        // update residu_d_hyb
+        if (k==0) {
+            for (int ielem=0;ielem<nelem;++ielem) {
+                for (int jres=0;jres<5;++jres) {
+                    residu_d_hyb[ielem][jres] = residu_d[ielem][jres];
+                }
+            }
+        }
+        else if((k==2)||(k==4)) {
+            for (int ielem=0;ielem<nelem;++ielem) {
+                for (int jres=0;jres<5;++jres) {
+                    residu_d_hyb[ielem][jres] = RKH_coef[RK_step][1][k]*residu_d[ielem][jres]+(1-RKH_coef[RK_step][1][k])*residu_d_hyb[ielem][jres];
+                }
+            }
+        }
+        SaveFlux_Hyb();
+        ResidualSmoothing();
+        // do step
+        for (int ielem=0;ielem<nelem;++ielem)
+        {
+          c = sqrt(1.4*p[ielem]/rho[ielem]);
+          sumLambda = (fabs(u[ielem])+c)*elem2deltaSxyz[ielem][0]+(fabs(v[ielem])+c)*elem2deltaSxyz[ielem][1]+(fabs(w[ielem])+c)*elem2deltaSxyz[ielem][2];
+          dTi_sans_V = cfl/sumLambda;
+
+          cons_[ielem][0] = cons[ielem][0] - RKH_coef[RK_step][0][k]*dTi_sans_V*(F_lux[ielem][0]);
+          cons_[ielem][1] = cons[ielem][1] - RKH_coef[RK_step][0][k]*dTi_sans_V*(F_lux[ielem][1]);
+          cons_[ielem][2] = cons[ielem][2] - RKH_coef[RK_step][0][k]*dTi_sans_V*(F_lux[ielem][2]);
+          cons_[ielem][3] = cons[ielem][3] - RKH_coef[RK_step][0][k]*dTi_sans_V*(F_lux[ielem][3]);
+          cons_[ielem][4] = cons[ielem][4] - RKH_coef[RK_step][0][k]*dTi_sans_V*(F_lux[ielem][4]);
+          SavePrimitiveRK(ielem);
+        }
+        // update residu
+        if ((k+1)!=RK_step)
+        {
+          ExchangePrimitive();
+          UpdateBound();
+    			if ((k==1) || (k==3))
+          {
+    				if (Order==1){ComputeFluxO1();}
+            else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
+            ComputeResidu();
+          }
+    			else
+          {
+    				if (Order==1){ComputeFluxO1Conv();}
+            else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
+    			  ComputeResiduConv();
+            }
+        }
+        kk = k;
+    }
+    kk += 1;
+
+    // update residu_d_hyb
+    if (kk==0)
+    {
+        for (int ielem=0;ielem<nelem;++ielem)
+        {
+            for (int jres=0;jres<5;++jres)
+            {
+                residu_d_hyb[ielem][jres] = residu_d[ielem][jres];
+            }
+        }
+    }
+    else if((kk==2)||(kk==4))
+    {
+        for (int ielem=0;ielem<nelem;++ielem)
+        {
+            for (int jres=0;jres<5;++jres)
+            {
+                residu_d_hyb[ielem][jres] = RKH_coef[RK_step][1][kk]*residu_d[ielem][jres]+(1-RKH_coef[RK_step][1][kk])*residu_d_hyb[ielem][jres];
+            }
+        }
+    }
+    SaveFlux_Hyb();
+    ResidualSmoothing();
+    for (int ielem=0;ielem<nelem;++ielem)
+    {
+      c = sqrt(1.4*p[ielem]/rho[ielem]);
+      sumLambda = (fabs(u[ielem])+c)*elem2deltaSxyz[ielem][0]+(fabs(v[ielem])+c)*elem2deltaSxyz[ielem][1]+(fabs(w[ielem])+c)*elem2deltaSxyz[ielem][2];
+      dTi_sans_V = cfl/sumLambda;
+
+      cons[ielem][0] = cons[ielem][0] - RKH_coef[RK_step][0][kk]*dTi_sans_V*(F_lux[ielem][0]);
+      cons[ielem][1] = cons[ielem][1] - RKH_coef[RK_step][0][kk]*dTi_sans_V*(F_lux[ielem][1]);
+      cons[ielem][2] = cons[ielem][2] - RKH_coef[RK_step][0][kk]*dTi_sans_V*(F_lux[ielem][2]);
+      cons[ielem][3] = cons[ielem][3] - RKH_coef[RK_step][0][kk]*dTi_sans_V*(F_lux[ielem][3]);
+      cons[ielem][4] = cons[ielem][4] - RKH_coef[RK_step][0][kk]*dTi_sans_V*(F_lux[ielem][4]);
+      SavePrimitive(ielem);
+    }
+    if ((kk+1)!=RK_step)
+    {
+      ExchangePrimitive();
+      UpdateBound();
+      if ((kk==1) || (kk==3))
+      {
+        if (Order==1){ComputeFluxO1();}
+        else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
+        ComputeResidu();
+      }
+      else
+      {
+        if (Order==1){ComputeFluxO1Conv();}
+        else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
+        ComputeResiduConv();
+      }
+    }
+}
+
+ /*
 void solver_c::TimeStepRkH() {
     double c, eTempo, invrho;           //local sound speed
     double sumLambda;   // see blasek, sum of spectral radiuses
@@ -784,7 +786,20 @@ void solver_c::TimeStepRkH() {
         }
     }
 }
+ */
 
+
+void solver_c::SaveFlux_Hyb()
+{
+  for(int ielem=0; ielem<nelem; ++ielem)
+  {
+    F_lux[ielem][0] = (residu_c[ielem][0]-residu_d_hyb[ielem][0]);
+    F_lux[ielem][1] = (residu_c[ielem][1]-residu_d_hyb[ielem][1]);
+    F_lux[ielem][2] = (residu_c[ielem][2]-residu_d_hyb[ielem][2]);
+    F_lux[ielem][3] = (residu_c[ielem][3]-residu_d_hyb[ielem][3]);
+    F_lux[ielem][4] = (residu_c[ielem][4]-residu_d_hyb[ielem][4]);
+  }
+}
 
 void solver_c::ComputeFluxO1Conv() {
     for (int iface = 0; iface < nface; iface++) {
@@ -1146,7 +1161,6 @@ void solver_c::ComputeResidu() {
             for (int iflux=0;iflux<5;++iflux) {
                 residu_c[ielem][iflux] += fluxSign*flux_c[iface][iflux]*face2area[iface];
                 residu_d[ielem][iflux] += fluxSign*flux_d[iface][iflux]*face2area[iface];
-                FLUX[ielem][iflux] = residu_c[ielem][iflux] - residu_d[ielem][iflux];
             }
         }
     }
@@ -1178,7 +1192,7 @@ void solver_c::ComputeResiduConv() {
 double solver_c::CheckConvergence() {
     double residuSum = 0;
     for (int ielem=0;ielem<nelem;++ielem) {                                                 //Sum of residu in rho
-        residuSum += pow((FLUX[ielem][0])/elem2vol[ielem],2);        // CAREFULL WITH SIGN OF DISSIPATIVE FLUX
+        residuSum += pow((residu_c[ielem][0]-residu_d[ielem][0])/elem2vol[ielem],2);        // CAREFULL WITH SIGN OF DISSIPATIVE FLUX
     }
     return sqrt(residuSum);
 }
@@ -1198,6 +1212,62 @@ double solver_c::E2P(double e_loc,double rho_loc,double u_loc,double v_loc,doubl
 }
 
 
+
+void solver_c::ResidualSmoothing()
+{
+  if(smoothOrNah=="Yes")
+  {
+    int smooteration = 2;
+    int NeiBoar;
+    double S0, S1, S2, S3, S4;
+    double epsilon = 0.6;
+    for (int iter = 0; iter < smooteration; iter++)
+		{
+			for (int ielem = 0; ielem < nelem; ++ielem)
+			{
+        S0 = 0.0;        S1 = 0.0;        S2 = 0.0;
+        S3 = 0.0;        S4 = 0.0;
+        SmootyRezi[ielem][0] = 0.0;        SmootyRezi[ielem][1] = 0.0;
+        SmootyRezi[ielem][2] = 0.0;        SmootyRezi[ielem][3] = 0.0;
+        SmootyRezi[ielem][4] = 0.0;
+        int vtk = elem2vtk[ielem];
+	    	int Nbr_of_face = vtklookup[ndime-2][vtk][0];
+        int FennTom = 0;
+        for(int iface=0; iface<Nbr_of_face; ++iface)
+        {
+          NeiBoar = elem2elem[ielem][iface];
+          if(NeiBoar<nelem)
+          {
+            S0 += epsilon * SmootyRezi[NeiBoar][0];
+            S1 += epsilon * SmootyRezi[NeiBoar][1];
+						S2 += epsilon * SmootyRezi[NeiBoar][2];
+						S3 += epsilon * SmootyRezi[NeiBoar][3];
+						S4 += epsilon * SmootyRezi[NeiBoar][4];
+          }
+          else
+          {
+            FennTom +=1;
+          }
+        }
+
+				Nbr_of_face -= FennTom;
+				SmootyRezi[ielem][0] = (F_lux[ielem][0] + S0) / (1.0 + epsilon * Nbr_of_face);
+				SmootyRezi[ielem][1] = (F_lux[ielem][1] + S1) / (1.0 + epsilon * Nbr_of_face);
+				SmootyRezi[ielem][2] = (F_lux[ielem][2] + S2) / (1.0 + epsilon * Nbr_of_face);
+				SmootyRezi[ielem][3] = (F_lux[ielem][3] + S3) / (1.0 + epsilon * Nbr_of_face);
+				SmootyRezi[ielem][4] = (F_lux[ielem][4] + S4) / (1.0 + epsilon * Nbr_of_face);
+      }
+    }
+    for (int i = 0; i < nelem; ++i)
+		{
+			F_lux[i][0] = SmootyRezi[i][0];
+			F_lux[i][1] = SmootyRezi[i][1];
+			F_lux[i][2] = SmootyRezi[i][2];
+			F_lux[i][3] = SmootyRezi[i][3];
+			F_lux[i][4] = SmootyRezi[i][4];
+		}
+  }
+}
 
 
 void solver_c::WriteResidu(){

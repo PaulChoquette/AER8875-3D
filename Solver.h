@@ -38,6 +38,8 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 
     private:
     //Private variables
+    double invrho;
+    double eTempo;
     int nbc;
     string* bound2tag;
     int* BoundIndex;            //Limits of boundary cells id -> [izone] = start, indexes up to n+1
@@ -51,8 +53,10 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     double** SmootyRezi;
     double** residu_d;          //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** residu_d_hyb;      //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
-    double** W_0_;
+    double** cons_;
+    double** cons;
     double** W_0;               //copy of initial state for RK
+    double** F_lux;
     double** limit;             //Limitors per element and primary value
     double** primitivesSendBuffer;  //Buffer for Tx
     double** gradientSendBuffer;    //Gradient buffer for Tx
@@ -96,5 +100,9 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 	double P2E(double,double,double,double,double);// Calcul pression vers Energie
 	double E2P(double,double,double,double,double);// Calcul  Energie vers pression
     void WriteResidu();
-    void SaveConservative(int ielem);
+    void SaveConservative();
+    void SaveFlux();
+    void SaveFlux_Hyb();
+    void SavePrimitive(int);
+    void SavePrimitiveRK(int);
 };
