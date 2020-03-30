@@ -457,7 +457,7 @@ class Interface():
         self.btn_partition.place(x=310,y=250)
         self.finishBUTTON()
 
-        calll = "./bin/Execute1 " + self.txt.get() + " " + self.su2FilePath + " " + self.spin_partition.get() + "GUI"
+        calll = "./bin/Execute1 " + self.txt.get() + " " + self.su2FilePath + " " + self.spin_partition.get() + " GUI"
         os.system(calll)
         print("\nPartitionning completed... \n")
 

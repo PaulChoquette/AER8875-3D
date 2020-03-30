@@ -40,7 +40,10 @@ string getFileName(const string& s) {
 void TEST(string simName, string su2, int partition)
 {
 	cout << "\n==================================== ONERA ==================================== " << endl;
+  size_t lastindex = su2.find_last_of(".");
+  string out = su2.substr(0, lastindex) + "_" + "zone";
 	cout << " Simulation name : "; cout << simName << endl;
+	cout << " Name of su2++ output files : "; cout << out << endl;
 	cout << " Su2 file to partition : "; cout << su2 << endl;
 	cout << " Nomber of partition to make : "; cout << partition << endl;
 	cout << endl;
@@ -50,9 +53,7 @@ void TEST(string simName, string su2, int partition)
 	ONERA.ComputeGlobalConnectivity(FileONERA);
 	ONERA.ComputeMETIS(partition, 3, FileONERA);
 	ONERA.ComputeZoneConnectivity(FileONERA);
-	FileONERA.WriteAllZoneFile(simName + "zone", FileONERA, ONERA);
-
-
+	FileONERA.WriteAllZoneFile(out, FileONERA, ONERA);
 }
 
 int main(int argc, char *argv[])
@@ -71,7 +72,6 @@ int main(int argc, char *argv[])
 	string simName = argv[1];
 	string su2 = argv[2];
 	int partition = atoi(argv[3]);
-
 	TEST(simName, su2, partition);
 
 
