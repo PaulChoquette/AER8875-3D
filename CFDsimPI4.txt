@@ -4,20 +4,31 @@
 
 SimName= CFDsimPI4.txt
 choiceMESH= IMPORT
-su2FilePath= /media/sf_SHARE_FOLDER/GitKraken_folder/AER8875-3D/Zone0(1).su2
+su2FilePath= /home/cd/Documents/PI4/GitLocal/MPI_dev/Zone0.su2
 NbrPartition= 4
 alpha= 0.0
 mach= 2.0
 gamma= 1.4
+<<<<<<< HEAD
 TemporelMethod= Runge-Kutta_Hybride
 stgaeNbr= 5
 cflVAR_str= 2.3
+=======
+TemporelMethod= Runge-Kutta-H
+stgaeNbr= 5
+cflVAR_str= 1.8
+>>>>>>> Execute2
 ResidualSmooth= No
 SpatialMethod= Roe
-SpatialMethodORDER= 1
+SpatialMethodORDER= 2
 grad= 
+<<<<<<< HEAD
 iterMAX= 5000
 convergenceCriterea= 1e-14
+=======
+iterMAX= 100000
+convergenceCriterea= 1e-13
+>>>>>>> Execute2
 graph= 
 alpha_0= 0.0
 alpha_inf= 0.0

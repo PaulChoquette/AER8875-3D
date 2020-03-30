@@ -24,11 +24,16 @@ string fileName;
 int main() {
 	Reader_c FileContents;
 	string parametreFile = "CFDsimPI4.txt";
-	double convergeFixLimit = pow(10,-4);
+	double convergeFixLimit = pow(10,-6);		//Gèle les limiteurs après convergence jusqu'à cette résolution là. Évite é vventuelles oscillations
 	//////////////////////////////////////////////////////////////////////////////
 	solver_c solve(FileContents, convergeFixLimit);
+<<<<<<< HEAD
 	fileName = "Zone"+to_string(solve.World.world_rank)+" (1).su2";
 	//fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
+=======
+	//solve.PrintStylz();
+	fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
+>>>>>>> Execute2
 	FileContents.read_file_local(fileName);
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
@@ -38,13 +43,16 @@ int main() {
 
 	//solve.SetAnalyticalGradiant(0.69,0.0,0.0);
 	//solve.PrintGradiant();
+	//solve.LimitTecplot();
 	//solve.HighlightZoneBorder();
+<<<<<<< HEAD
+=======
+
+	FileContents.write_tecplot(FileContents,"./PlotOut/Tecio",solve.World.world_rank, solve.p, solve.rho, solve.u, solve.v, solve.w);
+>>>>>>> Execute2
 	// To change
-	switch (solve.World.world_rank){
-		case 0 : FileContents.write_tecplot(FileContents,"./PlotOut/Tecio0", solve.elem2vol, solve.rho, solve.u, solve.v, solve.w);solve.PrintStylz();break;
-		case 1 : FileContents.write_tecplot(FileContents,"./PlotOut/Tecio1", solve.elem2vol, solve.rho, solve.u, solve.v, solve.w);break;
-		case 2 : FileContents.write_tecplot(FileContents,"./PlotOut/Tecio2", solve.elem2vol, solve.rho, solve.u, solve.v, solve.w);break;
-		case 3 : FileContents.write_tecplot(FileContents,"./PlotOut/Tecio3", solve.elem2vol, solve.rho, solve.u, solve.v, solve.w);break;
+	if (solve.World.world_rank==0){
+		solve.PrintStylz();
 	}
 
 	string OFileName = "./PlotOut/AsciiFile"+to_string(solve.World.world_rank)+".dat";

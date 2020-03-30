@@ -60,7 +60,7 @@ class Reader_c {
 		void write_file(Reader_c& read, Solver_c& solve, int izone);
 		void WriteAllZoneFile(Reader_c& read,Solver_c& solve );
 		//Write Tecplot output
-		void write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w);
+		void write_tecplot(Reader_c &FileContents, const char* out_filename,int world_id,void* p, void* Rho, void* u, void* v, void* w);
 		void write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,double*v,double*w);
 
 

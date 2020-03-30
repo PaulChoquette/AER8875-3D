@@ -5,10 +5,12 @@
 #include <fstream>
 #include "main.h"
 #include "Reader.h"
-#include "/home/michaelgagnon/Bureau/TECIO/include/TECXXX.h"
+#include "/home/cd/TECIO/include/TECXXX.h"
+#include <iomanip>
+#include <sstream>
 
 
-void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, double* p, double* Rho, double* u, double* v, double* w) {
+void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename,int world_id, void* p, void* Rho, void* u, void* v, void* w) {
 
 	//Declare and fill X Y Z data arrays
 	double* x = new double[FileContents.npoint];
@@ -32,6 +34,8 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, d
 	char fname_temp[100];
 	strcpy(fname_temp, "./");
 	strcat(fname_temp, out_filename);
+	string Tem = to_string(world_id);
+	strcat(fname_temp, Tem.c_str());
 	strcat(fname_temp, ".plt");
 
 	const char* fname = fname_temp;
@@ -106,6 +110,10 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename, d
 void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,double*v,double*w){
     fstream outFile;
     outFile.open(FileName, ios::out);
+	outFile.precision(15);
+	outFile<<scientific;
+
+
     outFile << "VARIABLES=\"X\",\"Y\",\"Z\",\"p\",\"rho\",\"u\",\"v\",\"w\"" << endl;
 	//outFile << "VARIABLES=\"X\",\"Y\",\"Z\"" << endl;
     //outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
@@ -139,28 +147,23 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
 	string C;
 	for (int i = 0; i < nelem; i++)
     {
-        C = to_string(p[i]);
-        outFile << C << endl;
+        outFile <<fixed<<setprecision(15)<< p[i] << endl;
     }
 	for (int i = 0; i < nelem; i++)
     {
-        C = to_string(rho[i]);
-        outFile << C << endl;
+        outFile <<fixed<<setprecision(15)<< rho[i] << endl;
     }
 	for (int i = 0; i < nelem; i++)
     {
-        C = to_string(u[i]);
-        outFile << C << endl;
+        outFile <<fixed<<setprecision(15)<< u[i] << endl;
     }
 	for (int i = 0; i < nelem; i++)
     {
-        C = to_string(v[i]);
-        outFile << C << endl;
+        outFile <<fixed<<setprecision(15)<< v[i] << endl;
     }
 	for (int i = 0; i < nelem; i++)
     {
-        C = to_string(w[i]);
-        outFile << C << endl;
+        outFile <<fixed<<setprecision(15)<< w[i] << endl;
     }
 
         // Ecriture des noeuds de chaque elements pour les carres
