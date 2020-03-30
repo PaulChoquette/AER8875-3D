@@ -1,0 +1,22 @@
+% 
+ZONE= 0
+% 
+% Problem dimension 
+% 
+NDIME= 0
+% 
+% Inner element connectivity 
+% 
+NELEM= 0
+% 
+% Node coordinates 
+% 
+NPOIN= 0
+% 
+% Boundary elements 
+% 
+NMARK= 0
+% 
+% Zone Boundary elements 
+% 
+NZONE= 0
