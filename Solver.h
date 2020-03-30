@@ -16,6 +16,8 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void Compute();                             // solve problem
     void PrintStylz();
     Comm World;                                 // MPI Cluster [World.world_rank to get thread ID]
+    double invrho;
+    double eTempo;
     // Simulation parametrisation
     string smoothOrNah;
     double mach,AoA,cfl,convergeCrit;
@@ -39,25 +41,21 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 
     private:
     //Private variables
-    double invrho;
-    double eTempo;
     int nbc;
     string* bound2tag;
     int* BoundIndex;            //Limits of boundary cells id -> [izone] = start, indexes up to n+1
     int* ZBoundIndex;           //Limits of zone boundary cells id -> [izone] = start, indexes up to n+1
     int ntgt;                   //Number of MPI targets
     int* elem2vtk;              //Overwrites the partially-deleted one in connect_c
-    double** flux_c;            //convective flux  flux[iface][variable (rho=0,u,v,w,p=4)]
-    double** flux_d;            //dissipative flux flux[iface][variable (rho=0,u,v,w,p=4)]
+    double** flux_c;            //convective F_lux  F_lux[iface][variable (rho=0,u,v,w,p=4)]
+    double** flux_d;            //dissipative F_lux F_lux[iface][variable (rho=0,u,v,w,p=4)]
     double** residu_c;          //convective residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
-    double** FLUX;
+    double** F_lux;
     double** SmootyRezi;
     double** residu_d;          //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** residu_d_hyb;      //dissipative residuals residu[ielem][variable (rho=0,u,v,w,p=4)]
     double** cons_;
-    double** cons;
-    double** W_0;               //copy of initial state for RK
-    double** F_lux;
+    double** cons;               //copy of initial state for RK
     double** limit;             //Limitors per element and primary value
     double** primitivesSendBuffer;  //Buffer for Tx
     double** gradientSendBuffer;    //Gradient buffer for Tx
@@ -88,12 +86,12 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void TimeStepRkM();         // Runge-Kutta Multistage time integration
     void TimeStepRkH();         // Runge-Kutta Hybride time integration
     void ComputeGrandientsNLimit();// Computes gradiants WITH limitors INCLUDED. Bool true
-    void UpwindFlux(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative flux [local]
-    void RoeDissipation(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative flux [local]
-    void ComputeFluxO1();       // Calcul des flux (Roe) ordre 1
-	void ComputeFluxO1Conv();   // Calcul flux convectifs Ordre 1
-    void ComputeFluxO2();       // Calcul des flux (Roe) ordre 2
-    void ComputeFluxO2Conv();   // Calcul flux convectifs Ordre 2
+    void UpwindFlux(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative F_lux [local]
+    void RoeDissipation(int,double,double,double,double,double,double,double,double,double,double);// Compute dissipative F_lux [local]
+    void ComputeFluxO1();       // Calcul des F_lux (Roe) ordre 1
+	void ComputeFluxO1Conv();   // Calcul F_lux convectifs Ordre 1
+    void ComputeFluxO2();       // Calcul des F_lux (Roe) ordre 2
+    void ComputeFluxO2Conv();   // Calcul F_lux convectifs Ordre 2
     void ResidualSmoothing();   //
     void ComputeResidu();       // Calcul des résidu
     void ComputeResiduConv();   // Calcul des résidus convectifs seulement
@@ -102,8 +100,8 @@ class solver_c : public Metric_c {    // TBD wheter public or private
 	double E2P(double,double,double,double,double);// Calcul  Energie vers pression
     void WriteResidu();
     void SaveConservative();
+    void SavePrimitive(int ielem);
+    void SavePrimitiveRK(int ielem);
     void SaveFlux();
     void SaveFlux_Hyb();
-    void SavePrimitive(int);
-    void SavePrimitiveRK(int);
 };

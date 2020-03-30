@@ -434,6 +434,30 @@ void Reader_c::check()
 	cout << "line : ";cout << line;cout << "\n";
 	cout << "bc : ";cout << bc;cout << "\n";
 	cout << "nzone : "; cout << nzone; cout << "\n";
+	// cout << "\nElem2Node :\n";
+	// for(int i=0; i<elem;i++)
+	// {
+	// 	for(int j=0; j<vtklookup[1][elem2vtk[i]][1]; j++)
+	// 	{
+	// 		cout << elem2node[i][j]; cout << " ; ";
+	// 	}
+	// 	cout << "\n";
+	// }
+	// cout << "\ncoord :\n";
+	// for(int i=0; i<npoint; i++)
+	// {
+	// 	cout << coord[i][0]; cout << " ; "; cout << coord[i][1]; cout << " ; "; cout << coord[i][2]; cout << "\n";
+	// }
+	// cout << "\nelem2vtk :\n";
+	// for(int i=0; i<ncell; i++)
+	// {
+	// 	cout << elem2vtk[i];cout << "\n";
+	// }
+	// cout << "\nzelem2jelem :\n";
+	// for (int i = 0; i < nzelem; i++)
+	// {
+	// 	cout << zelem2jelem[i]; cout << "\n";
+	// }
 }
 
 

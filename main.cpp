@@ -27,29 +27,22 @@ int main() {
 	double convergeFixLimit = pow(10,-6);		//Gèle les limiteurs après convergence jusqu'à cette résolution là. Évite é vventuelles oscillations
 	//////////////////////////////////////////////////////////////////////////////
 	solver_c solve(FileContents, convergeFixLimit);
-<<<<<<< HEAD
+	//solve.PrintStylz();
 	fileName = "Zone"+to_string(solve.World.world_rank)+" (1).su2";
 	//fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
-=======
-	//solve.PrintStylz();
-	fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
->>>>>>> Execute2
 	FileContents.read_file_local(fileName);
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
 	solve.SumNorm(FileContents, 1);
+
 	solve.InitMPIBuffer(FileContents);
 	solve.Compute();		//Necessary for no seg faults
-
 	//solve.SetAnalyticalGradiant(0.69,0.0,0.0);
 	//solve.PrintGradiant();
 	//solve.LimitTecplot();
 	//solve.HighlightZoneBorder();
-<<<<<<< HEAD
-=======
 
 	FileContents.write_tecplot(FileContents,"./PlotOut/Tecio",solve.World.world_rank, solve.p, solve.rho, solve.u, solve.v, solve.w);
->>>>>>> Execute2
 	// To change
 	if (solve.World.world_rank==0){
 		solve.PrintStylz();
@@ -57,6 +50,5 @@ int main() {
 
 	string OFileName = "./PlotOut/AsciiFile"+to_string(solve.World.world_rank)+".dat";
 	FileContents.write_tecplot_ASCII(OFileName,solve.p,solve.rho,solve.u,solve.v,solve.w);
-
 	return 1;
 }

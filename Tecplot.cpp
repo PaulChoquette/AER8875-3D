@@ -5,7 +5,7 @@
 #include <fstream>
 #include "main.h"
 #include "Reader.h"
-#include "/home/cd/TECIO/include/TECXXX.h"
+#include "/home/michaelgagnon/Bureau/TECIO/include/TECXXX.h"
 #include <iomanip>
 #include <sstream>
 
@@ -39,7 +39,7 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename,in
 	strcat(fname_temp, ".plt");
 
 	const char* fname = fname_temp;
-	
+
 	tecini142("NACA_0012", "X,Y,Z,P,Rho,U,V,W", fname , ".", &FileFormat, &FileType, &Debug, &IsDouble);
 
 	//Initialize teczne 142 variables and use teczne142 to make header for each zone
@@ -132,7 +132,7 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
     }
     string b;                      // ecrire les coordonnees de laxe y a la suite
     for (int i = 0; i < npoint; i++)
-    {	
+    {
         b = to_string(coord[i][1]);
         outFile << b << endl;
     }
@@ -142,7 +142,7 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
         z = to_string(coord[i][2]);
         outFile << z << endl;
     }
-    
+
 		// Conservatives
 	string C;
 	for (int i = 0; i < nelem; i++)
