@@ -9,15 +9,15 @@ NbrPartition : 4
 alpha : 0.0
 mach : 1.0
 gamma : 1.4
-TemporelMethod : Runge-Kutta
-stgaeNbr : 5
+TemporelMethod : Choisir une méthode d'intégration temporelle
+stgaeNbr : 1
 cflVAR_str : 1.0
-ResidualSmooth : Yes
-SpatialMethod : Roe
-SpatialMethodORDER : 2
+ResidualSmooth : Yes or No
+SpatialMethod : Choisir une méthode d'intégration spatiale
+SpatialMethodORDER : 1
 grad : 
 iterMAX : 100000.0
 convergenceCriterea : 1e-14
-graph : [True, True, True, True, True, True, True]
+graph : [False, False, False, False, False, False, False]
 alpha_0 : 0.0
 alpha_inf : 0.0
