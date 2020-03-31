@@ -12,6 +12,7 @@ from sys import modules
 import random
 import subprocess
 import os
+from tkinter import simpledialog
 
 class Interface_livrable_c():
     def __init__(self):
@@ -192,6 +193,13 @@ class Interface():
        var.set("4")
        self.spin_partition = Spinbox(self.tab1, bd=3, wrap=True, from_=1, to=15, width=5,textvariable=var)
        self.spin_partition.place(x=210,y=260)
+    ######################## Option : Patitionnement ########################
+       lbl333 = tk.Label(self.tab1, text="Nombre de coeur :   ")
+       lbl333.place(x=10,y=300)
+       var = StringVar()
+       var.set("4")
+       self.spin_partition1 = Spinbox(self.tab1, bd=3, wrap=True, from_=1, to=15, width=5,textvariable=var)
+       self.spin_partition1.place(x=150,y=300)
     ######################## Option : alpha ########################
        lbl2 = tk.Label(self.tab1, text="Angle d'attaque :")
        lbl2.place(x=10,y=310+40)
@@ -633,8 +641,11 @@ class Interface():
         button333.place(x=60,y=650)
 
     def computeCODE(self, *arg):
-        print(" ---------- COMPUTE ---------- ")
-
+        coeur = self.spin_partition1.get()
+        commande = "mpirun -n " + coeur + " ./bin/Execute2"
+        ExecCommand = simpledialog.askstring(title=" ", prompt="Confirmer la commande d'exécution:", initialvalue=commande)
+        os.system(ExecCommand)
+        messagebox.showinfo(title="Opération réussi", message="Exécution de la simulation terminée")
 
     def saveNext(self):
         self.alpha = self.entre1.get()
