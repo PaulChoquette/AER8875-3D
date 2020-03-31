@@ -20,24 +20,7 @@
 
 using namespace std;
 
-string getFileName(const string& s) {
-
-   char sep = '/';
-
-#ifdef _WIN32
-   sep = '\\';
-#endif
-
-   size_t i = s.rfind(sep, s.length());
-   if (i != string::npos) {
-      return(s.substr(i+1, s.length() - i));
-   }
-
-   return("");
-}
-
-
-void TEST(string simName, string su2, int partition)
+void compute(string simName, string su2, int partition)
 {
 	cout << "\n==================================== ONERA ==================================== " << endl;
   size_t lastindex = su2.find_last_of(".");
@@ -55,28 +38,18 @@ void TEST(string simName, string su2, int partition)
 	ONERA.ComputeZoneConnectivity(FileONERA);
 	FileONERA.WriteAllZoneFile(out, FileONERA, ONERA);
 }
-
+// ======================================================================================================================================== //
+// ================================================================= MAIN ================================================================= //
+// ======================================================================================================================================== //
 int main(int argc, char *argv[])
 {
-	if(argc<4)
-	{
-		cout << argc<<endl;
-		cout << "Input arguments are missing"<<endl;
-		exit( 666 );
-	}
-	else
-	{
-		cout << "Number of input argument : "; cout << argc << endl;
-	}
+	if(argc<4)	{		cout << argc<<endl;		cout << "Input arguments are missing"<<endl;		exit( 666 );	}
+	else	{		cout << "Number of input argument : "; cout << argc << endl;	}
 	cout << "==================================== NOICE STARTING ====================================" << endl;
 	string simName = argv[1];
 	string su2 = argv[2];
 	int partition = atoi(argv[3]);
-	TEST(simName, su2, partition);
-
-
+	compute(simName, su2, partition);
 	cout << "===================================== NOICE ENDING =====================================" << endl;
-
-
 	return 0;
 }

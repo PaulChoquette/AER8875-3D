@@ -84,12 +84,11 @@ class Interface_view():
        self.Interface_view.destroy()
 
 
-
 class Interface():
 
     def __init__(self):
        self.interface = tk.Tk()
-       self.interface.title("GUI -- In WIP")
+       self.interface.title("AER8875 - Projet intégrateur IV [Groupe D]")
        self.interface.geometry('600x750')
        tab_control = ttk.Notebook(self.interface)
        self.tab1 = ttk.Frame(tab_control)
@@ -109,10 +108,11 @@ class Interface():
        filemenu.add_command(label="Fermer", command=self.quit)
        menubar.add_cascade(label="Options", menu=filemenu)
        checking = Menu(menubar, tearoff=0)
-       checking.add_command(label="Vérification de la paramétrisation", command=self.seeTXT)
+       checking.add_command(label="Vérification de la paramétrisation", command=self.saveNext)
        menubar.add_cascade(label="Vérification", menu=checking)
        test_case = Menu(menubar, tearoff=0)
-       test_case.add_command(label="Livrable C", command=self.livrableC)
+       #test_case.add_command(label="Livrable C", command=self.livrableC)
+       test_case.add_command(label="Livrable C [option nd]", command=self.ND_errorMSG)
        menubar.add_cascade(label="Cas tests", menu=test_case)
        self.interface.config(menu=menubar)
         #############################################
@@ -163,7 +163,7 @@ class Interface():
        self.grad = StringVar()
        self.iterMAX = DoubleVar()
        self.convergenceCriterea = DoubleVar()
-       self.graph = StringVar() # "000111001010..." etc pour graph# 0,1,2,3... pour la position et 0 ou 1 pour oui ou non
+       self.graph = []
        self.alpha_0=0.0
        self.alpha_inf=0.0
 
@@ -210,20 +210,13 @@ class Interface():
        lbl2 = tk.Label(self.tab1, text="Gamma :")
        lbl2.place(x=10,y=410+40)
        self.entre3 = tk.Entry(self.tab1, width=5)
-       self.entre3.insert(0, 1.0)
+       self.entre3.insert(0, self.gamma)
        self.entre3.place(x=80,y=410+40)
-    ######################## Team Name ########################
-       formTitle = Label(self.tab1, text="AER8875",width=20,font=("bold", 14))
-       formTitle.place(x=245,y=500)
-       formTitle = Label(self.tab1, text="Projet intégrateur IV",width=20,font=("bold", 14))
-       formTitle.place(x=190,y=520)
-       formTitle = Label(self.tab1, text="Groupe D",width=20,font=("bold", 14))
-       formTitle.place(x=245,y=540)
     ######################## LOGO ########################
        image = tk.PhotoImage(file="logo.png")
-       image = image.subsample(7, 7)
+       image = image.subsample(6, 6)
        label = tk.Label(self.tab1,image=image)
-       label.place(x=370,y=310)
+       label.place(x=300,y=310)
 ################################################################################################################################################################
        self.spin_stage = Spinbox(self.tab2, bd=3, wrap=True, from_=1, to=5, width=5)
        formTitle_2 = Label(self.tab2, text="Integration spatiale",width=20,font=("bold", 14))
@@ -249,9 +242,10 @@ class Interface():
        self.SpatialMethod.trace("w", self.SpatialeBTN)
  ######################## Option : Schema temporel ########################
        OptionList2 = [
-       "Euler explicite",
-       "Euler implicite",
-       "Runge-Kutta"]
+       "Euler-explicite",
+       "Euler-implicite",
+       "Runge-Kutta",
+       "Hybride"]
        self.TemporelMethod.set("Choisir une méthode d'intégration temporelle")
        self.opt10 = tk.OptionMenu(self.tab2, self.TemporelMethod, *OptionList2)
        self.opt10.config(width=50, font=('Helvetica', 12))
@@ -309,7 +303,7 @@ class Interface():
 
 ######################## Option : Graph to generate ########################
        formTitle1 = Label(self.tab30, text="Indiquer les graphiques à générer",font=("bold", 15))
-       formTitle1.place(x=145,y=53)
+       formTitle1.place(x=125,y=53)
        lbl5 = tk.Label(self.tab30, text="Convergence du résidu :   ")
        lbl5.place(x=10,y=100)
        chk1 = Checkbutton(self.tab30, var=self.boolResiduConv)
@@ -364,14 +358,15 @@ class Interface():
        button22 = tk.Button(self.tab30, text = 'Sauvegarder', command=self.saveNext,bg='brown',fg='white',width=17)
        button22.place(x=360,y=600)
 
-
-
-
-
-
-
-
+       self.RUNtxt_1 = tk.Label(self.tab1, text="Pour lancer la simulation, il faut premièrement partitionner et sauvegarder le paramétrage",bg='grey',fg='white',width=75,font=("Helvetica", 10))
+       self.RUNtxt_1.place(x=30,y=650)
+       self.RUNtxt_2 = tk.Label(self.tab2, text="Pour lancer la simulation, il faut premièrement partitionner et sauvegarder le paramétrage",bg='grey',fg='white',width=75,font=("Helvetica", 10))
+       self.RUNtxt_2.place(x=30,y=650)
+       self.RUNtxt_3 = tk.Label(self.tab30, text="Pour lancer la simulation, il faut premièrement partitionner et sauvegarder le paramétrage",bg='grey',fg='white',width=75,font=("Helvetica", 10))
+       self.RUNtxt_3.place(x=30,y=650)
+    #####################################################
     ######################## RUN ########################
+    #####################################################
        self.interface.mainloop()
 ############################################################################################################################
 #######################################################   METHODS   ########################################################
@@ -387,6 +382,9 @@ class Interface():
         self.check = Interface_view()
         txtFILE = self.SimName + ".txt"
         self.check.compute(txtFILE)
+
+    def ND_errorMSG(self):
+        messagebox.showerror("Erreur", "Cette option n'est pas encore disponible ou a été désactiver")
 
     def re_start(self, *arg):
         #time.sleep(10)
@@ -432,7 +430,18 @@ class Interface():
             # testing ...
             #
     def SpatialeBTN(self, *arg):
-        self.opt11.config(width=50, font=('Helvetica', 12),bg='LightBlue3')
+        if self.SpatialMethod.get()=="AUSM":
+            self.opt11.destroy()
+            OptionList1 = [
+            "Roe",
+            "AUSM"]
+            self.SpatialMethod.set("Choisir une méthode d'intégration spatiale")
+            self.opt11 = tk.OptionMenu(self.tab2, self.SpatialMethod, *OptionList1)
+            self.opt11.config(width=50, font=('Helvetica', 12))
+            self.opt11.place(x=50,y=70)
+            messagebox.showinfo("Note", "Cette option n'est pas encore disponible ou a été désactiver")
+        else:
+            self.opt11.config(width=50, font=('Helvetica', 12),bg='LightBlue3')
 
     def MeshChoiceIMPORT(self, *arg):
         self.btn_meshChoice_1.destroy()
@@ -443,23 +452,36 @@ class Interface():
         self.btn_meshChoice_2.place(x=375,y=130)
         self.choiceMESH = "IMPORT"
     ######################## Import SU2 file ########################
-        self.lbl2 = tk.Label(self.tab1, text="Choisir un maillage")
-        self.lbl2.place(x=10,y=200)
-        self.photo = PhotoImage(file = r"loupe.png")
-        self.photoimage = self.photo.subsample(20, 20)
-        self.FileSearch_btn = Button(self.tab1, image = self.photoimage, command = lambda:self.get_filePath())
-        self.FileSearch_btn.place(x=145,y=190)
-        self.lbl20 = tk.Label(self.tab1, text="...........................................su2",bg="SlateGray1",width=42)
-        self.lbl20.place(x=230,y=200)
+        try:
+            self.lbl2.destroy()
+            self.FileSearch_btn.destroy()
+            self.lbl20.destroy()
+            self.lbl2 = tk.Label(self.tab1, text="Choisir un maillage")
+            self.lbl2.place(x=10,y=200)
+            self.photo = PhotoImage(file = r"loupe.png")
+            self.photoimage = self.photo.subsample(20, 20)
+            self.FileSearch_btn = Button(self.tab1, image = self.photoimage, command = lambda:self.get_filePath())
+            self.FileSearch_btn.place(x=145,y=190)
+            self.lbl20 = tk.Label(self.tab1, text="...........................................su2",width=42)
+            self.lbl20.place(x=230,y=200)
+        except:
+            self.lbl2 = tk.Label(self.tab1, text="Choisir un maillage")
+            self.lbl2.place(x=10,y=200)
+            self.photo = PhotoImage(file = r"loupe.png")
+            self.photoimage = self.photo.subsample(20, 20)
+            self.FileSearch_btn = Button(self.tab1, image = self.photoimage, command = lambda:self.get_filePath())
+            self.FileSearch_btn.place(x=145,y=190)
+            self.lbl20 = tk.Label(self.tab1, text="...........................................su2",width=42)
+            self.lbl20.place(x=230,y=200)
 
     def ComputePartitions(self):
         self.btn_partition = tk.Button(self.tab1, text="Partitionner le maillage",height=2,command=self.ComputePartitions,bg='LightBlue3')
         self.btn_partition.place(x=310,y=250)
-        self.finishBUTTON()
-
         calll = "./bin/Execute1 " + self.txt.get() + " " + self.su2FilePath + " " + self.spin_partition.get() + " GUI"
         os.system(calll)
         print("\nPartitionning completed... \n")
+        messagebox.showinfo(title="Opération réussi", message="Partitionnement terminé")
+
 
     def MeshChoiceGENERATE(self, *arg):
         self.btn_meshChoice_1.destroy()
@@ -483,64 +505,18 @@ class Interface():
         self.opt1.config(width=20, font=('Helvetica', 12))
         self.opt1.place(x=50,y=110)
         self.opt1.config(width=20, font=('Helvetica', 12),bg='LightBlue3')
-        if self.check_1.get() == True:
-            self.opt20.destroy()
-            self.opt30.destroy()
-        if self.check_2.get() == True:
-            self.label1.destroy()
-            self.text1.destroy()
-        self.check_1.set(False)
-        self.check_2.set(False)
-        if self.SpatialMethodORDER.get() == "Schema spatial d'ordre 2":
-            self.check_1.set(True)
-            GradOpt = [
-            "........",
-            "........",
-            "........"]
-            self.grad.set("Gradiant")
-            self.opt20 = tk.OptionMenu(self.tab2, self.grad, *GradOpt)
-            self.opt20.config(width=12, font=('Helvetica', 12))
-            self.opt20.place(x=390,y=110)
-            Limiteur = [
-            "x",
-            "y"]
-            self.Limiteur.set("Limiteur")
-            self.opt30 = tk.OptionMenu(self.tab2, self.Limiteur, *Limiteur)
-            self.opt30.config(width=12, font=('Helvetica', 12))
-            self.opt30.place(x=50,y=150)
-            self.Limiteur.trace("w", self.LimiteurOpt)
-            self.grad.trace("w", self.grad_BTN)
-
-    def grad_BTN(self, *arg):
-        if self.grad.get() != "Gradiant":
-            self.opt20.config(width=12, font=('Helvetica', 12),bg='LightBlue3')
-
-    def LimiteurOpt(self, *arg):
-        if self.check_2.get() == True:
-            self.label1.destroy()
-            self.text1.destroy()
-        if self.Limiteur.get() == "x":
-            self.label1 = tk.Label(self.tab2, text="Parametre X : ")
-            self.label1.place(x=250,y=160)
-            self.text1= tk.Entry(self.tab2, width=5)
-            self.text1.insert(0, 1.0)
-            self.text1.place(x=360,y=160)
-
-        elif self.Limiteur.get() == "y":
-            self.label1 = tk.Label(self.tab2, text="Parametre Y : ")
-            self.label1.place(x=250,y=160)
-            self.text1= tk.Entry(self.tab2, width=5)
-            self.text1.insert(0, 1.0)
-            self.text1.place(x=360,y=160)
-        if self.Limiteur.get() != "Limiteur":
-            self.opt30.config(width=12, font=('Helvetica', 12),bg='LightBlue3')
-            self.check_2.set(True)
-
-
 
     def TemporelMethod_BTN(self, *arg):
         self.opt10.config(width=50, font=('Helvetica', 12),bg='LightBlue3')
         if self.TemporelMethod.get()=="Runge-Kutta":
+            self.opt10.config(width=20, font=('Helvetica', 12))
+            self.opt10.place(x=50,y=250)
+            self.stage = tk.Label(self.tab2, text="Nombre de stage :   ")
+            self.stage.place(x=320,y=255)
+            self.spin_stage = Spinbox(self.tab2, bd=3, wrap=True, from_=1, to=5, width=5)
+            self.spin_stage.place(x=450,y=255)
+            self.check_3.set(True)
+        elif self.TemporelMethod.get()=="Hybride":
             self.opt10.config(width=20, font=('Helvetica', 12))
             self.opt10.place(x=50,y=250)
             self.stage = tk.Label(self.tab2, text="Nombre de stage :   ")
@@ -609,11 +585,31 @@ class Interface():
         if filePath is not None:
             self.lbl20.destroy()
             self.su2FilePath = filePath
-            filepath_appear = Label(self.tab1, text=self.su2FilePath,font=("Arial Bold", 10))
-            filepath_appear.place(x=230,y=200)
-            ######################## Partionner le maillage ########################
-            self.btn_partition = tk.Button(self.tab1, text="Partitionner le maillage",height=2,command=self.ComputePartitions)
-            self.btn_partition.place(x=310,y=250)
+            pos = 0
+            for char in filePath:
+                pos += 1
+                if char == "/":
+                    posSave = pos
+                if char == ".":
+                    posSave2 = pos
+            try:
+                self.lbl20.destroy()
+                self.filepath_appear.destroy()
+                show = filePath[posSave : posSave2+3]
+                self.lbl20 = tk.Label(self.tab1, text="...........................................su2",bg="SlateGray1",width=42)
+                self.filepath_appear = tk.Label(self.tab1, text=show,bg="SlateGray1",width=42)
+                self.filepath_appear.place(x=230,y=200)
+                ######################## Partionner le maillage ########################
+                self.btn_partition = tk.Button(self.tab1, text="Partitionner le maillage",height=2,command=self.ComputePartitions)
+                self.btn_partition.place(x=310,y=250)
+            except:
+                show = filePath[posSave : posSave2+3]
+                self.lbl20 = tk.Label(self.tab1, text="...........................................su2",bg="SlateGray1",width=42)
+                self.filepath_appear = tk.Label(self.tab1, text=show,bg="SlateGray1",width=42)
+                self.filepath_appear.place(x=230,y=200)
+                ######################## Partionner le maillage ########################
+                self.btn_partition = tk.Button(self.tab1, text="Partitionner le maillage",height=2,command=self.ComputePartitions)
+                self.btn_partition.place(x=310,y=250)
 
 
 
@@ -624,6 +620,9 @@ class Interface():
         self.stgaeNbr = self.spin_stage.get()
 
     def finishBUTTON(self, *arg):
+        self.RUNtxt_1.destroy()
+        self.RUNtxt_2.destroy()
+        self.RUNtxt_3.destroy()
         style = Style()
         style.configure('TButton', font =('calibri', 20, 'bold'),borderwidth = '4')
         button3 = tk.Button(self.tab1, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
@@ -650,6 +649,7 @@ class Interface():
         writer = InputFILE(self)
         writer.compute(self)
         self.seeTXT()
+        self.finishBUTTON()
 
     def quit(self):
         try:
@@ -666,7 +666,7 @@ class Interface():
     def livrableC_effect(self, *arg):
         self.livrableC = Interface_livrable_c()
 
-
+# =========================================================================================================== #
 class Constructor():
     def compute(self):
         app = Interface()
@@ -680,6 +680,12 @@ class InputFILE():
 
 
     def compute(self, Interface):
+        ordreSpatial = Interface.SpatialMethodORDER.get()
+        if ordreSpatial=="Schema spatial d'ordre 2":
+            ordreSpatial = 2
+        else:
+            ordreSpatial = 1
+        graphss = [Interface.boolResiduConv.get(), Interface.boolCP_chord.get(), Interface.boolCLConv.get(), Interface.boolCDConv.get(), Interface.boolCL_Alpha.get(), Interface.boolCD_Alpha.get(), Interface.boolCM_Alpha.get()]
         try:
             f = open(self.fileNAME)
             # Do something with the file
@@ -728,7 +734,7 @@ class InputFILE():
                 txtFILE.write(str(Interface.SpatialMethod.get()))
                 txtFILE.write("\n")
                 txtFILE.write(str("SpatialMethodORDER : "))
-                txtFILE.write(str(Interface.SpatialMethodORDER.get()))
+                txtFILE.write(str(ordreSpatial))
                 txtFILE.write("\n")
                 txtFILE.write(str("grad : "))
                 txtFILE.write(str(Interface.grad.get()))
@@ -740,7 +746,7 @@ class InputFILE():
                 txtFILE.write(str(Interface.convergenceCriterea))
                 txtFILE.write("\n")
                 txtFILE.write(str("graph : "))
-                txtFILE.write(str(Interface.graph.get()))
+                txtFILE.write(str(graphss))
                 txtFILE.write("\n")
                 txtFILE.write(str("alpha_0 : "))
                 txtFILE.write(str(Interface.alpha_0))
@@ -797,7 +803,7 @@ class InputFILE():
             txtFILE.write(str(Interface.SpatialMethod.get()))
             txtFILE.write("\n")
             txtFILE.write(str("SpatialMethodORDER : "))
-            txtFILE.write(str(Interface.SpatialMethodORDER.get()))
+            txtFILE.write(str(ordreSpatial))
             txtFILE.write("\n")
             txtFILE.write(str("grad : "))
             txtFILE.write(str(Interface.grad.get()))
@@ -809,7 +815,7 @@ class InputFILE():
             txtFILE.write(str(Interface.convergenceCriterea))
             txtFILE.write("\n")
             txtFILE.write(str("graph : "))
-            txtFILE.write(str(Interface.graph.get()))
+            txtFILE.write(str(graphss))
             txtFILE.write("\n")
             txtFILE.write(str("alpha_0 : "))
             txtFILE.write(str(Interface.alpha_0))
