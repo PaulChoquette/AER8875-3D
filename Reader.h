@@ -88,6 +88,12 @@ class Reader_c {
 				double convCrit;
 				double AoA_i;
 				double AoA_f;
+				double Sref;
+				double Cref;
+				double xref;
+				double yref;
+				double zref;
+
 		///////////////////////////////////////////////////////////////////////////////
 
 				ifstream file_2;

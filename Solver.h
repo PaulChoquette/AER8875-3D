@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
-#include <Comm.h>
-#include <Metric.h>
+#include "Comm.h"
+#include "Metric.h"
 
 using namespace std;
 
@@ -20,7 +20,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     double eTempo;
     // Simulation parametrisation
     string smoothOrNah;
-    double mach,AoA,cfl,convergeCrit;
+    double mach,AoA,cfl,convergeCrit,Sref,Cref,xref,yref,zref;
     int Order,RK_step,iterMax;
     double residuRel,convergeFixLimit;          // Residu, limit at which limitors will be fixed
     bool RK_M;
@@ -36,14 +36,13 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void SetAnalyticalGradiant(double,double,double);
     void PrintGradiant();
     void LimitTecplot();
-
-
+    void ComputeCoefficient();
 
     private:
     //Private variables
     int nbc;
+    int* BoundIndex; //Limits of boundary cells id -> [izone] = start, indexes up to n+1
     string* bound2tag;
-    int* BoundIndex;            //Limits of boundary cells id -> [izone] = start, indexes up to n+1
     int* ZBoundIndex;           //Limits of zone boundary cells id -> [izone] = start, indexes up to n+1
     int ntgt;                   //Number of MPI targets
     int* elem2vtk;              //Overwrites the partially-deleted one in connect_c
@@ -104,4 +103,5 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void SavePrimitiveRK(int ielem);
     void SaveFlux();
     void SaveFlux_Hyb();
+    double ComputeProjetedArea();
 };

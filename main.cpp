@@ -41,6 +41,7 @@ int main() {
 	//solve.PrintGradiant();
 	//solve.LimitTecplot();
 	//solve.HighlightZoneBorder();
+	solve.ComputeCoefficient();
 
 	FileContents.write_tecplot(FileContents,"./PlotOut/Tecio",solve.World.world_rank, solve.p, solve.rho, solve.u, solve.v, solve.w);
 	// To change

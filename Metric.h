@@ -17,11 +17,11 @@ public:
 	// :
 	double* face2area;
 	double* elem2vol;
-	// :
 	double** face2norm;
 	double** elem2center;
 	double*** face2elemCenter;
 	double** elem2deltaSxyz;
+	double** face2midpoint;
 	// =========================================== FUNCTION MEMBERS ============================================
 	void ComputeMetric(Reader_c& read);
 	void Norm_Area(Reader_c& read);

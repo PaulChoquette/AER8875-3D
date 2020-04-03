@@ -31,7 +31,7 @@ Comm::~Comm() {
 }
 
 void Comm::Init() {
-    // Start MPI 
+    // Start MPI
     MPI_Init(NULL,NULL);    // Init MPI
     MPI_Comm_size(MPI_COMM_WORLD,&world_size); // Get world size
     MPI_Comm_rank(MPI_COMM_WORLD,&world_rank);  //Get world ID
@@ -94,14 +94,14 @@ void Comm::ExchangePrimitives(double** primitivesTx) {
     }
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Waitall(ntgt*2,Request,MPI_STATUSES_IGNORE);
-    
+
 }
 
 void Comm::ReclassPrimitives(double**rho,double**u,double**v,double**w,double**p) {
     for (int izone=0;izone<ntgt;++izone) {
-        for (int ibelem=0;ibelem<zone2nbelem[izone];++ibelem) {       
+        for (int ibelem=0;ibelem<zone2nbelem[izone];++ibelem) {
             //*rho[rxOrder2localOrder[izone][ibelem]] = primitivesBuffer[izone][ibelem]; DOESN'T WORK
-            // Yes, I like living on the edge 
+            // Yes, I like living on the edge
             *(rho[0]+rxOrder2localOrder[izone][ibelem]) = primitivesBuffer[izone][ibelem];  //WORKS
             *(u[0]+rxOrder2localOrder[izone][ibelem]) = primitivesBuffer[izone][ibelem+zone2nbelem[izone]];
             *(v[0]+rxOrder2localOrder[izone][ibelem]) = primitivesBuffer[izone][ibelem+zone2nbelem[izone]*2];
@@ -197,4 +197,38 @@ void Comm::PrintP(void){
             cout<<"T: "<<world_rank<<"| z:"<<tgtList[izone]<<" Lcell : "<<primitivesBuffer[izone][ibelem+zone2nbelem[izone]*4]<<endl;
         }
     }
+}
+double Comm::UpdateCoefficient(double LocalForce){
+    double GlobalForce,TempForce,SumForce;
+    if (world_rank!=0) {
+        MPI_Request Request;
+        MPI_Isend(&LocalForce,1,MPI_DOUBLE,0,6,MPI_COMM_WORLD,&Request);
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Wait(&Request,MPI_STATUS_IGNORE);
+        MPI_Irecv(&GlobalForce,1,MPI_DOUBLE,0,7,MPI_COMM_WORLD,&Request);
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Wait(&Request,MPI_STATUS_IGNORE);
+        SumForce = GlobalForce;
+    }
+    else {
+        MPI_Request Request[world_size-1];double resArr[world_size-1];
+
+        GlobalForce = LocalForce;
+        for (int itgt=1;itgt<world_size;++itgt) {
+            MPI_Irecv(&resArr[itgt-1],1,MPI_DOUBLE,itgt,6,MPI_COMM_WORLD,&Request[itgt-1]);
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Wait(Request,MPI_STATUS_IGNORE);
+        for (int itgt=1;itgt<world_size;++itgt) {
+            GlobalForce += resArr[itgt-1];
+        }
+        SumForce = GlobalForce;
+        for (int itgt=1;itgt<world_size;++itgt) {
+            MPI_Isend(&SumForce,1,MPI_DOUBLE,itgt,7,MPI_COMM_WORLD,&Request[itgt-1]);
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Wait(Request,MPI_STATUS_IGNORE);
+    }
+
+    return SumForce;
 }

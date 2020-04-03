@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
-#include <Solver.h>
+#include "Solver.h"
 #include <math.h>
 #include <main.h>
 #include <iomanip>
@@ -19,6 +19,11 @@ solver_c::solver_c(Reader_c& FileContents, double convergeFixLimit_in)
   mach = FileContents.mach;
   AoA = FileContents.AoA;
   cfl = FileContents.cfl;
+  Sref = FileContents.Sref;
+  Cref = FileContents.Cref;
+  xref = FileContents.xref;
+  yref = FileContents.yref;
+  zref = FileContents.zref;
   if(FileContents.tempMethod=="Runge-Kutta")
   {
     RK_M=1;
@@ -1419,11 +1424,90 @@ void solver_c::LimitTecplot() {
         p[ielem] = limit[ielem][4];
     }
 }
+//*********************************************************************************
+//                           POST-TRAITEMENT
+//*********************************************************************************
 
+double solver_c::ComputeProjetedArea(){
+  int ig,indxMin,indxMax,iface;// ig = ghost index, ir = real index
+  string BoundType;
+  double Area1;
+  double Area2;
+  double GlobalArea;
 
+  for (int ibc=0;ibc<nbc;++ibc) {
+      BoundType = bound2tag[ibc];
+      indxMin = BoundIndex[ibc];
+      indxMax = BoundIndex[ibc+1];
+      if (BoundType.substr(0,4)=="wall"){ //If slipwall
+          // Slipwall
+          for (ig=indxMin;ig<indxMax;++ig) {
+              iface = elem2face[ig][0];
+              Area1 += 0.50*fabs(face2area[iface]*face2norm[iface][1]);
+          }
+      }
+  }
+  GlobalArea = World.UpdateCoefficient(Area1);
+  return GlobalArea;
+}
+//=============================================================================
+void solver_c::ComputeCoefficient() {
+    int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
+    string BoundType;
+    double Fx=0;
+    double Fy=0;
+    double Fz=0;
+    double Mz=0;
+    double GlobalFx;
+    double GlobalFy;
+    double GlobalFz;
+    double GlobalMz;
+    double Coeff_l;
+    double Coeff_d;
+    double Coeff_mz;
+    double q = 0.5*pow(inf_speed,2.0);
+    double Area;
+    double X,Y;
+    double Mtan;
 
+    for (int ibc=0;ibc<nbc;++ibc) {
+      BoundType = bound2tag[ibc];
+      indxMin = BoundIndex[ibc];
+      indxMax = BoundIndex[ibc+1];
+      if (BoundType.substr(0,4)=="wall"){ //If slipwall
+          // Slipwall
+          for (ig=indxMin;ig<indxMax;++ig) {
+              iface = elem2face[ig][0];
+              ir = elem2elem[ig][0];
+              Fx += p[ir]*face2area[iface]*face2norm[iface][0];
+              Fy += p[ir]*face2area[iface]*face2norm[iface][1];
+              Fz += p[ir]*face2area[iface]*face2norm[iface][2];
+              Mtan += -p[ir]*face2area[iface]*(face2norm[iface][1]*(face2midpoint[iface][0]-xref)-face2norm[iface][0]*(face2midpoint[iface][1]-yref));
+          }
+      }
+    }
 
+    GlobalFx = World.UpdateCoefficient(Fx);
+    GlobalFy = World.UpdateCoefficient(Fy);
+    GlobalFz = World.UpdateCoefficient(Fz);
+    GlobalMz = World.UpdateCoefficient(Mtan);
 
+    if (Sref != 0.0){
+      Area = Sref;
+    }
+    else {
+      Area = ComputeProjetedArea();
+    }
+    Coeff_l = GlobalFy/(Area*q);
+    Coeff_d = GlobalFx/(Area*q);
+    Coeff_mz = GlobalMz/(Area*q);
+
+    if (World.world_rank==0){
+      cout<<"Le coefficient de portance est de : "<<Coeff_l<<endl;
+      cout<<"Le coefficient de trainee est de : "<<Coeff_d<<endl;
+      cout<<"Le coefficient de moment en z : "<<Coeff_mz<<endl;
+  	}
+}
 
 void solver_c::PrintStylz() {
     // Mandatory ascii art

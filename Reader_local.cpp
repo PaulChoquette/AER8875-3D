@@ -482,6 +482,12 @@ void Reader_c::computePrmt(string filename) {
 		convCrit = 666;
 		AoA_i = 666;
 		AoA_f = 666;
+		Sref = 666;
+		Cref = 666;
+		xref = 666;
+		yref = 666;
+		zref = 666;
+
 		//Read file line_2 by line_2
 		while (getline(file_2, line_2))
 		{
@@ -553,6 +559,26 @@ void Reader_c::computePrmt(string filename) {
         AoA_f = inputDouble(cline_2, "alpha_inf= ");
 				continue;
       }
+			if(Sref==666){
+        Sref = inputDouble(cline_2, "Sref= ");
+				continue;
+      }
+			if(Cref==666){
+				Cref = inputDouble(cline_2, "Cref= ");
+				continue;
+			}
+			if(xref==666){
+				xref = inputDouble(cline_2, "xref= ");
+				continue;
+			}
+			if(yref==666){
+				yref = inputDouble(cline_2, "yref= ");
+				continue;
+			}
+			if(zref==666){
+				zref = inputDouble(cline_2, "zref= ");
+				continue;
+			}
 		}
 
 		file_2.close();

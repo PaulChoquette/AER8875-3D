@@ -22,7 +22,7 @@ class Comm {
     double** gradientBuffer;    // Buffer for received gradient values
     int** rxOrder2localOrder;   // Local Index to store received values
     double SumResidu;
-    
+
 
     // Public methods
     Comm();
@@ -40,7 +40,9 @@ class Comm {
     void PrintCellOrder(void);
     void PrintP(void);
 
+    // Post-traitement
+    double UpdateCoefficient(double);
     private :
     // Private methods
-    
+
 };

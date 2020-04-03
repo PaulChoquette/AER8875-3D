@@ -48,7 +48,7 @@ void Metric_c::Norm_Area(Reader_c& read)
 			int pt1 = face2node[iface][0];
 			int pt2 = face2node[iface][1];
 			int pt3 = face2node[iface][2];
-	
+
 			double delta_xy_a = (read.coord[pt1][0] - read.coord[pt2][0])*(read.coord[pt1][1] + read.coord[pt2][1]);
 			double delta_xy_b = (read.coord[pt2][0] - read.coord[pt3][0])*(read.coord[pt2][1] + read.coord[pt3][1]);
 			double delta_xy_c = (read.coord[pt3][0] - read.coord[pt1][0])*(read.coord[pt3][1] + read.coord[pt1][1]);
@@ -61,7 +61,7 @@ void Metric_c::Norm_Area(Reader_c& read)
 			double S_x = 0.5*(delta_yz_a + delta_yz_b + delta_yz_c);
 			double S_y = 0.5*(delta_zx_a + delta_zx_b + delta_zx_c);
 			double S_z = 0.5*(delta_xy_a + delta_xy_b + delta_xy_c);
-	
+
 			face2area[iface] = sqrt(S_x*S_x + S_y*S_y + S_z*S_z);
 			face2norm[iface][0] = S_x/face2area[iface];
 			face2norm[iface][1] = S_y/face2area[iface];
@@ -101,8 +101,8 @@ void Metric_c::Norm_Area(Reader_c& read)
 }
 void Metric_c::Volume(Reader_c& read)
 {
-	
-	
+
+
 		elem2vol	= new double [nface];
 		elem2vol    = new double [nelem];
 		for(int ielem=0; ielem<nelem; ielem++)
@@ -168,7 +168,7 @@ void Metric_c::Volume(Reader_c& read)
 	      	TroisVolume += face2area[faceID]*(normale_x*r_mid_x + normale_y*r_mid_y + normale_z*r_mid_z);
 	    }
 	   	elem2vol [ielem] = TroisVolume/3.0;
-	}	
+	}
 }
 void Metric_c::SumNorm(Reader_c& read, int choix)
 {
@@ -251,7 +251,7 @@ void Metric_c::SumNorm(Reader_c& read, int choix)
 			cout << Elem2sumNorm[ielem][2] << endl;
 			*/
 		}
-	
+
 		if(state == "NA")
 		{
 			state = "Sum=0 for every elements";
@@ -267,7 +267,7 @@ void Metric_c::SumNorm(Reader_c& read, int choix)
 	  SumNormLocalZone[0] = 0.0;
 	  SumNormLocalZone[1] = 0.0;
 	  SumNormLocalZone[2] = 0.0;
-	  
+
 	for(int iface=0; iface<nface; iface++)
 	{
 		SumNormLocalZone[0] += face2norm[iface][0];
@@ -282,7 +282,7 @@ void Metric_c::SumNorm(Reader_c& read, int choix)
 		cout << "SumNormAllZones[1] : "; cout <<  SumNormAllZones[1] << endl;
 		cout << "SumNormAllZones[2] : "; cout <<  SumNormAllZones[2] << endl;
 		*/
-	  
+
 	}
 	cout << "Verificaion de la somme des normales pour chaques elements : ";
 	cout << state << endl;
@@ -310,14 +310,17 @@ void Metric_c::Elem2DeltaS(Reader_c& read)
 	elem2deltaSxyz[ielem][1] = 0.5*somme_sY;
 	elem2deltaSxyz[ielem][2] = 0.5*somme_sZ;
 	}
-	
+
 }
 void Metric_c::Face2Center(Reader_c& read)
 {
 	elem2center	= new double* [nelem];
 	face2elemCenter	= new double**[nface];
+	face2midpoint = new double* [nface];
+
 	for(int face_i=0; face_i<nface; face_i++)
 	{
+		face2midpoint[face_i] = new double[ndime];
 		face2elemCenter[face_i] = new double*[2];
 		for (int ix=0;ix<2;++ix) {
 			face2elemCenter[face_i][ix] = new double[ndime];
@@ -366,6 +369,10 @@ void Metric_c::Face2Center(Reader_c& read)
 			r_mid_x = r_mid_x/nnode;
 			r_mid_y = r_mid_y/nnode;
 			r_mid_z = r_mid_z/nnode;
+
+			face2midpoint[faceID][0] = r_mid_x;
+			face2midpoint[faceID][1] = r_mid_y;
+			face2midpoint[faceID][2] = r_mid_z;
 			/*
 			cout << "Pour face ID : "; cout << faceID << endl;
 			cout << "Center_x : "; cout << r_mid_x << endl;
@@ -398,5 +405,5 @@ void Metric_c::Face2Center(Reader_c& read)
 				cout << "ERROR" << endl;
 			}
 		}
-	} 
+	}
 }

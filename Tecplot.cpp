@@ -5,7 +5,7 @@
 #include <fstream>
 #include "main.h"
 #include "Reader.h"
-#include "/home/michaelgagnon/Bureau/TECIO/include/TECXXX.h"
+#include "/home/etudiant/TECIO/include/TECXXX.h"
 #include <iomanip>
 #include <sstream>
 
@@ -105,7 +105,6 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename,in
 	tecend142();
 
 }
-
 
 void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,double*v,double*w){
     fstream outFile;
