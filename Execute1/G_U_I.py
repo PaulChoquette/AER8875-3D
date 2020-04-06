@@ -146,6 +146,8 @@ class Interface():
        self.chgt = 0
        self.window = False
        self.interface_2 = False
+       self.partition = 0
+       self.save = 0
     ######################## Variables for text file ########################
        self.SimName=StringVar()
        self.choiceMESH = StringVar()
@@ -182,10 +184,8 @@ class Interface():
        #delimiter2 = Label(self.tab1, text="------------------------------------------------------------------------------------------------------------------")
        #delimiter2.place(x=10,y=250)
     ######################## Choice for mesh ########################
-       self.btn_meshChoice_1 = tk.Button(self.tab1, text="Importer un maillage",height=2,command=self.MeshChoiceIMPORT)
-       self.btn_meshChoice_2 = tk.Button(self.tab1, text="Générer un maillage",height=2,command=self.MeshChoiceGENERATE)
+       self.btn_meshChoice_1 = tk.Button(self.tab1, text="Importer un maillage",height=2, width=54, command=self.MeshChoiceIMPORT)
        self.btn_meshChoice_1.place(x=70,y=130)
-       self.btn_meshChoice_2.place(x=375,y=130)
     ######################## Option : Patitionnement ########################
        lbl3 = tk.Label(self.tab1, text="Partitionnement du maillage :   ")
        lbl3.place(x=10,y=260)
@@ -349,7 +349,33 @@ class Interface():
        chk55 = Checkbutton(self.tab30, var=self.boolCM_Alpha)
        chk55.place(x=500,y=280)
        self.boolCM_Alpha.trace("w", self.Cx_Alpha)
+    ######################## Position moment et corde et surface ########################
+       formTitle_30 = Label(self.tab30, text="Précisions pour le calcul des coefficients aérodynamiques",font=("bold", 13))
+       formTitle_30.place(x=10,y=360)
 
+       self.Sref = tk.Entry(self.tab30, width=18)
+       self.Sref.insert(0, 1.0)
+       self.Sref.place(x=100,y=400)
+       lbl300 = tk.Label(self.tab30, text="Surface de référence : ")
+       lbl300.place(x=10,y=400)
+
+       self.Cref = tk.Entry(self.tab30, width=18)
+       self.Cref.insert(0, 1.0)
+       self.Cref.place(x=100,y=430)
+       lbl300 = tk.Label(self.tab30, text="Corde de référence : ")
+       lbl300.place(x=10,y=430)
+
+       self.xref = tk.Entry(self.tab30, width=4)
+       self.xref.insert(0, 0.25)
+       self.xref.place(x=310,y=460)
+       self.yref = tk.Entry(self.tab30, width=4)
+       self.yref.insert(0, 0.00)
+       self.yref.place(x=350,y=460)
+       self.zref = tk.Entry(self.tab30, width=4)
+       self.zref.insert(0, 0.00)
+       self.zref.place(x=390,y=460)
+       lbl300 = tk.Label(self.tab30, text="Position pour le calcul de moment [x,y,z] : ")
+       lbl300.place(x=10,y=460)
     ######################## BoutonsDuBas ########################
        button = tk.Button(self.tab1, text = 'Abandoner', command=self.quit,bg='brown',fg='white',width=17)
        button.place(x=60,y=600)
@@ -366,12 +392,15 @@ class Interface():
        button22 = tk.Button(self.tab30, text = 'Sauvegarder', command=self.saveNext,bg='brown',fg='white',width=17)
        button22.place(x=360,y=600)
 
-       self.RUNtxt_1 = tk.Label(self.tab1, text="Pour lancer la simulation, il faut premièrement partitionner et sauvegarder le paramétrage",bg='grey',fg='white',width=75,font=("Helvetica", 10))
-       self.RUNtxt_1.place(x=30,y=650)
-       self.RUNtxt_2 = tk.Label(self.tab2, text="Pour lancer la simulation, il faut premièrement partitionner et sauvegarder le paramétrage",bg='grey',fg='white',width=75,font=("Helvetica", 10))
-       self.RUNtxt_2.place(x=30,y=650)
-       self.RUNtxt_3 = tk.Label(self.tab30, text="Pour lancer la simulation, il faut premièrement partitionner et sauvegarder le paramétrage",bg='grey',fg='white',width=75,font=("Helvetica", 10))
-       self.RUNtxt_3.place(x=30,y=650)
+       style = Style()
+       style.configure('TButton', font =('calibri', 20, 'bold'),borderwidth = '4')
+       button3 = tk.Button(self.tab1, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
+       button3.place(x=60,y=650)
+       button33 = tk.Button(self.tab30, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
+       button33.place(x=60,y=650)
+       button333 = tk.Button(self.tab2, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
+       button333.place(x=60,y=650)
+
     #####################################################
     ######################## RUN ########################
     #####################################################
@@ -453,11 +482,8 @@ class Interface():
 
     def MeshChoiceIMPORT(self, *arg):
         self.btn_meshChoice_1.destroy()
-        self.btn_meshChoice_2.destroy()
-        self.btn_meshChoice_1 = tk.Button(self.tab1, text="Importer un maillage",height=2,command=self.MeshChoiceIMPORT,bg='LightBlue3')
-        self.btn_meshChoice_2 = tk.Button(self.tab1, text="Générer un maillage",height=2,command=self.MeshChoiceGENERATE)
+        self.btn_meshChoice_1 = tk.Button(self.tab1, text="Importer un maillage",height=2, width=54,command=self.MeshChoiceIMPORT,bg='LightBlue3')
         self.btn_meshChoice_1.place(x=70,y=130)
-        self.btn_meshChoice_2.place(x=375,y=130)
         self.choiceMESH = "IMPORT"
     ######################## Import SU2 file ########################
         try:
@@ -487,22 +513,9 @@ class Interface():
         self.btn_partition.place(x=310,y=250)
         calll = "./bin/Execute1 " + self.txt.get() + " " + self.su2FilePath + " " + self.spin_partition.get() + " GUI"
         os.system(calll)
+        self.partition = 1
         print("\nPartitionning completed... \n")
         messagebox.showinfo(title="Opération réussi", message="Partitionnement terminé")
-
-
-    def MeshChoiceGENERATE(self, *arg):
-        self.btn_meshChoice_1.destroy()
-        self.btn_meshChoice_2.destroy()
-        self.btn_meshChoice_1 = tk.Button(self.tab1, text="Importer un maillage",height=2,command=self.MeshChoiceIMPORT)
-        self.btn_meshChoice_2 = tk.Button(self.tab1, text="Générer un maillage",height=2,command=self.MeshChoiceGENERATE,bg='LightBlue3')
-        self.btn_meshChoice_1.place(x=70,y=130)
-        self.btn_meshChoice_2.place(x=375,y=130)
-        if self.choiceMESH == "IMPORT":
-            self.lbl2.destroy()
-            self.lbl20.destroy()
-            self.FileSearch_btn.destroy()
-        messagebox.showerror("Notification", "L'option 'Générer un maillage' n'est pas encore disponible")
 
     def SecOrdreEffect(self, *arg):
         self.opt1.destroy()
@@ -627,40 +640,37 @@ class Interface():
     def on_spinbox_change_stage(self):
         self.stgaeNbr = self.spin_stage.get()
 
-    def finishBUTTON(self, *arg):
-        self.RUNtxt_1.destroy()
-        self.RUNtxt_2.destroy()
-        self.RUNtxt_3.destroy()
-        style = Style()
-        style.configure('TButton', font =('calibri', 20, 'bold'),borderwidth = '4')
-        button3 = tk.Button(self.tab1, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
-        button3.place(x=60,y=650)
-        button33 = tk.Button(self.tab30, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
-        button33.place(x=60,y=650)
-        button333 = tk.Button(self.tab2, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
-        button333.place(x=60,y=650)
 
     def computeCODE(self, *arg):
-        coeur = self.spin_partition1.get()
-        commande = "mpirun -n " + coeur + " ./bin/Execute2"
-        ExecCommand = simpledialog.askstring(title=" ", prompt="Confirmer la commande d'exécution:", initialvalue=commande)
-        os.system(ExecCommand)
-        messagebox.showinfo(title="Opération réussi", message="Exécution de la simulation terminée")
+        if self.save == 0 :
+            messagebox.showerror("Erreur", 'Pour lancer la simulation, il faut minimalement'
+                ' importer un maillage, le partitionner et sauvegarder le paramétrage')
+        else :
+            coeur = self.spin_partition1.get()
+            commande = "mpirun -n " + coeur + " ./bin/Execute2"
+            ExecCommand = simpledialog.askstring(title=" ", prompt="Confirmer la commande d'exécution:", initialvalue=commande)
+            os.system(ExecCommand)
+            messagebox.showinfo(title="Opération réussi", message="Exécution de la simulation terminée")
 
     def saveNext(self):
-        self.alpha = self.entre1.get()
-        self.mach = self.entre2.get()
-        self.gamma = self.entre3.get()
-        self.cflVAR_str = self.txt1.get()
-        self.convergenceCriterea = self.text3.get()
-        self.iterMAX = self.text2.get()
-        self.on_spinbox_change_partition()
-        self.on_spinbox_change_stage()
-        self.SimName = self.txt.get()
-        writer = InputFILE(self)
-        writer.compute(self)
-        self.seeTXT()
-        self.finishBUTTON()
+        if self.partition == 0 :
+            messagebox.showerror("Erreur", "Pour sauvegarder le paramétrage et générer le fichier de paramètres,"
+                ' il faut minimalement importer un maillage et le partitionner')
+
+        else :
+            self.alpha = self.entre1.get()
+            self.mach = self.entre2.get()
+            self.gamma = self.entre3.get()
+            self.cflVAR_str = self.txt1.get()
+            self.convergenceCriterea = self.text3.get()
+            self.iterMAX = self.text2.get()
+            self.on_spinbox_change_partition()
+            self.on_spinbox_change_stage()
+            self.SimName = self.txt.get()
+            writer = InputFILE(self)
+            writer.compute(self)
+            self.seeTXT()
+            self.save = 1
 
     def quit(self):
         try:
