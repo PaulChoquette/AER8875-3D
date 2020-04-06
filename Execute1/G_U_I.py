@@ -67,7 +67,7 @@ class Interface_view():
     def __init__(self):
         self.Interface_view = tk.Tk()
         self.Interface_view.title("Vérification")
-        self.Interface_view.geometry('520x470')
+        self.Interface_view.geometry('520x570')
 
     def compute(self, txtFile):
         self.read(txtFile)
@@ -77,7 +77,7 @@ class Interface_view():
         if f.mode == 'r':
             contents =f.read()
             print(contents)
-        self.T = tk.Text(self.Interface_view, height=26, width=63)
+        self.T = tk.Text(self.Interface_view, height=33, width=63)
         self.T.pack()
         self.T.insert(tk.END, contents)
 
@@ -353,15 +353,15 @@ class Interface():
        formTitle_30 = Label(self.tab30, text="Précisions pour le calcul des coefficients aérodynamiques",font=("bold", 13))
        formTitle_30.place(x=10,y=360)
 
-       self.Sref = tk.Entry(self.tab30, width=18)
+       self.Sref = tk.Entry(self.tab30, width=7)
        self.Sref.insert(0, 1.0)
-       self.Sref.place(x=100,y=400)
+       self.Sref.place(x=180,y=400)
        lbl300 = tk.Label(self.tab30, text="Surface de référence : ")
        lbl300.place(x=10,y=400)
 
-       self.Cref = tk.Entry(self.tab30, width=18)
+       self.Cref = tk.Entry(self.tab30, width=7)
        self.Cref.insert(0, 1.0)
-       self.Cref.place(x=100,y=430)
+       self.Cref.place(x=180,y=430)
        lbl300 = tk.Label(self.tab30, text="Corde de référence : ")
        lbl300.place(x=10,y=430)
 
@@ -400,14 +400,17 @@ class Interface():
        button33.place(x=60,y=650)
        button333 = tk.Button(self.tab2, text = 'Lancer la simulation', command=self.computeCODE,bg='brown',fg='white',width=55)
        button333.place(x=60,y=650)
-
     #####################################################
     ######################## RUN ########################
     #####################################################
+       self.warning_()
        self.interface.mainloop()
 ############################################################################################################################
 #######################################################   METHODS   ########################################################
 ############################################################################################################################
+    def warning_(self):
+        messagebox.showwarning('# WARNING: ', "Notez qu'il faut créer l'environnement et appeler le makefile pour que les exécutables fonctionnent")
+
     def seeTXT(self, *arg):
         if self.interface_2 == True:
             try:
@@ -775,6 +778,21 @@ class InputFILE():
                 txtFILE.write(str("alpha_inf : "))
                 txtFILE.write(str(Interface.alpha_inf))
                 txtFILE.write("\n")
+                txtFILE.write(str("Sref : "))
+                txtFILE.write(str(Interface.Sref.get()))
+                txtFILE.write("\n")
+                txtFILE.write(str("Cref : "))
+                txtFILE.write(str(Interface.Cref.get()))
+                txtFILE.write("\n")
+                txtFILE.write(str("xref : "))
+                txtFILE.write(str(Interface.xref.get()))
+                txtFILE.write("\n")
+                txtFILE.write(str("yref : "))
+                txtFILE.write(str(Interface.yref.get()))
+                txtFILE.write("\n")
+                txtFILE.write(str("zref : "))
+                txtFILE.write(str(Interface.zref.get()))
+                txtFILE.write("\n")
                 txtFILE.close()
             else:
                 print('Créer un nouveau fichier')
@@ -843,6 +861,21 @@ class InputFILE():
             txtFILE.write("\n")
             txtFILE.write(str("alpha_inf : "))
             txtFILE.write(str(Interface.alpha_inf))
+            txtFILE.write("\n")
+            txtFILE.write(str("Sref : "))
+            txtFILE.write(str(Interface.Sref.get()))
+            txtFILE.write("\n")
+            txtFILE.write(str("Cref : "))
+            txtFILE.write(str(Interface.Cref.get()))
+            txtFILE.write("\n")
+            txtFILE.write(str("xref : "))
+            txtFILE.write(str(Interface.xref.get()))
+            txtFILE.write("\n")
+            txtFILE.write(str("yref : "))
+            txtFILE.write(str(Interface.yref.get()))
+            txtFILE.write("\n")
+            txtFILE.write(str("zref : "))
+            txtFILE.write(str(Interface.zref.get()))
             txtFILE.write("\n")
             txtFILE.close()
         finally:

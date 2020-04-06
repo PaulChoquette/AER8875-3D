@@ -21,3 +21,8 @@ convergenceCriterea : 1e-14
 graph : [False, False, False, False, False, False, False]
 alpha_0 : 0.0
 alpha_inf : 0.0
+Sref : 1.0
+Cref : 1.0
+xref : 0.25
+yref : 0.0
+zref : 0.0
