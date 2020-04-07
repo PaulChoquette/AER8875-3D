@@ -187,7 +187,7 @@ class Interface():
        self.btn_meshChoice_1 = tk.Button(self.tab1, text="Importer un maillage",height=2, width=54, command=self.MeshChoiceIMPORT)
        self.btn_meshChoice_1.place(x=70,y=130)
     ######################## Option : Patitionnement ########################
-       lbl3 = tk.Label(self.tab1, text="Partitionnement du maillage :   ")
+       lbl3 = tk.Label(self.tab1, text="Nombre de partition :   ")
        lbl3.place(x=10,y=260)
        var = StringVar()
        var.set("4")
@@ -273,7 +273,7 @@ class Interface():
        OptionList1 = [
        "Yes",
        "No"]
-       self.ResidualSmooth.set("Yes or No")
+       self.ResidualSmooth.set("Oui/Non?")
        self.opt2 = tk.OptionMenu(self.tab2, self.ResidualSmooth, *OptionList1)
        self.opt2.config(width=8, font=('Helvetica', 10))
        self.opt2.place(x=140,y=355)
@@ -282,13 +282,13 @@ class Interface():
        self.formTitle_4 = Label(self.tab2, text="Convergence",width=20,font=("bold", 14))
        self.formTitle_4.place(x=10,y=450)
 
-       self.label3 = tk.Label(self.tab2, text="Nombre d'iteration maximale :")
+       self.label3 = tk.Label(self.tab2, text="Nombre d'iterations maximal :")
        self.label3.place(x=10,y=490)
        self.text2 = tk.Entry(self.tab2, width=10)
        self.text2.insert(0, 100000.0)
        self.text2.place(x=240,y=490)
 
-       self.label4 = tk.Label(self.tab2, text="Critere de convergence :")
+       self.label4 = tk.Label(self.tab2, text="critère de convergence :")
        self.label4.place(x=10,y=530)
        self.text3 = tk.Entry(self.tab2, width=8)
        self.text3.insert(0, 1e-14)
@@ -351,43 +351,49 @@ class Interface():
        self.boolCM_Alpha.trace("w", self.Cx_Alpha)
     ######################## Position moment et corde et surface ########################
        formTitle_30 = Label(self.tab30, text="Précisions pour le calcul des coefficients aérodynamiques",font=("bold", 13))
-       formTitle_30.place(x=10,y=360)
+       formTitle_30.place(x=10,y=360 + 30)
 
        self.Sref = tk.Entry(self.tab30, width=7)
        self.Sref.insert(0, 1.0)
-       self.Sref.place(x=180,y=400)
+       self.Sref.place(x=180,y=400 + 30)
        lbl300 = tk.Label(self.tab30, text="Surface de référence= ")
-       lbl300.place(x=10,y=400)
+       lbl300.place(x=10,y=400 + 30)
+       lbl3000 = tk.Label(self.tab30, text="[m^2]")
+       lbl3000.place(x=250,y=400 + 30)
 
        self.Cref = tk.Entry(self.tab30, width=7)
        self.Cref.insert(0, 1.0)
-       self.Cref.place(x=180,y=430)
+       self.Cref.place(x=180,y=430 + 30)
        lbl300 = tk.Label(self.tab30, text="Corde de référence= ")
-       lbl300.place(x=10,y=430)
+       lbl300.place(x=10,y=430 + 30)
+       lbl3000 = tk.Label(self.tab30, text="[m]")
+       lbl3000.place(x=250,y=430 + 30)
 
        self.xref = tk.Entry(self.tab30, width=4)
        self.xref.insert(0, 0.25)
-       self.xref.place(x=310,y=460)
+       self.xref.place(x=310,y=460 + 30)
        self.yref = tk.Entry(self.tab30, width=4)
        self.yref.insert(0, 0.00)
-       self.yref.place(x=350,y=460)
+       self.yref.place(x=350,y=460 + 30)
        self.zref = tk.Entry(self.tab30, width=4)
        self.zref.insert(0, 0.00)
-       self.zref.place(x=390,y=460)
+       self.zref.place(x=390,y=460 + 30)
        lbl300 = tk.Label(self.tab30, text="Position pour le calcul de moment [x,y,z]= ")
-       lbl300.place(x=10,y=460)
+       lbl300.place(x=10,y=460 + 30)
+       lbl3000 = tk.Label(self.tab30, text="[m]")
+       lbl3000.place(x=435,y=460 + 30)
     ######################## BoutonsDuBas ########################
-       button = tk.Button(self.tab1, text = 'Abandoner', command=self.quit,bg='brown',fg='white',width=17)
+       button = tk.Button(self.tab1, text = 'Abandonner', command=self.quit,bg='brown',fg='white',width=17)
        button.place(x=60,y=600)
        button2 = tk.Button(self.tab1, text = 'Sauvegarder', command=self.saveNext,bg='brown',fg='white',width=17)
        button2.place(x=360,y=600)
 
-       button = tk.Button(self.tab2, text = 'Abandoner', command=self.quit,bg='brown',fg='white',width=17)
+       button = tk.Button(self.tab2, text = 'Abandonner', command=self.quit,bg='brown',fg='white',width=17)
        button.place(x=60,y=600)
        button2 = tk.Button(self.tab2, text = 'Sauvegarder', command=self.saveNext,bg='brown',fg='white',width=17)
        button2.place(x=360,y=600)
 
-       button11 = tk.Button(self.tab30, text = 'Abandoner', command=self.quit,bg='brown',fg='white',width=17)
+       button11 = tk.Button(self.tab30, text = 'Abandonner', command=self.quit,bg='brown',fg='white',width=17)
        button11.place(x=60,y=600)
        button22 = tk.Button(self.tab30, text = 'Sauvegarder', command=self.saveNext,bg='brown',fg='white',width=17)
        button22.place(x=360,y=600)
@@ -515,7 +521,7 @@ class Interface():
         self.btn_partition = tk.Button(self.tab1, text="Partitionner le maillage",height=2,command=self.ComputePartitions,bg='LightBlue3')
         self.btn_partition.place(x=310,y=250)
         self.partition = 1
-        self.saveNext()
+        self.saveNext_1()
         calll = "./bin/Execute1 " + self.SimName
         os.system(calll)
         print("\nPartitionning completed... \n")
@@ -532,9 +538,8 @@ class Interface():
         self.opt1.config(width=20, font=('Helvetica', 12),bg='LightBlue3')
 
     def TemporelMethod_BTN(self, *arg):
-        self.opt10.config(width=50, font=('Helvetica', 12),bg='LightBlue3')
         if self.TemporelMethod.get()=="Runge-Kutta":
-            self.opt10.config(width=20, font=('Helvetica', 12))
+            self.opt10.config(width=20, font=('Helvetica', 12),bg='LightBlue3')
             self.opt10.place(x=50,y=250)
             self.stage = tk.Label(self.tab2, text="Nombre de stage :   ")
             self.stage.place(x=320,y=255)
@@ -542,18 +547,33 @@ class Interface():
             self.spin_stage.place(x=450,y=255)
             self.check_3.set(True)
         elif self.TemporelMethod.get()=="Hybride":
-            self.opt10.config(width=20, font=('Helvetica', 12))
+            self.opt10.config(width=20, font=('Helvetica', 12),bg='LightBlue3')
             self.opt10.place(x=50,y=250)
             self.stage = tk.Label(self.tab2, text="Nombre de stage :   ")
             self.stage.place(x=320,y=255)
             self.spin_stage = Spinbox(self.tab2, bd=3, wrap=True, from_=1, to=5, width=5)
             self.spin_stage.place(x=450,y=255)
             self.check_3.set(True)
-        else:
+        elif self.TemporelMethod.get()=="Euler-implicite":
+            messagebox.showerror("Erreur", "Cette option n'est pas encore disponible ou a été désactiver")
+            OptionList2 = [
+            "Euler-explicite",
+            "Euler-implicite",
+            "Runge-Kutta",
+            "Hybride"]
+            self.TemporelMethod.set("Choisir une méthode d'intégration temporelle")
+            self.opt10.destroy()
+            self.opt10 = tk.OptionMenu(self.tab2, self.TemporelMethod, *OptionList2)
+            self.opt10.config(width=50, font=('Helvetica', 12))
+            self.opt10.place(x=50,y=250)
             if self.check_3.get() == True:
                 self.spin_stage.destroy()
                 self.stage.destroy()
-            self.opt10.config(width=50, font=('Helvetica', 12))
+        else:
+            self.opt10.config(width=50, font=('Helvetica', 12),bg='LightBlue3')
+            if self.check_3.get() == True:
+                self.spin_stage.destroy()
+                self.stage.destroy()
             self.opt10.place(x=50,y=250)
             self.check_3.set(False)
 
@@ -573,21 +593,21 @@ class Interface():
 
         if self.boolx_Alpha==True:
             if self.chgt==0:
-                self.self.lbl10 = tk.Label(self.tab30, text="Définir la plage de valeur d'angle d'attaque pour l'analyse :")
-                self.self.lbl10.place(x=50,y=300)
+                self.lbl10 = tk.Label(self.tab30, text="Définir la plage de valeur d'angle d'attaque pour l'analyse :")
+                self.lbl10.place(x=50,y=300)
 
-                self.self.lbl11 = tk.Label(self.tab30, text="De :")
-                self.self.lbl11.place(x=70,y=320)
-                self.self.lbl12 = tk.Label(self.tab30, text="[deg]")
-                self.self.lbl12.place(x=160,y=320)
+                self.lbl11 = tk.Label(self.tab30, text="De :")
+                self.lbl11.place(x=70,y=320)
+                self.lbl12 = tk.Label(self.tab30, text="[deg]")
+                self.lbl12.place(x=160,y=320)
                 self.txt10 = tk.Entry(self.tab30, width=5)
                 self.txt10.insert(0, 0.0)
                 self.txt10.place(x=100,y=320)
 
-                self.self.lbl13 = tk.Label(self.tab30, text="À :")
-                self.self.lbl13.place(x=70,y=340)
-                self.self.lbl14 = tk.Label(self.tab30, text="[deg]")
-                self.self.lbl14.place(x=160,y=340)
+                self.lbl13 = tk.Label(self.tab30, text="À :")
+                self.lbl13.place(x=70,y=340)
+                self.lbl14 = tk.Label(self.tab30, text="[deg]")
+                self.lbl14.place(x=160,y=340)
                 self.txt11 = tk.Entry(self.tab30, width=5)
                 self.txt11.insert(0, 10.0)
                 self.txt11.place(x=100,y=340)
@@ -595,12 +615,12 @@ class Interface():
                 self.chgt = 1
         else :
             if self.chgt == 1:
-                self.self.lbl10.destroy()
-                self.self.lbl11.destroy()
-                self.self.lbl12.destroy()
+                self.lbl10.destroy()
+                self.lbl11.destroy()
+                self.lbl12.destroy()
                 self.txt10.destroy()
-                self.self.lbl13.destroy()
-                self.self.lbl14.destroy()
+                self.lbl13.destroy()
+                self.lbl14.destroy()
                 self.txt11.destroy()
 
                 self.chgt = 0
@@ -676,6 +696,21 @@ class Interface():
             self.seeTXT()
             self.save = 1
 
+
+    def saveNext_1(self):
+            self.alpha = self.entre1.get()
+            self.mach = self.entre2.get()
+            self.gamma = self.entre3.get()
+            self.cflVAR_str = self.txt1.get()
+            self.convergenceCriterea = self.text3.get()
+            self.iterMAX = self.text2.get()
+            self.on_spinbox_change_partition()
+            self.on_spinbox_change_stage()
+            self.SimName = self.txt.get()
+            writer = InputFILE(self)
+            writer.compute(self)
+
+
     def quit(self):
         try:
             if self.window == True :
@@ -703,8 +738,14 @@ class InputFILE():
     def __init__(self, Interface):
         self.fileNAME = Interface.SimName + ".txt"
 
+    def default(self, Interface):
+        if Interface.SpatialMethod.get() == "Choisir une méthode d'intégration spatiale":
+            Interface.SpatialMethod.set('Roe')
+        if Interface.TemporelMethod.get() == "Choisir une méthode d'intégration temporelle":
+            Interface.TemporelMethod.set('Euler-explicite')
 
     def compute(self, Interface):
+        self.default(Interface)
         ordreSpatial = Interface.SpatialMethodORDER.get()
         if ordreSpatial=="Schema spatial d'ordre 2":
             ordreSpatial = 2
@@ -881,6 +922,7 @@ class InputFILE():
             txtFILE.close()
         finally:
             print('Ecriture terminee...')
+
 
 
 

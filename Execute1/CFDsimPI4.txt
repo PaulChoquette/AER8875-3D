@@ -4,16 +4,16 @@
 
 SimName= CFDsimPI4
 choiceMESH= IMPORT
-su2FilePath= /media/sf_SHARE_FOLDER/GitKraken_folder/AER8875-3D/Execute1/su2_Bank/ONERA.su2
+su2FilePath= /media/sf_SHARE_FOLDER/GitKraken_folder/AER8875-3D/Execute1/su2_Bank/naca0012_euler_65x65x2_O_1B.su2
 NbrPartition= 4
 alpha= 0.0
 mach= 1.0
 gamma= 1.4
-TemporelMethod= Choisir une méthode d'intégration temporelle
+TemporelMethod= Euler-explicite
 stgaeNbr= 1
 cflVAR_str= 1.0
-ResidualSmooth= Yes or No
-SpatialMethod= Choisir une méthode d'intégration spatiale
+ResidualSmooth= Oui/Non?
+SpatialMethod= Roe
 SpatialMethodORDER= 1
 grad= 
 iterMAX= 100000.0
