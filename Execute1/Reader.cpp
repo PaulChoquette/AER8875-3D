@@ -107,7 +107,7 @@ void Reader_c::read_file(string filename) {
 
 			if (bclinen != 0) {
 				if (linen > bclinen && linen <= bclinen + bcnl) {
-					
+
 					//3 steps : step 0 is reading marker tag, step 1 is reading marker elemn and final step is filling bc_elem2nnode
 					if (step == 0) {
 						bound2tag[bc] = line.substr(12,8);
@@ -354,7 +354,7 @@ void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int 
 			for (int inoel = 0; inoel < vtklookup[1][mesh.elem2vtk[izone][ielem]][1]; inoel++) {
 				temp_connec += "    ";
 				temp_connec += to_string(mesh.elem2node[izone][ielem][inoel]);
-				
+
 			}
 			temp_connec += "    ";
 			outfile << mesh.elem2vtk[izone][ielem]<< temp_connec <<"\n";
@@ -372,9 +372,9 @@ void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int 
 		outfile << "% \n";
 		outfile << "% Boundary elements \n";
 		outfile << "% \n";
-		
+
 		outfile << "NMARK= " << read.nbc << "\n";
-		for (int ibc = 0; ibc < read.nbc; ibc++) { 
+		for (int ibc = 0; ibc < read.nbc; ibc++) {
 			//int jzone = mesh.zone2jzone[izone][ijzone];
 			outfile << "MARKER_TAG= " << read.bound2tag[ibc] << "\n";
 			int nghost = mesh.zone2boundIndex[izone][ibc + 1] - mesh.zone2boundIndex[izone][ibc];
@@ -384,7 +384,7 @@ void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int 
 			for (int ighost = ielem1; ighost < ielem2; ighost++) {
 				string temp_connec = "";
 				int vtk = mesh.elem2vtk[izone][ighost];
-				int nnoel = vtklookup[read.ndime-2][vtk][1]; 
+				int nnoel = vtklookup[read.ndime-2][vtk][1];
 				for (int inoel = 0; inoel < nnoel; inoel++) {
 					temp_connec += "    ";
 					temp_connec += to_string(mesh.elem2node[izone][ighost][inoel]);
@@ -398,10 +398,10 @@ void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int 
 		outfile << "% \n";
 		outfile << "% Zone Boundary elements \n";
 		outfile << "% \n";
-		
+
 		outfile << "NZONE= " << mesh.nzone -1 << "\n";
 		int ighost = 0;
-		for (int ijzone = 0; ijzone < mesh.nzone -1; ijzone++) { 
+		for (int ijzone = 0; ijzone < mesh.nzone -1; ijzone++) {
 			int jzone = mesh.zone2jzone[izone][ijzone];
 			outfile << "ZONE_TAG= " << to_string(jzone) << "\n";
 
@@ -410,11 +410,11 @@ void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int 
 
 			int ielem1 = mesh.zone2zoneIndex[izone][ijzone];
 			int ielem2 = mesh.zone2zoneIndex[izone][ijzone+1];
-			
+
 			for (int ielem = ielem1; ielem < ielem2; ielem++) {
 				string temp_connec = "";
 				int vtk = mesh.elem2vtk[izone][ielem];
-				int nnofa = vtklookup[read.ndime-2][vtk][1]; 
+				int nnofa = vtklookup[read.ndime-2][vtk][1];
 
 				for (int inofa = 0; inofa < nnofa + 1; inofa++) {
 					temp_connec += "    ";
@@ -479,7 +479,7 @@ void Reader_c::write_tecplot_METIS(string FileName, Reader_c & read, Connect_c& 
 		for (int ivar=1; ivar < nvar; ivar++){
 		varlocation[ivar] = varlocation[ivar-1] + 1;
 		varstring = varstring + "," + to_string(varlocation[ivar]) ;
-		}	
+		}
 	}
 	varstring = varstring + "]";
 
@@ -533,14 +533,14 @@ void Reader_c::write_tecplot_METIS(string FileName, Reader_c & read, Connect_c& 
 	{
 		int vtk = read.elem2vtk[ielem];
 		int nnoel = vtklookup[ndime-2][vtk][1];
-		
+
 		for (int icol = 0; icol <= nnoel - 1; icol++)
 		{
 			string icols = to_string(read.elem2node[ielem][icol]+1);
 			outFile << icols << " ";
 		}
 		outFile << endl;
-		
+
 	}
 
     delete[] varlocation;
@@ -593,7 +593,7 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 		for (int ivar=1; ivar < nvar; ivar++){
 		varlocation[ivar] = varlocation[ivar-1] + 1;
 		varstring = varstring + "," + to_string(varlocation[ivar]) ;
-		}	
+		}
 	}
 	varstring = varstring + "]";
 
@@ -611,7 +611,7 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 	outFile << "Nodes=" << mesh.zone2nnode[jzone] << ", Elements=" << njzone << ", ZONETYPE=" << ZONETYPE << endl;
 	outFile << "DATAPACKING=BLOCK" << endl;
 	outFile << "VARLOCATION = (" << varstring << " = CELLCENTERED)" << endl;
-	
+
 	string a;                      //ecrire les coordonnees de laxe x a la suite
 	for (int j = 0; j < mesh.zone2nnode[jzone]; j++)
 	{
@@ -632,36 +632,36 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 			outFile << z << endl;
 		}
 	}
-	
+
 	// Elem in other zone
 	string m;
-	
+
 	int estart = mesh.zone2zoneIndex[izone][ijzone];
 	int estop = mesh.zone2zoneIndex[izone][ijzone+1];
 
 	for (int ielem = estart; ielem < estop; ielem++)
 	{
-		
+
 		int vtk = mesh.elem2vtk[izone][ielem];
 		int nnoel = vtklookup[ndime-2][vtk][1];
 		m = to_string(mesh.elem2node[izone][ielem][nnoel]);
 		outFile << m << endl;
-		
+
 	}
-	
+
 
 	// Elem
-	string m2;	
+	string m2;
 	for (int ielem = estart; ielem < estop; ielem++)
 	{
-		
+
 		int vtk = mesh.elem2vtk[izone][ielem];
 		int nnoel = vtklookup[ndime-2][vtk][1];
 		m2 = to_string(ielem);
 		outFile << m2 << endl;
-		
+
 	}
-	
+
 	// Elem
 	int z1;
 	int z2;
@@ -676,22 +676,22 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 	string zz = to_string(z1)+to_string(z2);
 	for (int ielem = estart; ielem < estop; ielem++)
 	{
-		
+
 		int vtk = mesh.elem2vtk[izone][ielem];
 		int nnoel = vtklookup[ndime-2][vtk][1];
 
 		outFile << zz << endl;
-		
+
 	}
 
-	
-	
-		
+
+
+
 
 	for (int ielem = estart; ielem < estop; ielem++)
 	{
-		
-		
+
+
 		int vtk = mesh.elem2vtk[izone][ielem];
 		int nnoel = vtklookup[ndime-2][vtk][1];
 		int jelem = mesh.elem2node[izone][ielem][nnoel];
@@ -703,9 +703,9 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 			outFile << icols << " ";
 		}
 		outFile << endl;
-		
+
 	}
-	
+
 
     delete[] varlocation;
 	outFile.close();
@@ -716,3 +716,105 @@ void Reader_c::write_tecplot_OtherZone(int izone, int jzone, string FileName, Re
 
 }
 
+
+void Reader_c::computePrmt(string filename)
+{
+	if (OpenFile_2(filename))
+	{
+		SimName = "666";
+		su2FilePath = "666";
+		Npartition = 666;
+		while (getline(file_2, line_2))
+		{
+			//Tick line_2 number and store line_2 as character array
+			linen_2++;
+			cline_2 = line_2.c_str();
+      //cout << cline_2 <<endl;
+			if(SimName=="666"){
+        SimName = inputStr(cline_2, "SimName= ");
+				continue;
+      }
+			if(su2FilePath=="666"){
+        su2FilePath = inputStr(cline_2, "su2FilePath= ");
+				continue;
+      }
+			if(Npartition==666){
+        Npartition = inputInt(cline_2, "NbrPartition= ");
+				continue;
+      }
+		}
+		file_2.close();
+	}
+	else {
+		//ERROR 1 : File could not be opened
+	}
+}
+bool Reader_c::OpenFile_2(string filename)
+{
+	file_2.open(filename);
+
+	if (file_2.is_open()) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+int Reader_c::inputInt(const string& line_2, const string& tofind)
+{
+	size_t cnstpos = line_2.find(tofind);
+	int cnst = 0;
+	if (cnstpos != string::npos) {
+		//cout << "cnstpos : "; cout << cnstpos<<endl;
+		cnstpos = line_2.find_last_of(" ") + 1;
+
+		string cnstch;
+
+		cnstch = line_2.substr(cnstpos, line_2.length() - cnstpos);
+		cnst = stoul(cnstch);
+		cout << tofind; cout << " "; cout << cnst<<endl;
+	}
+	else {
+		return 666;
+	}
+	//cout << tofind; cout << " "; cout << cnst; cout << "\n";
+	return cnst;
+}
+double Reader_c::inputDouble(const string& line_2, const string& tofind)
+{
+	size_t cnstpos = line_2.find(tofind);
+	double cnst = 0;
+	if (cnstpos != string::npos) {
+		cnstpos = line_2.find_last_of(" ") + 1;
+
+		string cnstch;
+
+		cnstch = line_2.substr(cnstpos, line_2.length() - cnstpos);
+		cnst = stod(cnstch);
+		cout << tofind; cout << " "; cout << cnst<<endl;
+	}
+	else {
+		return 666;
+	}
+	//cout << tofind; cout << " "; cout << cnst; cout << "\n";
+	return cnst;
+}
+
+string Reader_c::inputStr(const string& line_2, const string& tofind)
+{
+	size_t cnstpos = line_2.find(tofind);
+	string cnst = "0";
+	if (cnstpos != string::npos) {
+		cnstpos = line_2.find_last_of(" ") + 1;
+
+		string cnstch;
+
+		cnstch = line_2.substr(cnstpos, line_2.length() - cnstpos);
+		cnst = cnstch;
+		cout << tofind; cout << " "; cout << cnst<<endl;
+	}
+	else {
+		return "666";
+	}
+	return cnst;
+}

@@ -43,13 +43,11 @@ void compute(string simName, string su2, int partition)
 // ======================================================================================================================================== //
 int main(int argc, char *argv[])
 {
-	if(argc<4)	{		cout << argc<<endl;		cout << "Input arguments are missing"<<endl;		exit( 666 );	}
-	else	{		cout << "Number of input argument : "; cout << argc << endl;	}
 	cout << "==================================== NOICE STARTING ====================================" << endl;
-	string simName = argv[1];
-	string su2 = argv[2];
-	int partition = atoi(argv[3]);
-	compute(simName, su2, partition);
+	string FileName = argv[1];
+	Reader_c ReadPrmt;
+	ReadPrmt.computePrmt(FileName + ".txt");
+	compute(ReadPrmt.SimName, ReadPrmt.su2FilePath, ReadPrmt.Npartition);
 	cout << "===================================== NOICE ENDING =====================================" << endl;
 	return 0;
 }

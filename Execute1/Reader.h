@@ -16,6 +16,10 @@ class Connect_c;
 class Reader_c {
 	public:
 		//Read Files
+		string SimName;
+		string su2FilePath;
+		int Npartition;
+
 		ifstream file;
 		int linen;
 		string line;
@@ -47,6 +51,16 @@ class Reader_c {
 		void write_tecplot_METIS(string FileName, Reader_c & read, Connect_c& solve);
 		void write_tecplot_Connectivity(int izone, string FileName, Reader_c & read, Connect_c& solve);
 		void write_tecplot_OtherZone(int izone, int jzone, string FileName, Reader_c & read, Connect_c& solve);
+
+		void computePrmt(string filename);
+		bool OpenFile_2(string filename);
+		ifstream file_2;
+		int linen_2;
+		string line_2;
+		const char* cline_2;
+		int inputInt(const string& line_2, const string& tofind);
+		double inputDouble(const string& line_2, const string& tofind);
+		string inputStr(const string& line_2, const string& tofind);
 };
 
 #endif

@@ -2,27 +2,27 @@
                     Input File                             
 ------------------------------------------------------------
 
-SimName : CFDsimPI4
-choiceMESH : IMPORT
-su2FilePath : /media/sf_SHARE_FOLDER/GitKraken_folder/AER8875-3D/Execute1/su2_Bank/ONERA.su2
-NbrPartition : 4
-alpha : 0.0
-mach : 1.0
-gamma : 1.4
-TemporelMethod : Choisir une méthode d'intégration temporelle
-stgaeNbr : 1
-cflVAR_str : 1.0
-ResidualSmooth : Yes or No
-SpatialMethod : Choisir une méthode d'intégration spatiale
-SpatialMethodORDER : 1
-grad : 
-iterMAX : 100000.0
-convergenceCriterea : 1e-14
-graph : [False, False, False, False, False, False, False]
-alpha_0 : 0.0
-alpha_inf : 0.0
-Sref : 1.0
-Cref : 1.0
-xref : 0.25
-yref : 0.0
-zref : 0.0
+SimName= CFDsimPI4
+choiceMESH= IMPORT
+su2FilePath= /media/sf_SHARE_FOLDER/GitKraken_folder/AER8875-3D/Execute1/su2_Bank/ONERA.su2
+NbrPartition= 4
+alpha= 0.0
+mach= 1.0
+gamma= 1.4
+TemporelMethod= Choisir une méthode d'intégration temporelle
+stgaeNbr= 1
+cflVAR_str= 1.0
+ResidualSmooth= Yes or No
+SpatialMethod= Choisir une méthode d'intégration spatiale
+SpatialMethodORDER= 1
+grad= 
+iterMAX= 100000.0
+convergenceCriterea= 1e-14
+graph= [False, False, False, False, False, False, False]
+alpha_0= 0.0
+alpha_inf= 0.0
+Sref= 1.0
+Cref= 1.0
+xref= 0.25
+yref= 0.0
+zref= 0.0
