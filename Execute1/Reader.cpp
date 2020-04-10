@@ -398,30 +398,44 @@ void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int 
 		outfile << "% \n";
 		outfile << "% Zone Boundary elements \n";
 		outfile << "% \n";
+		int nzone_connect = mesh.nzone - 1;
 
-		outfile << "NZONE= " << mesh.nzone -1 << "\n";
+		// Calculation of real number of zone that touch zone i
+		for (int ijzone = 0; ijzone < mesh.nzone -1; ijzone++) {
+			int jzone = mesh.zone2jzone[izone][ijzone];
+			int njzone = mesh.zone2markelem[izone][ijzone];
+			if (njzone == 0){
+				nzone_connect -= 1;
+			}
+
+		}
+		//outfile << "NZONE= " << mesh.nzone << "\n";
+		outfile << "NZONE= " << nzone_connect << "\n";
 		int ighost = 0;
+
 		for (int ijzone = 0; ijzone < mesh.nzone -1; ijzone++) {
 			int jzone = mesh.zone2jzone[izone][ijzone];
 			outfile << "ZONE_TAG= " << to_string(jzone) << "\n";
 
 			int njzone = mesh.zone2markelem[izone][ijzone];
-			outfile << "ZONE_ELEMS= " << njzone <<"\n";
+			if (njzone != 0){
+				outfile << "ZONE_ELEMS= " << njzone <<"\n";
 
-			int ielem1 = mesh.zone2zoneIndex[izone][ijzone];
-			int ielem2 = mesh.zone2zoneIndex[izone][ijzone+1];
+				int ielem1 = mesh.zone2zoneIndex[izone][ijzone];
+				int ielem2 = mesh.zone2zoneIndex[izone][ijzone+1];
 
-			for (int ielem = ielem1; ielem < ielem2; ielem++) {
-				string temp_connec = "";
-				int vtk = mesh.elem2vtk[izone][ielem];
-				int nnofa = vtklookup[read.ndime-2][vtk][1];
+				for (int ielem = ielem1; ielem < ielem2; ielem++) {
+					string temp_connec = "";
+					int vtk = mesh.elem2vtk[izone][ielem];
+					int nnofa = vtklookup[read.ndime-2][vtk][1];
 
-				for (int inofa = 0; inofa < nnofa + 1; inofa++) {
-					temp_connec += "    ";
-					temp_connec += to_string(mesh.elem2node[izone][ielem][inofa]);
+					for (int inofa = 0; inofa < nnofa + 1; inofa++) {
+						temp_connec += "    ";
+						temp_connec += to_string(mesh.elem2node[izone][ielem][inofa]);
 
+					}
+					outfile << to_string(vtk) << temp_connec  <<  "\n";
 				}
-				outfile << to_string(vtk) << temp_connec  <<  "\n";
 			}
 		}
 		outfile.close();
