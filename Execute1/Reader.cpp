@@ -415,10 +415,11 @@ void Reader_c::write_file(string FileName, Reader_c& read, Connect_c& mesh, int 
 
 		for (int ijzone = 0; ijzone < mesh.nzone -1; ijzone++) {
 			int jzone = mesh.zone2jzone[izone][ijzone];
-			outfile << "ZONE_TAG= " << to_string(jzone) << "\n";
+			
 
 			int njzone = mesh.zone2markelem[izone][ijzone];
 			if (njzone != 0){
+				outfile << "ZONE_TAG= " << to_string(jzone) << "\n";
 				outfile << "ZONE_ELEMS= " << njzone <<"\n";
 
 				int ielem1 = mesh.zone2zoneIndex[izone][ijzone];
