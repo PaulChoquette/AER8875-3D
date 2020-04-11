@@ -72,7 +72,7 @@ class Reader_c {
 
 		///////////////////////////////////////////////////////////////////////////////
 				string SimName;
-				string su2FilePath;
+				string su2FilePath,su2pFilePath;
 				int Npartition;
 		    double AoA;
 		    double mach;

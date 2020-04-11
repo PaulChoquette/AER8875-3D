@@ -41,7 +41,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     private:
     //Private variables
     int nbc;
-    int* BoundIndex; //Limits of boundary cells id -> [izone] = start, indexes up to n+1
+    int* BoundIndex; //Limits of boundary cells id -> [ibc] = start, indexes up to n+1
     string* bound2tag;
     int* ZBoundIndex;           //Limits of zone boundary cells id -> [izone] = start, indexes up to n+1
     int ntgt;                   //Number of MPI targets

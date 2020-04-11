@@ -127,18 +127,18 @@ verify : release $(ReleaseObjectFiles)
 # Pattern Rules
 
 .debug/%.o : %.cpp
-	@$(CXX) -c $(CXXFLAGS) $(DEBUGFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(METIS_INCLUDE_PATH) $< -o $@
+	@$(CXX) -c $(CXXFLAGS) $(DEBUGFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(TECIO_INCLUDE_PATH) $< -o $@
 	@echo '   Pattern Rule | Compiling | '$(CXXFLAGS) $(DEBUGFLAGS) ' | ' $<' ... Done'
 
 .release/%.o : %.cpp
-	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(METIS_INCLUDE_PATH) $< -o $@
+	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(TECIO_INCLUDE_PATH) $< -o $@
 	@echo '   Pattern Rule | Compiling | '$(CXXFLAGS) $(RELEASEFLAGS) ' | ' $<' ... Done '
 
 .shared/%.so : %.o
 	@$(CXX) $(SHAREDFLAGS)  $< -o $@ $(METISLIBS) -I$(METIS_INCLUDE_PATH) $< -o $@
 
 .shared/%.o : %.cpp
-	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(METIS_INCLUDE_PATH) $< -o $@
+	@$(CXX) -c $(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS)  -I$(subst $(space), -I,$(AllDirs)) -I$(METIS_INCLUDE_PATH) -I$(TECIO_INCLUDE_PATH) $< -o $@
 	@echo '   Pattern Rule | Compiling | '$(CXXFLAGS) $(RELEASEFLAGS) $(SHAREDFLAGS)' | ' $<' ... Done '
 
 

@@ -355,7 +355,7 @@ void Metric_c::Face2Center(Reader_c& read)
 		{
 			int faceID = elem2face[ielem][iface];
 				//cout << "faceID : "; cout << faceID << endl;
-				int nnode = face2nnofa[faceID];
+			int nnode = face2nnofa[faceID];
 				//cout << "nnode : "; cout << nnode << endl;
 			double r_mid_x = 0.0;
 			double r_mid_y = 0.0;
@@ -388,6 +388,10 @@ void Metric_c::Face2Center(Reader_c& read)
 			double delta_x = r_mid_x-elem2center[ielem][0];
 			double delta_y = r_mid_y-elem2center[ielem][1];
 			double delta_z = r_mid_z-elem2center[ielem][2];
+			// delta_x = 0;
+			// delta_y = 0;
+			// delta_z = 0;
+
 			if(ielem == elem1)
 			{
 				face2elemCenter[faceID][0][0] = delta_x;
@@ -406,4 +410,7 @@ void Metric_c::Face2Center(Reader_c& read)
 			}
 		}
 	}
+
+
+
 }

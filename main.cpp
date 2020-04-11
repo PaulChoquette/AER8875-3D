@@ -28,8 +28,10 @@ int main() {
 	//////////////////////////////////////////////////////////////////////////////
 	solver_c solve(FileContents, convergeFixLimit);
 	//solve.PrintStylz();
-	fileName = "Zone"+to_string(solve.World.world_rank)+" (1).su2";
-	//fileName = "Zone"+to_string(solve.World.world_rank)+".su2";
+	FileContents.computePrmt(parametreFile);
+	fileName = FileContents.su2pFilePath+to_string(solve.World.world_rank)+".su2";
+	cout<<fileName<<endl;
+	//fileName = "naca0012_euler_65x65x2_ONE0.su2";
 	FileContents.read_file_local(fileName);
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
@@ -43,13 +45,13 @@ int main() {
 	//solve.HighlightZoneBorder();
 	solve.ComputeCoefficient();
 
-	FileContents.write_tecplot(FileContents,"./PlotOut/Tecio",solve.World.world_rank, solve.p, solve.rho, solve.u, solve.v, solve.w);
+	FileContents.write_tecplot(FileContents,"./Tecio",solve.World.world_rank, solve.p, solve.rho, solve.u, solve.v, solve.w);
 	// To change
 	if (solve.World.world_rank==0){
 		solve.PrintStylz();
 	}
 
-	string OFileName = "./PlotOut/AsciiFile"+to_string(solve.World.world_rank)+".dat";
+	string OFileName = "./AsciiFile"+to_string(solve.World.world_rank)+".dat";
 	FileContents.write_tecplot_ASCII(OFileName,solve.p,solve.rho,solve.u,solve.v,solve.w);
 	return 1;
 }

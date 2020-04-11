@@ -5,7 +5,7 @@
 #include <fstream>
 #include "main.h"
 #include "Reader.h"
-#include "/home/etudiant/TECIO/include/TECXXX.h"
+#include "/home/cd/TECIO/include/TECXXX.h"
 #include <iomanip>
 #include <sstream>
 

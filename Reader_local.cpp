@@ -147,7 +147,7 @@ void Reader_c::read_file_local(string filename) {
 
 			if (nzone == 0) {
 				nzone = Readcnst(line, "NZONE= ");
-				if (nzone != 0) {
+				if (nzone > 0) {
 					zone2tag = new string[nzone];
 					zlinen = linen;
 					zoneIndex = new int[nzone + 1];
@@ -161,82 +161,147 @@ void Reader_c::read_file_local(string filename) {
 					step = 0;
 					continue;
 				}
+				else if(nzone==-1){
+					zlinen =linen;
+					nhalo = bcnl - 2 * nbc;
+					ncell = nelem + nhalo;
+					elem2node = new int* [ncell];
+					elem2vtk = new int[ncell];
+					for (int ielem = 0; ielem < nelem; ielem++)
+					{
+						elem2vtk[ielem] = elem2vtk_nh[ielem];
+						elem2node[ielem] = new int[vtklookup[ndime - 2][elem2vtk[ielem]][1]];
+						for (int inode = 0; inode < vtklookup[ndime - 2][elem2vtk[ielem]][1]; inode++)
+						{
+							elem2node[ielem][inode] = elem2node_nh[ielem][inode];
+						}
+					}
+					int imelem = 0;
+					for (int ibc = 0; ibc < nbc; ibc++)
+					{
+						for (int ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
+						{
+							elem2vtk[nelem + imelem] = bc_elem2vtk[ibc][ibcen];
+							elem2node[nelem + imelem] = new int[vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]];
+
+							for (int j = 0; j < vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]; j++)
+							{
+								elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
+							}
+							imelem++;
+						}
+					}
+					break;
+				}
 			}
 			if (zlinen != 0) {
-				if (linen > zlinen && linen <= zlinen + znl) {
-
-					//3 steps : step 0 is reading marker tag, step 1 is reading marker elemn and final step is filling bc_elem2nnode
-					if (step == 0) {
-						zone2tag[zoneid] = line.substr(10, 12);
-						step++;
-					}
-					else if (step == 1) {
-						z_nelem = Readcnst(line, "ZONE_ELEMS= ");
-						z_nelemv[zoneid] = z_nelem;
-						zoneIndex[zoneid + 1] = zoneIndex[zoneid] + z_nelem;
-						znl += z_nelem; //add nelem since each elem has 1 line
-						z_elem2vtk[zoneid] = new int[z_nelem];
-						pre_zelem2jelem[zoneid] = new int[z_nelem];
-						z_elem2node[zoneid] = new int* [z_nelem];
-
-						z_e2n_counter = 0; //counter for marker element number used in FillMarker
-						step++;
-					}
-					else if (step == 2) {
-						Fill_ZN_E2N_VTK(cline, zoneid);
-						if (z_e2n_counter == z_nelem) {
-							zoneid++;
-							step = 0;
+				if (nzone == -1) {
+					nhalo = bcnl - 2 * nbc;
+					ncell = nelem + nhalo;
+					elem2node = new int* [ncell];
+					elem2vtk = new int[ncell];
+					for (int ielem = 0; ielem < nelem; ielem++)
+					{
+						elem2vtk[ielem] = elem2vtk_nh[ielem];
+						elem2node[ielem] = new int[vtklookup[ndime - 2][elem2vtk[ielem]][1]];
+						for (int inode = 0; inode < vtklookup[ndime - 2][elem2vtk[ielem]][1]; inode++)
+						{
+							elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 						}
 					}
-					if (bc == nbc && zoneid == nzone) {
-						nhalo = bcnl - 2 * nbc;
-						nzelem = (znl - 2 * nzone);
-						ncell = nelem + nhalo + nzelem;
-						elem2node = new int* [ncell];
-						elem2vtk = new int[ncell];
-						zelem2jelem = new int[nzelem];
-						for (int ielem = 0; ielem < nelem; ielem++)
+
+					int imelem = 0;
+					for (int ibc = 0; ibc < nbc; ibc++)
+					{
+						for (int ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
 						{
-							elem2vtk[ielem] = elem2vtk_nh[ielem];
-							elem2node[ielem] = new int[vtklookup[ndime - 2][elem2vtk[ielem]][1]];
-							for (int inode = 0; inode < vtklookup[ndime - 2][elem2vtk[ielem]][1]; inode++)
+							elem2vtk[nelem + imelem] = bc_elem2vtk[ibc][ibcen];
+							elem2node[nelem + imelem] = new int[vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]];
+
+							for (int j = 0; j < vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]; j++)
 							{
-								elem2node[ielem][inode] = elem2node_nh[ielem][inode];
+								elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
+							}
+							imelem++;
+						}
+					}
+				}
+				else{
+					if (linen > zlinen&& linen <= zlinen + znl) {
+
+						//3 steps : step 0 is reading marker tag, step 1 is reading marker elemn and final step is filling bc_elem2nnode
+						if (step == 0) {
+							zone2tag[zoneid] = line.substr(10, 12);
+							step++;
+						}
+						else if (step == 1) {
+							z_nelem = Readcnst(line, "ZONE_ELEMS= ");
+							z_nelemv[zoneid] = z_nelem;
+							zoneIndex[zoneid + 1] = zoneIndex[zoneid] + z_nelem;
+							znl += z_nelem; //add nelem since each elem has 1 line
+							z_elem2vtk[zoneid] = new int[z_nelem];
+							pre_zelem2jelem[zoneid] = new int[z_nelem];
+							z_elem2node[zoneid] = new int* [z_nelem];
+
+							z_e2n_counter = 0; //counter for marker element number used in FillMarker
+							step++;
+						}
+						else if (step == 2) {
+							Fill_ZN_E2N_VTK(cline, zoneid);
+							if (z_e2n_counter == z_nelem) {
+								zoneid++;
+								step = 0;
 							}
 						}
-						int imelem = 0;
-						for (int ibc = 0; ibc < nbc; ibc++)
-						{
-							for (int ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
+						if (bc == nbc && zoneid == nzone) {
+							nhalo = bcnl - 2 * nbc;
+							nzelem = (znl - 2 * nzone);
+							ncell = nelem + nhalo + nzelem;
+							elem2node = new int* [ncell];
+							elem2vtk = new int[ncell];
+							zelem2jelem = new int[nzelem];
+							for (int ielem = 0; ielem < nelem; ielem++)
 							{
-								elem2vtk[nelem + imelem] = bc_elem2vtk[ibc][ibcen];
-								elem2node[nelem + imelem] = new int[vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]];
-
-								for (int j = 0; j < vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]; j++)
+								elem2vtk[ielem] = elem2vtk_nh[ielem];
+								elem2node[ielem] = new int[vtklookup[ndime - 2][elem2vtk[ielem]][1]];
+								for (int inode = 0; inode < vtklookup[ndime - 2][elem2vtk[ielem]][1]; inode++)
 								{
-									elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
+									elem2node[ielem][inode] = elem2node_nh[ielem][inode];
 								}
-								imelem++;
 							}
-						}
-						imelem = 0;
-						for (int izone = 0; izone < nzone; izone++)
-						{
-							for (int izone_en = 0; izone_en < z_nelemv[izone]; izone_en++)
+							int imelem = 0;
+							for (int ibc = 0; ibc < nbc; ibc++)
 							{
-								elem2vtk[nelem + nhalo + imelem] = z_elem2vtk[izone][izone_en];
-								zelem2jelem[imelem] = pre_zelem2jelem[izone][izone_en];
-								elem2node[nelem + nhalo + imelem] = new int[vtklookup[ndime - 2][elem2vtk[nelem + nhalo + imelem]][1]];
-
-								for (int j = 0; j < vtklookup[ndime - 2][elem2vtk[nelem + nhalo + imelem]][1]; j++)
+								for (int ibcen = 0; ibcen < bc_nelemv[ibc]; ibcen++)
 								{
-									elem2node[nelem + nhalo + imelem][j] = z_elem2node[izone][izone_en][j];
-								}
-								imelem++;
-							}
-						}
+									elem2vtk[nelem + imelem] = bc_elem2vtk[ibc][ibcen];
+									elem2node[nelem + imelem] = new int[vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]];
 
+									for (int j = 0; j < vtklookup[ndime - 2][elem2vtk[nelem + imelem]][1]; j++)
+									{
+										elem2node[nelem + imelem][j] = bc_elem2node[ibc][ibcen][j];
+									}
+									imelem++;
+								}
+							}
+							imelem = 0;
+							for (int izone = 0; izone < nzone; izone++)
+							{
+								for (int izone_en = 0; izone_en < z_nelemv[izone]; izone_en++)
+								{
+									elem2vtk[nelem + nhalo + imelem] = z_elem2vtk[izone][izone_en];
+									zelem2jelem[imelem] = pre_zelem2jelem[izone][izone_en];
+									elem2node[nelem + nhalo + imelem] = new int[vtklookup[ndime - 2][elem2vtk[nelem + nhalo + imelem]][1]];
+
+									for (int j = 0; j < vtklookup[ndime - 2][elem2vtk[nelem + nhalo + imelem]][1]; j++)
+									{
+										elem2node[nelem + nhalo + imelem][j] = z_elem2node[izone][izone_en][j];
+									}
+									imelem++;
+								}
+							}
+
+						}
 					}
 
 				}
@@ -264,15 +329,15 @@ void Reader_c::read_file_local(string filename) {
 
 		//Zone 2 Zone array deletion
 
-		for (int i = 0; i < nzone; i++) {
-			for (int j = 0; j < z_nelemv[i]; j++) {
-				delete[] z_elem2node[i][j];
-			}
-			delete[] z_elem2node[i];
-		}
-		delete[] z_elem2node;
-		delete[] z_elem2vtk;
-		delete[] elem2vtk_nh;
+		// for (int i = 0; i < nzone; i++) {
+		// 	for (int j = 0; j < z_nelemv[i]; j++) {
+		// 		delete[] z_elem2node[i][j];
+		// 	}
+		// 	delete[] z_elem2node[i];
+		// }
+		// delete[] z_elem2node;
+		// delete[] z_elem2vtk;
+		// delete[] elem2vtk_nh;
 		file.close();
 	}
 	else {
@@ -468,6 +533,7 @@ void Reader_c::computePrmt(string filename) {
 	{
 		SimName = "666";
 		su2FilePath = "666";
+		su2pFilePath = "666";
 		Npartition = 666;
     AoA = 666;
     mach = 666;
@@ -501,6 +567,10 @@ void Reader_c::computePrmt(string filename) {
       }
 			if(su2FilePath=="666"){
         su2FilePath = inputStr(cline_2, "su2FilePath= ");
+				continue;
+      }
+	  if(su2pFilePath=="666"){
+        su2pFilePath = inputStr(cline_2, "su2pFilePath= ");
 				continue;
       }
 			if(Npartition==666){

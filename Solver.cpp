@@ -111,12 +111,14 @@ solver_c::~solver_c() {
     }
 
     // Delete MPI-related variables
-    for (int izone=0;izone<ntgt;++izone) {
-        if (Order==2){delete[] gradientSendBuffer[izone];}
-        delete[] primitivesSendBuffer[izone];
+    if (World.world_rank>1) {
+        for (int izone=0;izone<ntgt;++izone) {
+            if (Order==2){delete[] gradientSendBuffer[izone];}
+            delete[] primitivesSendBuffer[izone];
+        }
+        if (Order==2){delete[] gradientSendBuffer;}
+        delete[] primitivesSendBuffer;
     }
-    if (Order==2){delete[] gradientSendBuffer;}
-    delete[] primitivesSendBuffer;
 }
 
 
@@ -131,6 +133,7 @@ void solver_c::Compute() {
     double Residu_initial,ResiduLocal;
     Initialisation();
     UpdateBound();
+    
 
     while (iteration<iterMax) {
         ++iteration;
@@ -138,7 +141,12 @@ void solver_c::Compute() {
         else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}
         ComputeResidu();
         ResiduLocal = CheckConvergence();
-        Residu = World.UpdateConvergence(ResiduLocal);
+        if (World.world_size>1){
+            Residu = World.UpdateConvergence(ResiduLocal);
+        }
+        else {
+            Residu = ResiduLocal;
+        }
         if (iteration==1) {
             Residu_initial = Residu;
         }
@@ -271,7 +279,7 @@ void solver_c::UpdateBound() {
                 udotn = face2norm[iface][0]*u[ir]+face2norm[iface][1]*v[ir]+face2norm[iface][2]*w[ir];
 
                 if ((pow(u[ir],2)+pow(v[ir],2)+pow(w[ir],2))>=pow(c0,2)) {  //if supersonic
-                    if (udotn>0) {    //inlet
+                    if (udotn<=0) {    //inlet
                     // Supersonic Inflow
                         p[ig] = 1.0;
                         rho[ig] = 1.0;
@@ -289,7 +297,7 @@ void solver_c::UpdateBound() {
                 }
                 else {      // If subsonic
                     l_r0c0 = 1/(c0*rho[ir]);
-                    if (udotn>0) {    //inlet
+                    if (udotn<=0) {    //inlet
                         // Subsonic Inflow
                         p[ig] = 0.5*(1.0+p[ir]-c0*rho[ir]*(face2norm[iface][0]*(inf_speed_x-u[ir])+face2norm[iface][1]*(inf_speed_y-v[ir])+face2norm[iface][2]*(inf_speed_z-w[ir])));
                         rho[ig] = 1.0+(p[ig]-1.0)/pow(c0,2);
@@ -314,8 +322,10 @@ void solver_c::UpdateBound() {
 
 // Initialise MPI
 void solver_c::InitMPIBuffer(Reader_c& Read) {
+    string BoundType;
+    int indxMin,indxMax,iface;
     int* zone2nbelem,*tgtList,**localBorderID;   //number of element / zone boundary
-
+    if(World.world_size>1) {
     ntgt = Read.nzone;
     //Build zone2nbelem; number of element / zone boundary
     zone2nbelem = new int[ntgt];
@@ -352,7 +362,7 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
 	}
     delete[] localBorderID;
     delete[] zone2nbelem;delete[] tgtList;
-
+    }
 
     // Copy needed informations from Reader
     nbc = Read.nbc;
@@ -377,190 +387,144 @@ void solver_c::InitMPIBuffer(Reader_c& Read) {
         elem2vtk[ielem] = Read.elem2vtk[ielem];
     }
 
-    if (Order==2){ExchangeMetrics();}
+    if (Order==2){
+        if(World.world_size>1) {ExchangeMetrics();}
+    }
+    // Update metrics of ghost cells
+    for (int ibc=0;ibc<nbc;++ibc) {
+        BoundType = bound2tag[ibc];
+        indxMin = BoundIndex[ibc];
+        indxMax = BoundIndex[ibc+1];
+        for (int ig=indxMin;ig<indxMax;++ig) {
+            iface = elem2face[ig][0];
+            for (int idim=0;idim<3;++idim) {
+                face2elemCenter[iface][1][idim] = -face2elemCenter[iface][0][idim];
+            }
+        }
+    }
 }
 
 // exchange needed metrics values between zones
 void solver_c::ExchangeMetrics() {
     int ielem,iface,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
     int Pre_ind=ndime-2;
-    // Create needed buffer
-    double **metricBuffer;
-    metricBuffer = new double*[World.ntgt];
-    for (int izone=0;izone<World.ntgt;++izone) {
-        metricBuffer[izone] = new double[World.zone2nbelem[izone]*3];
-    }
-    // face2elemCenter : Only need to send [:][0][:]     || face2elemCenter[iface][0:side 0,1:side 1][idim]
-    // Populate Tx Buffer
-    for (int izone=0;izone<World.ntgt;++izone) {
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            ibelemIndx = ibelem + ZBoundIndex[izone];
-            iface = elem2face[ibelemIndx][0];
-            metricBuffer[izone][ibelem] = face2elemCenter[iface][0][0];
-            metricBuffer[izone][ibelem+World.zone2nbelem[izone]] = face2elemCenter[iface][0][1];
-            metricBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = face2elemCenter[iface][0][2];
-
+    if(World.world_size>1) {
+        // Create needed buffer
+        double **metricBuffer;
+        metricBuffer = new double*[World.ntgt];
+        for (int izone=0;izone<World.ntgt;++izone) {
+            metricBuffer[izone] = new double[World.zone2nbelem[izone]*3];
         }
-    }
-        //Send & Store
-    World.Exchange1DBuffer(metricBuffer);
-    for (int izone=0;izone<World.ntgt;++izone) {
-        BaseZoneIndxMin = ZBoundIndex[izone];
-        BaseZoneIndxMax = ZBoundIndex[izone+1];
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Gost Element in current zone
+        // face2elemCenter : Only need to send [:][0][:]     || face2elemCenter[iface][0:side 0,1:side 1][idim]
+        // Populate Tx Buffer
+        for (int izone=0;izone<World.ntgt;++izone) {
+            for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+                ibelemIndx = ibelem + ZBoundIndex[izone];
+                iface = elem2face[ibelemIndx][0];
+                metricBuffer[izone][ibelem] =                               face2elemCenter[iface][0][0];
+                metricBuffer[izone][ibelem+World.zone2nbelem[izone]] =      face2elemCenter[iface][0][1];
+                metricBuffer[izone][ibelem+World.zone2nbelem[izone]*2] =    face2elemCenter[iface][0][2];
 
-            iface = elem2face[jbelemIndx][0];
-            face2elemCenter[iface][1][0] = World.oneDBuffer[izone][ibelem];
-            face2elemCenter[iface][1][1] = World.oneDBuffer[izone][ibelem+World.zone2nbelem[izone]];
-            face2elemCenter[iface][1][2] = World.oneDBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+            }
         }
+            //Send & Store
+        World.Exchange1DBuffer(metricBuffer);
+        for (int izone=0;izone<World.ntgt;++izone) {
+            BaseZoneIndxMin = ZBoundIndex[izone];
+            BaseZoneIndxMax = ZBoundIndex[izone+1];
+            for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+                jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Gost Element in current zone
+
+                iface = elem2face[jbelemIndx][0];
+                face2elemCenter[iface][1][0] = World.oneDBuffer[izone][ibelem];
+                face2elemCenter[iface][1][1] = World.oneDBuffer[izone][ibelem+World.zone2nbelem[izone]];
+                face2elemCenter[iface][1][2] = World.oneDBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+            }
+        }
+        // Delete needed buffer
+        for (int izone=0;izone<World.ntgt;++izone) {
+            delete[] metricBuffer[izone];
+        }
+        delete[] metricBuffer;
     }
-    // Delete needed buffer
-    for (int izone=0;izone<World.ntgt;++izone) {
-        delete[] metricBuffer[izone];
-    }
-    delete[] metricBuffer;
 
 }
 
 // exchange primitive values between zones
 void solver_c::ExchangePrimitive() {
-    int ielem,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
-    int Pre_ind=ndime-2;
-    // Populate Tx Buffer
-    for (int izone=0;izone<World.ntgt;++izone) {
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            ibelemIndx = ibelem + ZBoundIndex[izone];
-            ielem = elem2elem[ibelemIndx][0];
-            primitivesSendBuffer[izone][ibelem] = rho[ielem];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = u[ielem];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = v[ielem];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*3] = w[ielem];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*4] = p[ielem];
+int ielem,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
+int Pre_ind=ndime-2;
+    if(World.world_size>1) {
+        // Populate Tx Buffer
+        for (int izone=0;izone<World.ntgt;++izone) {
+            for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+                ibelemIndx = ibelem + ZBoundIndex[izone];
+                ielem = elem2elem[ibelemIndx][0];
+                primitivesSendBuffer[izone][ibelem] = rho[ielem];
+                primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = u[ielem];
+                primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = v[ielem];
+                primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*3] = w[ielem];
+                primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*4] = p[ielem];
+            }
         }
-    }
-    //Send & Store
-    World.ExchangePrimitives(primitivesSendBuffer);
-//    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
-    for (int izone=0;izone<World.ntgt;++izone) {
-        BaseZoneIndxMin = ZBoundIndex[izone];
-        BaseZoneIndxMax = ZBoundIndex[izone+1];
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Ghost Element in current zone
+        //Send & Store
+        World.ExchangePrimitives(primitivesSendBuffer);
+    //    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
+        for (int izone=0;izone<World.ntgt;++izone) {
+            BaseZoneIndxMin = ZBoundIndex[izone];
+            BaseZoneIndxMax = ZBoundIndex[izone+1];
+            for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+                jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Ghost Element in current zone
 
-            rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
-            u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
-            v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
-            w[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
-            p[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
+                rho[jbelemIndx] = World.primitivesBuffer[izone][ibelem];
+                u[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
+                v[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+                w[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
+                p[jbelemIndx] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
+            }
         }
     }
 }
 
 // exchange gradiant values between zones [Order 2 only]
 void solver_c::ExchangeGradiants() {    // TO EDIT-----------------------------
-    int ielem,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
-    int Pre_ind=ndime-2;
-    // Populate Tx Buffer
-    for (int izone=0;izone<World.ntgt;++izone) {
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            for (int idim;idim<3;++idim) {
-                ibelemIndx = ibelem + ZBoundIndex[izone];
-                ielem = elem2elem[ibelemIndx][0];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5] = gradient[ielem][idim][0];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*1] = gradient[ielem][idim][1];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*2] = gradient[ielem][idim][2];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*3] = gradient[ielem][idim][3];
-                gradientSendBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*4] = gradient[ielem][idim][4];
+int ielem,ibelemIndx,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
+int Pre_ind=ndime-2;
+    if(World.world_size>1) {
+        for (int idime=0;idime<ndime;++idime) {
+            // Populate Tx Buffer
+            for (int izone=0;izone<World.ntgt;++izone) {
+                for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+                    ibelemIndx = ibelem + ZBoundIndex[izone];
+                    ielem = elem2elem[ibelemIndx][0];
+                    primitivesSendBuffer[izone][ibelem] = gradient[ielem][idime][0];
+                    primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = gradient[ielem][idime][1];
+                    primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = gradient[ielem][idime][2];
+                    primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*3] = gradient[ielem][idime][3];
+                    primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*4] = gradient[ielem][idime][4];
+                }
             }
-        }
-    }
-    //Send & Store
-    World.ExchangeGradients(gradientSendBuffer);
-    for (int izone=0;izone<World.ntgt;++izone) {
-        BaseZoneIndxMin = ZBoundIndex[izone];
-        BaseZoneIndxMax = ZBoundIndex[izone+1];
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Ghost Element in current zone
+            //Send & Store
+            World.ExchangePrimitives(primitivesSendBuffer);
+        //    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
+            for (int izone=0;izone<World.ntgt;++izone) {
+                BaseZoneIndxMin = ZBoundIndex[izone];
+                BaseZoneIndxMax = ZBoundIndex[izone+1];
+                for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
+                    jbelemIndx = World.rxOrder2localOrder[izone][ibelem];   //Ghost Element in current zone
 
-            for (int idim;idim<3;++idim) {
-                gradient[jbelemIndx][idim][0] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5];
-                gradient[jbelemIndx][idim][1] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*1];
-                gradient[jbelemIndx][idim][2] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*2];
-                gradient[jbelemIndx][idim][3] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*3];
-                gradient[jbelemIndx][idim][4] = World.gradientBuffer[izone][ibelem+World.zone2nbelem[izone]*idim*5+World.zone2nbelem[izone]*4];
+                    gradient[jbelemIndx][idime][0] = World.primitivesBuffer[izone][ibelem];
+                    gradient[jbelemIndx][idime][1] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]];
+                    gradient[jbelemIndx][idime][2] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*2];
+                    gradient[jbelemIndx][idime][3] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*3];
+                    gradient[jbelemIndx][idime][4] = World.primitivesBuffer[izone][ibelem+World.zone2nbelem[izone]*4];
+                }
             }
         }
     }
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ===================================================================    Resolution Support   =========================================================================== //
 void solver_c::SaveConservative()
 {
   for(int ielem=0; ielem<nelem; ielem++)
@@ -647,22 +611,21 @@ void solver_c::ResidualSmoothing()
           {
             S0 += epsilon * SmootyRezi[NeiBoar][0];
             S1 += epsilon * SmootyRezi[NeiBoar][1];
-						S2 += epsilon * SmootyRezi[NeiBoar][2];
-						S3 += epsilon * SmootyRezi[NeiBoar][3];
-						S4 += epsilon * SmootyRezi[NeiBoar][4];
-          }
+            S2 += epsilon * SmootyRezi[NeiBoar][2];
+            S3 += epsilon * SmootyRezi[NeiBoar][3];
+            S4 += epsilon * SmootyRezi[NeiBoar][4];
+            }
           else
           {
             FennTom +=1;
           }
         }
-
-				Nbr_of_face -= FennTom;
-				SmootyRezi[ielem][0] = (F_lux[ielem][0] + S0) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][1] = (F_lux[ielem][1] + S1) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][2] = (F_lux[ielem][2] + S2) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][3] = (F_lux[ielem][3] + S3) / (1.0 + epsilon * Nbr_of_face);
-				SmootyRezi[ielem][4] = (F_lux[ielem][4] + S4) / (1.0 + epsilon * Nbr_of_face);
+        Nbr_of_face -= FennTom;
+        SmootyRezi[ielem][0] = (F_lux[ielem][0] + S0) / (1.0 + epsilon * Nbr_of_face);
+        SmootyRezi[ielem][1] = (F_lux[ielem][1] + S1) / (1.0 + epsilon * Nbr_of_face);
+        SmootyRezi[ielem][2] = (F_lux[ielem][2] + S2) / (1.0 + epsilon * Nbr_of_face);
+        SmootyRezi[ielem][3] = (F_lux[ielem][3] + S3) / (1.0 + epsilon * Nbr_of_face);
+        SmootyRezi[ielem][4] = (F_lux[ielem][4] + S4) / (1.0 + epsilon * Nbr_of_face);
       }
     }
     for (int i = 0; i < nelem; ++i)
@@ -803,17 +766,17 @@ void solver_c::TimeStepRkH() {
         {
           ExchangePrimitive();
           UpdateBound();
-    			if ((k==1) || (k==3))
-          {
-    				if (Order==1){ComputeFluxO1();}
+    		if ((k==1) || (k==3))
+            {
+    		if (Order==1){ComputeFluxO1();}
             else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
             ComputeResidu();
-          }
-    			else
-          {
-    				if (Order==1){ComputeFluxO1Conv();}
+            }
+    		else
+            {
+    		if (Order==1){ComputeFluxO1Conv();}
             else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
-    			  ComputeResiduConv();
+    		ComputeResiduConv();
             }
         }
         kk = k;
@@ -856,23 +819,6 @@ void solver_c::TimeStepRkH() {
       cons[ielem][4] = cons[ielem][4] - RKH_coef[RK_step][0][kk]*dTi_sans_V*(F_lux[ielem][4]);
       SavePrimitive(ielem);
     }
-    if ((kk+1)!=RK_step)
-    {
-      ExchangePrimitive();
-      UpdateBound();
-      if ((kk==1) || (kk==3))
-      {
-        if (Order==1){ComputeFluxO1();}
-        else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2();}  // Diffusive fluxes do not need to be computed at every step!
-        ComputeResidu();
-      }
-      else
-      {
-        if (Order==1){ComputeFluxO1Conv();}
-        else {ComputeGrandientsNLimit();ExchangeGradiants();ComputeFluxO2Conv();}  // Diffusive fluxes do not need to be computed at every step!
-        ComputeResiduConv();
-      }
-    }
 }
 //
 //
@@ -890,7 +836,7 @@ void solver_c::ComputeFluxO1Conv() {
         ielemL = face2elem[iface][0];
         ielemR = face2elem[iface][1];
 
-        //Update L/R values [order 2]
+        //Update L/R values [order 1]
         rhoL = rho[ielemL];
         rhoR = rho[ielemR];
         uL = u[ielemL];
@@ -915,7 +861,7 @@ void solver_c::ComputeFluxO1() {
         ielemL = face2elem[iface][0];
         ielemR = face2elem[iface][1];
 
-        //Update L/R values [order 2]
+        //Update L/R values [order 1]
         rhoL = rho[ielemL];
         rhoR = rho[ielemR];
         uL = u[ielemL];
@@ -934,7 +880,8 @@ void solver_c::ComputeFluxO1() {
 
 // Computes grandients for order 2
 void solver_c::ComputeGrandientsNLimit() {
-    int jelem,jface,Nbr_of_face,Pre_ind = ndime-2;
+    int jelem,jface,Nbr_of_face,ir,indxMin,indxMax,Pre_ind = ndime-2;
+    string BoundType;
     double TempDemiSurVol,sign;
     double delta_2,UminRho,UmaxRho,UminU,UmaxU,UminV,UmaxV,UminP,UmaxP,UminW,UmaxW; //Barth & Jespersen p:166 Blasek
     int faceSide;   //Index [0/1]
@@ -1004,7 +951,7 @@ void solver_c::ComputeGrandientsNLimit() {
                 U[4] = p[jelem];
 
                 jface = elem2face[ielem][ineighbor];
-                faceSide = int(face2elem[jface][0]==jelem);        //jelem??
+                faceSide = int(face2elem[jface][0]==ielem);        //jelem??
 
                 for (int ivar=0;ivar<5;++ivar) {
                     delta_2 = 0.5*(GradU[0][ivar]*face2elemCenter[jface][faceSide][0]+GradU[1][ivar]*face2elemCenter[jface][faceSide][1]+GradU[2][ivar]*face2elemCenter[jface][faceSide][2]);
@@ -1030,13 +977,28 @@ void solver_c::ComputeGrandientsNLimit() {
         //Store & reset Gradients
         for (int idim=0;idim<3;++idim) {
             for (int ivar=0;ivar<5;++ivar) {
-                gradient[ielem][idim][ivar] = GradU[idim][ivar]*psi[ivar];
+                gradient[ielem][idim][ivar] = GradU[idim][ivar]*0.5;//*psi[ivar];
                 GradU[idim][ivar]=0;
             }
         }
         //Reset limitors
         for (int ivar=0;ivar<5;++ivar) {
             psi[ivar] = 1;
+        }
+    }
+
+    //Copy gradiants for boundary cells  : 
+    for (int ibc=0;ibc<nbc;++ibc) {
+        BoundType = bound2tag[ibc];
+        indxMin = BoundIndex[ibc];
+        indxMax = BoundIndex[ibc+1];
+        for (int ig=indxMin;ig<indxMax;++ig) {
+            ir = elem2elem[ig][0];
+            for (int idim=0;idim<3;++idim) {
+                for (int ivar=0;ivar<5;++ivar) {
+                    gradient[ig][idim][ivar] = gradient[ir][idim][ivar];
+                }
+            }
         }
     }
 }
@@ -1053,17 +1015,17 @@ for (int iface = 0; iface < nface; iface++) {
         ielemR = face2elem[iface][1];
 
         //Update L/R values [order 2]
-        rhoL = rho[ielemL]+gradient[ielemL][0][0]*face2elemCenter[iface][0][0]+gradient[ielemL][1][0]*face2elemCenter[iface][0][1]+gradient[ielemL][2][0]*face2elemCenter[iface][0][2];
-        uL = u[ielemL]+gradient[ielemL][0][1]*face2elemCenter[iface][0][0]+gradient[ielemL][1][1]*face2elemCenter[iface][0][1]+gradient[ielemL][2][1]*face2elemCenter[iface][0][2];
-        vL = v[ielemL]+gradient[ielemL][0][2]*face2elemCenter[iface][0][0]+gradient[ielemL][1][2]*face2elemCenter[iface][0][1]+gradient[ielemL][2][2]*face2elemCenter[iface][0][2];
-        wL = w[ielemL]+gradient[ielemL][0][3]*face2elemCenter[iface][0][0]+gradient[ielemL][1][3]*face2elemCenter[iface][0][1]+gradient[ielemL][2][3]*face2elemCenter[iface][0][2];
-        pL = p[ielemL]+gradient[ielemL][0][4]*face2elemCenter[iface][0][0]+gradient[ielemL][1][4]*face2elemCenter[iface][0][1]+gradient[ielemL][2][4]*face2elemCenter[iface][0][2];
+            rhoL = rho[ielemL]+gradient[ielemL][0][0]*face2elemCenter[iface][0][0]+gradient[ielemL][1][0]*face2elemCenter[iface][0][1] +gradient[ielemL][2][0]*face2elemCenter[iface][0][2];
+            uL =     u[ielemL]+gradient[ielemL][0][1]*face2elemCenter[iface][0][0]+gradient[ielemL][1][1]*face2elemCenter[iface][0][1] +gradient[ielemL][2][1]*face2elemCenter[iface][0][2];
+            vL =     v[ielemL]+gradient[ielemL][0][2]*face2elemCenter[iface][0][0]+gradient[ielemL][1][2]*face2elemCenter[iface][0][1] +gradient[ielemL][2][2]*face2elemCenter[iface][0][2];
+            wL =     w[ielemL]+gradient[ielemL][0][3]*face2elemCenter[iface][0][0]+gradient[ielemL][1][3]*face2elemCenter[iface][0][1] +gradient[ielemL][2][3]*face2elemCenter[iface][0][2];
+            pL =     p[ielemL]+gradient[ielemL][0][4]*face2elemCenter[iface][0][0]+gradient[ielemL][1][4]*face2elemCenter[iface][0][1] +gradient[ielemL][2][4]*face2elemCenter[iface][0][2];
 
-        rhoR = rho[ielemR]+gradient[ielemR][0][0]*face2elemCenter[iface][1][0]+gradient[ielemR][1][0]*face2elemCenter[iface][1][1]+gradient[ielemR][2][0]*face2elemCenter[iface][1][2];
-        uR = u[ielemR]+gradient[ielemR][0][1]*face2elemCenter[iface][1][0]+gradient[ielemR][1][1]*face2elemCenter[iface][1][1]+gradient[ielemR][2][1]*face2elemCenter[iface][1][2];
-        vR = v[ielemR]+gradient[ielemR][0][2]*face2elemCenter[iface][1][0]+gradient[ielemR][1][2]*face2elemCenter[iface][1][1]+gradient[ielemR][2][2]*face2elemCenter[iface][1][2];
-        wR = w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0]+gradient[ielemR][1][3]*face2elemCenter[iface][1][1]+gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
-        pR = p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1]+gradient[ielemR][2][4]*face2elemCenter[iface][1][2];
+            rhoR = rho[ielemR]+gradient[ielemR][0][0]*face2elemCenter[iface][1][0]+gradient[ielemR][1][0]*face2elemCenter[iface][1][1] +gradient[ielemR][2][0]*face2elemCenter[iface][1][2];
+            uR =     u[ielemR]+gradient[ielemR][0][1]*face2elemCenter[iface][1][0]+gradient[ielemR][1][1]*face2elemCenter[iface][1][1] +gradient[ielemR][2][1]*face2elemCenter[iface][1][2];
+            vR =     v[ielemR]+gradient[ielemR][0][2]*face2elemCenter[iface][1][0]+gradient[ielemR][1][2]*face2elemCenter[iface][1][1] +gradient[ielemR][2][2]*face2elemCenter[iface][1][2];
+            wR =     w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0]+gradient[ielemR][1][3]*face2elemCenter[iface][1][1] +gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
+            pR =     p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1] +gradient[ielemR][2][4]*face2elemCenter[iface][1][2];    
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
     }
 }
@@ -1077,17 +1039,18 @@ void solver_c::ComputeFluxO2() {
         ielemR = face2elem[iface][1];
 
         //Update L/R values [order 2]
-        rhoL = rho[ielemL]+gradient[ielemL][0][0]*face2elemCenter[iface][0][0]+gradient[ielemL][1][0]*face2elemCenter[iface][0][1]+gradient[ielemL][2][0]*face2elemCenter[iface][0][2];
-        uL = u[ielemL]+gradient[ielemL][0][1]*face2elemCenter[iface][0][0]+gradient[ielemL][1][1]*face2elemCenter[iface][0][1]+gradient[ielemL][2][1]*face2elemCenter[iface][0][2];
-        vL = v[ielemL]+gradient[ielemL][0][2]*face2elemCenter[iface][0][0]+gradient[ielemL][1][2]*face2elemCenter[iface][0][1]+gradient[ielemL][2][2]*face2elemCenter[iface][0][2];
-        wL = w[ielemL]+gradient[ielemL][0][3]*face2elemCenter[iface][0][0]+gradient[ielemL][1][3]*face2elemCenter[iface][0][1]+gradient[ielemL][2][3]*face2elemCenter[iface][0][2];
-        pL = p[ielemL]+gradient[ielemL][0][4]*face2elemCenter[iface][0][0]+gradient[ielemL][1][4]*face2elemCenter[iface][0][1]+gradient[ielemL][2][4]*face2elemCenter[iface][0][2];
+        rhoL = rho[ielemL]+gradient[ielemL][0][0]*face2elemCenter[iface][0][0] +gradient[ielemL][1][0]*face2elemCenter[iface][0][1] +gradient[ielemL][2][0]*face2elemCenter[iface][0][2];
+        uL =     u[ielemL]+gradient[ielemL][0][1]*face2elemCenter[iface][0][0] +gradient[ielemL][1][1]*face2elemCenter[iface][0][1] +gradient[ielemL][2][1]*face2elemCenter[iface][0][2];
+        vL =     v[ielemL]+gradient[ielemL][0][2]*face2elemCenter[iface][0][0] +gradient[ielemL][1][2]*face2elemCenter[iface][0][1] +gradient[ielemL][2][2]*face2elemCenter[iface][0][2];
+        wL =     w[ielemL]+gradient[ielemL][0][3]*face2elemCenter[iface][0][0] +gradient[ielemL][1][3]*face2elemCenter[iface][0][1] +gradient[ielemL][2][3]*face2elemCenter[iface][0][2];
+        pL =     p[ielemL]+gradient[ielemL][0][4]*face2elemCenter[iface][0][0] +gradient[ielemL][1][4]*face2elemCenter[iface][0][1] +gradient[ielemL][2][4]*face2elemCenter[iface][0][2];
 
-        rhoR = rho[ielemR]+gradient[ielemR][0][0]*face2elemCenter[iface][1][0]+gradient[ielemR][1][0]*face2elemCenter[iface][1][1]+gradient[ielemR][2][0]*face2elemCenter[iface][1][2];
-        uR = u[ielemR]+gradient[ielemR][0][1]*face2elemCenter[iface][1][0]+gradient[ielemR][1][1]*face2elemCenter[iface][1][1]+gradient[ielemR][2][1]*face2elemCenter[iface][1][2];
-        vR = v[ielemR]+gradient[ielemR][0][2]*face2elemCenter[iface][1][0]+gradient[ielemR][1][2]*face2elemCenter[iface][1][1]+gradient[ielemR][2][2]*face2elemCenter[iface][1][2];
-        wR = w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0]+gradient[ielemR][1][3]*face2elemCenter[iface][1][1]+gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
-        pR = p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1]+gradient[ielemR][2][4]*face2elemCenter[iface][1][2];
+        rhoR = rho[ielemR]+gradient[ielemR][0][0]*face2elemCenter[iface][1][0] +gradient[ielemR][1][0]*face2elemCenter[iface][1][1] +gradient[ielemR][2][0]*face2elemCenter[iface][1][2];
+        uR =     u[ielemR]+gradient[ielemR][0][1]*face2elemCenter[iface][1][0] +gradient[ielemR][1][1]*face2elemCenter[iface][1][1] +gradient[ielemR][2][1]*face2elemCenter[iface][1][2];
+        vR =     v[ielemR]+gradient[ielemR][0][2]*face2elemCenter[iface][1][0] +gradient[ielemR][1][2]*face2elemCenter[iface][1][1] +gradient[ielemR][2][2]*face2elemCenter[iface][1][2];
+        wR =     w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0] +gradient[ielemR][1][3]*face2elemCenter[iface][1][1] +gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
+        pR =     p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0] +gradient[ielemR][1][4]*face2elemCenter[iface][1][1] +gradient[ielemR][2][4]*face2elemCenter[iface][1][2]; 
+
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
         RoeDissipation(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
     }
@@ -1301,8 +1264,6 @@ double solver_c::E2P(double e_loc,double rho_loc,double u_loc,double v_loc,doubl
 }
 
 
-
-
 void solver_c::WriteResidu(){
     ofstream myfile ("ResiduLog.txt",ios::app);
     if (myfile.is_open())
@@ -1316,45 +1277,6 @@ void solver_c::WriteResidu(){
 void solver_c::PrintPress() {
     for (int ielem=0;ielem<ncell;++ielem) {
         cout<<p[ielem]<<endl;;
-    }
-}
-
-void solver_c::HighlightZoneBorder() {
-    int ielem,jbelemIndx,Nbr_of_faceIndx,BaseZoneIndxMin,BaseZoneIndxMax; //Local boundary element index
-    int Pre_ind=ndime-2;
-    // Populate Tx Buffer
-    for (int izone=0;izone<World.ntgt;++izone) {
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-            jbelemIndx = ibelem + ZBoundIndex[izone];
-            ielem = elem2elem[jbelemIndx][0];
-            primitivesSendBuffer[izone][ibelem] = 0;
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]] = u[ielem];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*2] = v[ielem];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*3] = w[ielem];
-            primitivesSendBuffer[izone][ibelem+World.zone2nbelem[izone]*4] = p[ielem];
-            //rho[ielem] = 0;  //Sets THIS ZONE's borders to 0
-        }
-    }
-    //Send & Store
-    World.ExchangePrimitives(primitivesSendBuffer);
-// // //    World.ReclassPrimitives(&rho,&u,&v,&w,&p);
-// // // PROBLEMATIC IF AN ELEMENTS SHARE TWO NEIGBHOORS IN THE SAME ZONE---------------------------------------------
-    for (int izone=0;izone<World.ntgt;++izone) {
-        // BaseZoneIndxMin = ZBoundIndex[izone];
-        // BaseZoneIndxMax = ZBoundIndex[izone+1];
-        for (int ibelem=0;ibelem<World.zone2nbelem[izone];++ibelem) {
-        // HIGHLY INNEFICIENT, SENDING DIRECTLY THE GHOST ID WOULD BE MUCHHHHHHHHHHH FASTER [Would allow use of ReclassPrimitives]
-            ielem = World.rxOrder2localOrder[izone][ibelem];   //Real Element in current zone
-            //cout<<World.world_rank<<"|"<<"From:"<<World.tgtList[izone]<<":=:"<<ielem<<endl;       //Good reception of SU2+ verified
-	        // Nbr_of_faceIndx = vtklookup[0][elem2vtk[ielem]][0]-1;
-            // for (int jelem=Nbr_of_faceIndx;jelem>-1;--jelem) {
-            //     jbelemIndx = elem2elem[ielem][jelem];
-            //     if((BaseZoneIndxMin<=jbelemIndx)&&(jbelemIndx<BaseZoneIndxMax)) {
-            //         break;
-            //     }
-            // }
-            rho[ielem] = World.primitivesBuffer[izone][ibelem];
-        }
     }
 }
 
@@ -1447,7 +1369,14 @@ double solver_c::ComputeProjetedArea(){
           }
       }
   }
+  if (World.world_size>1) {
   GlobalArea = World.UpdateCoefficient(Area1);
+  }
+  else
+  {
+      GlobalArea = Area1;
+  }
+  
   return GlobalArea;
 }
 //=============================================================================
@@ -1469,7 +1398,6 @@ void solver_c::ComputeCoefficient() {
     double Area;
     double X,Y;
     double Mtan;
-
     for (int ibc=0;ibc<nbc;++ibc) {
       BoundType = bound2tag[ibc];
       indxMin = BoundIndex[ibc];
@@ -1486,11 +1414,18 @@ void solver_c::ComputeCoefficient() {
           }
       }
     }
-
-    GlobalFx = World.UpdateCoefficient(Fx);
-    GlobalFy = World.UpdateCoefficient(Fy);
-    GlobalFz = World.UpdateCoefficient(Fz);
-    GlobalMz = World.UpdateCoefficient(Mtan);
+    if (World.world_size>1) {
+        GlobalFx = World.UpdateCoefficient(Fx);
+        GlobalFy = World.UpdateCoefficient(Fy);
+        GlobalFz = World.UpdateCoefficient(Fz);
+        GlobalMz = World.UpdateCoefficient(Mtan);
+    }
+    else {
+        GlobalFx = Fx;
+        GlobalFy = Fy;
+        GlobalFz = Fz;
+        GlobalMz = Mtan;
+    }
 
     if (Sref != 0.0){
       Area = Sref;
@@ -1503,9 +1438,9 @@ void solver_c::ComputeCoefficient() {
     Coeff_mz = GlobalMz/(Area*q);
 
     if (World.world_rank==0){
-      cout<<"Le coefficient de portance est de : "<<Coeff_l<<endl;
-      cout<<"Le coefficient de trainee est de : "<<Coeff_d<<endl;
-      cout<<"Le coefficient de moment en z : "<<Coeff_mz<<endl;
+      cout<<"Le coefficient de portance est de : "<<fixed<<setprecision(15)<<Coeff_l<<endl;
+      cout<<"Le coefficient de trainee est de : "<<fixed<<setprecision(15)<<Coeff_d<<endl;
+      cout<<"Le coefficient de moment en z : "<<fixed<<setprecision(15)<<Coeff_mz<<endl;
   	}
 }
 
