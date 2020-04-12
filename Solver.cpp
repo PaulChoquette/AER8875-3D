@@ -133,7 +133,7 @@ void solver_c::Compute() {
     double Residu_initial,ResiduLocal;
     Initialisation();
     UpdateBound();
-    
+
 
     while (iteration<iterMax) {
         ++iteration;
@@ -987,7 +987,7 @@ void solver_c::ComputeGrandientsNLimit() {
         }
     }
 
-    //Copy gradiants for boundary cells  : 
+    //Copy gradiants for boundary cells  :
     for (int ibc=0;ibc<nbc;++ibc) {
         BoundType = bound2tag[ibc];
         indxMin = BoundIndex[ibc];
@@ -1025,7 +1025,7 @@ for (int iface = 0; iface < nface; iface++) {
             uR =     u[ielemR]+gradient[ielemR][0][1]*face2elemCenter[iface][1][0]+gradient[ielemR][1][1]*face2elemCenter[iface][1][1] +gradient[ielemR][2][1]*face2elemCenter[iface][1][2];
             vR =     v[ielemR]+gradient[ielemR][0][2]*face2elemCenter[iface][1][0]+gradient[ielemR][1][2]*face2elemCenter[iface][1][1] +gradient[ielemR][2][2]*face2elemCenter[iface][1][2];
             wR =     w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0]+gradient[ielemR][1][3]*face2elemCenter[iface][1][1] +gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
-            pR =     p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1] +gradient[ielemR][2][4]*face2elemCenter[iface][1][2];    
+            pR =     p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0]+gradient[ielemR][1][4]*face2elemCenter[iface][1][1] +gradient[ielemR][2][4]*face2elemCenter[iface][1][2];
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
     }
 }
@@ -1049,7 +1049,7 @@ void solver_c::ComputeFluxO2() {
         uR =     u[ielemR]+gradient[ielemR][0][1]*face2elemCenter[iface][1][0] +gradient[ielemR][1][1]*face2elemCenter[iface][1][1] +gradient[ielemR][2][1]*face2elemCenter[iface][1][2];
         vR =     v[ielemR]+gradient[ielemR][0][2]*face2elemCenter[iface][1][0] +gradient[ielemR][1][2]*face2elemCenter[iface][1][1] +gradient[ielemR][2][2]*face2elemCenter[iface][1][2];
         wR =     w[ielemR]+gradient[ielemR][0][3]*face2elemCenter[iface][1][0] +gradient[ielemR][1][3]*face2elemCenter[iface][1][1] +gradient[ielemR][2][3]*face2elemCenter[iface][1][2];
-        pR =     p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0] +gradient[ielemR][1][4]*face2elemCenter[iface][1][1] +gradient[ielemR][2][4]*face2elemCenter[iface][1][2]; 
+        pR =     p[ielemR]+gradient[ielemR][0][4]*face2elemCenter[iface][1][0] +gradient[ielemR][1][4]*face2elemCenter[iface][1][1] +gradient[ielemR][2][4]*face2elemCenter[iface][1][2];
 
         UpwindFlux(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
         RoeDissipation(iface,rhoL,uL,vL,wL,pL,rhoR,uR,vR,wR,pR);
@@ -1376,7 +1376,7 @@ double solver_c::ComputeProjetedArea(){
   {
       GlobalArea = Area1;
   }
-  
+
   return GlobalArea;
 }
 //=============================================================================
@@ -1443,6 +1443,109 @@ void solver_c::ComputeCoefficient() {
       cout<<"Le coefficient de moment en z : "<<fixed<<setprecision(15)<<Coeff_mz<<endl;
   	}
 }
+
+void solver_c::GetCp(Reader_c& FileContents)
+{
+	cout << "Computing and saving CP distribution \tSTARTING...";
+  double q_inf, P_inf, rho_inf;
+  wallNode = 0;  wallFace = 0;
+  rho_inf = 1.0;  P_inf = 1.0;
+  int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
+  string BoundType;
+  for(int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
+  {
+    BoundType = bound2tag[ibc]; // Type de frontiere
+    indxMin = BoundIndex[ibc]; // index de la frontiere actuelle
+    indxMax = BoundIndex[ibc+1]; // index de la frontiere suivante
+    if (BoundType.substr(0,4)=="wall")
+    {
+        Wall_bc_count = indxMax - indxMin;
+        Cp = new double[Wall_bc_count];
+        for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
+        {
+          iface = elem2face[ig][0];
+          nnode_ = face2nnofa[iface];
+          wallNode += nnode_;          wallFace += 1;
+          q_inf = 0.5*rho_inf*inf_speed*inf_speed;
+          ir = elem2elem[ig][0];
+          Cp[ig - indxMin] = (p[ir] - P_inf)/q_inf;
+          //cout << "\nWorld.world_rank : "; cout << World.world_rank; cout << " Wall_bc_count : "; cout << Wall_bc_count; cout << " Cp : "; cout << Cp[ig - indxMin];
+        }
+        //cout << endl;
+    }
+  }
+  GetCp_coord(FileContents, Wall_bc_count, wallNode);
+  GetCp_write(FileContents, Wall_bc_count);
+  cout << "...............DONE" << endl;
+}
+void solver_c::GetCp_coord(Reader_c& FileContents, int Wall_bc_count, int wallNode)
+{
+  int ig,ir,indxMin,indxMax,iface;
+  string BoundType;
+  cp_coord = new double*[Wall_bc_count];
+  wallNode_coord = new double*[wallNode];
+  int count = 0;
+  for (int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
+  {
+    BoundType = bound2tag[ibc]; // Type de frontiere
+    indxMin = BoundIndex[ibc]; // index de la frontiere actuelle
+    indxMax = BoundIndex[ibc+1]; // index de la frontiere suivante
+    if (BoundType.substr(0,4)=="wall"){ //If slipwall
+        // Slipwall
+        for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
+        {
+          iface = elem2face[ig][0];
+
+          for(int i=0; i<nnode_; ++i)
+          {
+            wallNode_coord[count] = new double[FileContents.ndime];
+            wallNode_coord[count][0] = FileContents.coord[face2node[iface][i]][0];
+            wallNode_coord[count][1] = FileContents.coord[face2node[iface][i]][1];
+            wallNode_coord[count][2] = FileContents.coord[face2node[iface][i]][2];
+            count += 1;
+          }
+          ir = elem2elem[ig][0];
+          cp_coord[ir] = new double[FileContents.ndime];
+          cp_coord[ir][0] = face2midpoint[iface][0];
+          cp_coord[ir][1] = face2midpoint[iface][1];
+          cp_coord[ir][2] = face2midpoint[iface][2];
+          //cout << "\nWall_bc_count : "; cout << Wall_bc_count; cout << "  cp_coord : "; cout << cp_coord[iface][0]; cout << " "; cout << cp_coord[iface][1]; cout << " "; cout << cp_coord[iface][2];
+        }
+        //cout << endl;
+    }
+  }
+}
+void solver_c::GetCp_write(Reader_c& FileContents, int Wall_bc_count)
+{
+  int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
+  string BoundType;
+  ofstream myfile_airfoil;
+  string name;
+  name = "airfoil" + to_string(World.world_rank) + ".txt";
+  myfile_airfoil.setf(ios::fixed);
+  myfile_airfoil.open(name, ios::out);
+  for (int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
+  {
+    BoundType = bound2tag[ibc]; // Type de frontiere
+    indxMin = BoundIndex[ibc]; // index de la frontiere actuelle
+    indxMax = BoundIndex[ibc+1]; // index de la frontiere suivante
+    if (BoundType.substr(0,4)=="wall"){ //If slipwall
+      // Slipwall
+      for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
+      {
+        ir = elem2elem[ig][0];
+        myfile_airfoil << Cp[ir]; myfile_airfoil << " ";
+        myfile_airfoil << cp_coord[ir][0]; myfile_airfoil << " ";
+        myfile_airfoil << cp_coord[ir][1]; myfile_airfoil << " ";
+        myfile_airfoil << cp_coord[ir][2]; myfile_airfoil << " ";
+        myfile_airfoil << "\n";
+      }
+    }
+    //cout << endl;
+  }
+  myfile_airfoil.close();
+}
+
 
 void solver_c::PrintStylz() {
     // Mandatory ascii art

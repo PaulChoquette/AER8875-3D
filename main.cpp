@@ -32,6 +32,8 @@ int main() {
 	fileName = FileContents.su2pFilePath+to_string(solve.World.world_rank)+".su2";
 	cout<<fileName<<endl;
 	//fileName = "naca0012_euler_65x65x2_ONE0.su2";
+
+	fileName = "NACA0012_129x129_Zone" +to_string(solve.World.world_rank)+".su2";
 	FileContents.read_file_local(fileName);
 	solve.ComputeLocalConnectivity(FileContents);
 	solve.ComputeMetric(FileContents);
@@ -47,11 +49,13 @@ int main() {
 
 	FileContents.write_tecplot(FileContents,"./Tecio",solve.World.world_rank, solve.p, solve.rho, solve.u, solve.v, solve.w);
 	// To change
-	if (solve.World.world_rank==0){
-		solve.PrintStylz();
-	}
 
 	string OFileName = "./AsciiFile"+to_string(solve.World.world_rank)+".dat";
 	FileContents.write_tecplot_ASCII(OFileName,solve.p,solve.rho,solve.u,solve.v,solve.w);
+	solve.GetCp(FileContents);
+	FileContents.write_tecplot_ASCII_CP("./PressurDist"+to_string(solve.World.world_rank)+".dat",solve.Cp, solve.wallFace, solve.wallNode, solve.wallNode_coord, solve.elem2face);
+	if (solve.World.world_rank==0){
+		solve.PrintStylz();
+	}
 	return 1;
 }

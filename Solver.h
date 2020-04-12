@@ -5,11 +5,13 @@
 #include <stdio.h>
 #include "Comm.h"
 #include "Metric.h"
-
 using namespace std;
-
 class solver_c : public Metric_c {    // TBD wheter public or private
     public:
+    int Wall_bc_count,  wallFace;
+    double** cp_coord;
+    double** wallNode_coord;
+    int nnode_, wallNode;
     solver_c(Reader_c&, double);                   // Constructeur
     ~solver_c();                                // Destructeur
     void InitMPIBuffer(Reader_c&);              // Declare necessary structures for MPI
@@ -29,6 +31,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     double* v;
     double* w;
     double* p;
+    double* Cp;
     int iteration;
     //Debugging Methods
     void PrintPress();
@@ -37,11 +40,12 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void PrintGradiant();
     void LimitTecplot();
     void ComputeCoefficient();
-
+    void GetCp(Reader_c&);
     private:
     //Private variables
+    double P_inf, rho_inf;
     int nbc;
-    int* BoundIndex; //Limits of boundary cells id -> [ibc] = start, indexes up to n+1
+    int* BoundIndex; //Limits of boundary cells id -> [izone] = start, indexes up to n+1
     string* bound2tag;
     int* ZBoundIndex;           //Limits of zone boundary cells id -> [izone] = start, indexes up to n+1
     int ntgt;                   //Number of MPI targets
@@ -74,7 +78,6 @@ class solver_c : public Metric_c {    // TBD wheter public or private
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0.2742,0.2069,0.5020,0.5142,1.0},{1.0,0.0,0.56,0.0,0.44}}};   //Only order 5 in blasek
-
     //Private methods
     void Initialisation();      // Initialise field to infinity
     void ExchangeMetrics();     // MPI exchange needed metrics for order 2
@@ -104,4 +107,6 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     void SaveFlux();
     void SaveFlux_Hyb();
     double ComputeProjetedArea();
+    void GetCp_write(Reader_c&, int);
+    void GetCp_coord(Reader_c&, int, int);
 };

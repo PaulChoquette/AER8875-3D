@@ -21,7 +21,7 @@ void Metric_c::ComputeMetric( Reader_c& read)
 {
 	cout << "Metric Calculation \tSTARTING...";
 	//cout << "-------------------------------------- COMPUTE Normales & Surfaces --------------------------------------"<<endl;
-  	Norm_Area(read);
+  Norm_Area(read);
 	//cout << "-------------------------------------- COMPUTE Volumes --------------------------------------"<<endl;
 	Volume(read);
 	//cout << "-------------------------------------- COMPUTE elem2deltaSxyz --------------------------------------"<<endl;
@@ -87,15 +87,6 @@ void Metric_c::Norm_Area(Reader_c& read)
 			face2norm[iface][0] = S_x/face2area[iface];
 			face2norm[iface][1] = S_y/face2area[iface];
 			face2norm[iface][2] = S_z/face2area[iface];
-			/*
-			if(iface==22)
-			{
-				cout << "FACE ID" << endl;
-				cout << "face2norm[iface][0] : "; cout << face2norm[iface][0] << endl;
-				cout << "face2norm[iface][1] : "; cout << face2norm[iface][1] << endl;
-				cout << "face2norm[iface][2] : "; cout << face2norm[iface][2] << endl;
-			}
-			*/
 		}
 	}
 }
@@ -133,13 +124,6 @@ void Metric_c::Volume(Reader_c& read)
 			r_mid_x = r_mid_x/nnode;
 			r_mid_y = r_mid_y/nnode;
 			r_mid_z = r_mid_z/nnode;
-			/*
-			cout << "r_mid_x : " ;cout << r_mid_x << endl;
-			cout << "r_mid_y: " ;cout << r_mid_y << endl;
-			cout << "r_mid_z : " ;cout << r_mid_z << endl;
-			cout << "face2norm : "; cout << face2norm[faceID][0];cout << " ; "; cout << face2norm[faceID][1];cout << " ; "; cout << face2norm[faceID][2] << endl;
-			cout << "face2area[faceID] : "; cout << face2area[faceID] << endl;
-			*/
 			double normale_x = face2norm[faceID][0];
 			double normale_y = face2norm[faceID][1];
 			double normale_z = face2norm[faceID][2];
@@ -213,12 +197,6 @@ void Metric_c::SumNorm(Reader_c& read, int choix)
 						normale_z = -normale_z;
 					}
 				}
-				/*
-				cout << "faceID "; cout << faceID << endl;
-				cout << "normale_x "; cout << normale_x << endl;
-				cout << "normale_y "; cout << normale_y << endl;
-				cout << "normale_z "; cout << normale_z << endl;
-				*/
 				Elem2sumNorm[ielem][0] += normale_x;
 				Elem2sumNorm[ielem][1] += normale_y;
 				Elem2sumNorm[ielem][2] += normale_z;
@@ -235,21 +213,6 @@ void Metric_c::SumNorm(Reader_c& read, int choix)
 			{
 				state = "bad";
 			}
-			/*
-			cout << "------------------------"<<endl;
-			cout << "Elem # : "; cout << ielem << endl;
-			cout << "Elem2sumNorm[ielem][0] : "; cout <<  Elem2sumNorm[ielem][0] << endl;
-			cout << "Elem2sumNorm[ielem][1] : "; cout <<  Elem2sumNorm[ielem][1] << endl;
-			cout << "Elem2sumNorm[ielem][2] : "; cout <<  Elem2sumNorm[ielem][2] << endl;
-			*/
-			/*
-			cout << "------------------" <<endl;
-			cout << "elem # "; cout << ielem << endl;
-			cout << "Nbr_of_face "; cout << Nbr_of_face << endl;
-			cout << Elem2sumNorm[ielem][0] << endl;
-			cout << Elem2sumNorm[ielem][1] << endl;
-			cout << Elem2sumNorm[ielem][2] << endl;
-			*/
 		}
 
 		if(state == "NA")
@@ -277,12 +240,6 @@ void Metric_c::SumNorm(Reader_c& read, int choix)
 	SumNormAllZones[0] += SumNormLocalZone[0];
 	SumNormAllZones[1] += SumNormLocalZone[1];
 	SumNormAllZones[2] += SumNormLocalZone[2];
-		/*
-		cout << "SumNormAllZones[0] : "; cout <<  SumNormAllZones[0] << endl;
-		cout << "SumNormAllZones[1] : "; cout <<  SumNormAllZones[1] << endl;
-		cout << "SumNormAllZones[2] : "; cout <<  SumNormAllZones[2] << endl;
-		*/
-
 	}
 	cout << "Verificaion de la somme des normales pour chaques elements : ";
 	cout << state << endl;
@@ -329,12 +286,9 @@ void Metric_c::Face2Center(Reader_c& read)
 	for(int ielem=0; ielem<nelem; ielem++)
 	{
 		elem2center[ielem] = new double[read.ndime];
-		//cout << "Elemt ID : "; cout << ielem << endl;
 		int vtk = read.elem2vtk[ielem];
 		int Nbr_of_face = vtklookup[ndime-2][vtk][0];
 		int Nbr_of_node = vtklookup[ndime-2][vtk][1];
-		//cout << "Nbr_of_face : "; cout << Nbr_of_face << endl;
-		//cout << "Nbr_of_node : "; cout << Nbr_of_node << endl;
 		double c_x = 0.0;
 		double c_y = 0.0;
 		double c_z = 0.0;
@@ -348,15 +302,10 @@ void Metric_c::Face2Center(Reader_c& read)
 		elem2center[ielem][0] = c_x/Nbr_of_node;
 		elem2center[ielem][1] = c_y/Nbr_of_node;
 		elem2center[ielem][2] = c_z/Nbr_of_node;
-		//cout << "Center_x : "; cout << elem2center[ielem][0] << endl;
-		//cout << "Center_y : "; cout << elem2center[ielem][1] << endl;
-		//cout << "Center_z : "; cout << elem2center[ielem][2] << endl;
 		for(int iface=0; iface<Nbr_of_face;iface++)
 		{
 			int faceID = elem2face[ielem][iface];
-				//cout << "faceID : "; cout << faceID << endl;
 			int nnode = face2nnofa[faceID];
-				//cout << "nnode : "; cout << nnode << endl;
 			double r_mid_x = 0.0;
 			double r_mid_y = 0.0;
 			double r_mid_z = 0.0;
@@ -373,25 +322,11 @@ void Metric_c::Face2Center(Reader_c& read)
 			face2midpoint[faceID][0] = r_mid_x;
 			face2midpoint[faceID][1] = r_mid_y;
 			face2midpoint[faceID][2] = r_mid_z;
-			/*
-			cout << "Pour face ID : "; cout << faceID << endl;
-			cout << "Center_x : "; cout << r_mid_x << endl;
-			cout << "Center_y : "; cout << r_mid_y << endl;
-			cout << "Center_z : "; cout << r_mid_z << endl;
-			*/
 			int elem1 = face2elem[faceID][0];
 			int elem2 = face2elem[faceID][1];
-			/*
-			cout << "ielem : "; cout << ielem <<endl;
-			cout << "faceID : "; cout << faceID <<endl;
-			*/
 			double delta_x = r_mid_x-elem2center[ielem][0];
 			double delta_y = r_mid_y-elem2center[ielem][1];
 			double delta_z = r_mid_z-elem2center[ielem][2];
-			// delta_x = 0;
-			// delta_y = 0;
-			// delta_z = 0;
-
 			if(ielem == elem1)
 			{
 				face2elemCenter[faceID][0][0] = delta_x;
@@ -410,7 +345,4 @@ void Metric_c::Face2Center(Reader_c& read)
 			}
 		}
 	}
-
-
-
 }
