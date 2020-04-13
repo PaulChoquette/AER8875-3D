@@ -203,7 +203,7 @@ class Interface():
     ######################## Option : alpha ########################
        lbl2 = tk.Label(self.tab1, text="Angle d'attaque :")
        lbl2.place(x=10,y=310+40)
-       lbl22 = tk.Label(self.tab1, text="(\u03B1 [deg])")
+       lbl22 = tk.Label(self.tab1, text="([rad])")
        lbl22.place(x=185,y=310+40)
        self.entre1 = tk.Entry(self.tab1, width=5)
        self.entre1.insert(0, 0.0)
@@ -382,6 +382,12 @@ class Interface():
        lbl300.place(x=10,y=460 + 30)
        lbl3000 = tk.Label(self.tab30, text="[m]")
        lbl3000.place(x=435,y=460 + 30)
+
+       lbl3oo00 = tk.Label(self.tab30, text="Axe de référence pour le calcul de la portance : ")
+       lbl3oo00.place(x=10,y=460 + 60)
+       self.coeffRef = tk.Entry(self.tab30, width=4)
+       self.coeffRef.insert(0, "z")
+       self.coeffRef.place(x=330,y=460 + 60)
     ######################## BoutonsDuBas ########################
        button = tk.Button(self.tab1, text = 'Abandonner', command=self.quit,bg='brown',fg='white',width=17)
        button.place(x=60,y=600)
@@ -598,7 +604,7 @@ class Interface():
 
                 self.lbl11 = tk.Label(self.tab30, text="De :")
                 self.lbl11.place(x=70,y=320)
-                self.lbl12 = tk.Label(self.tab30, text="[deg]")
+                self.lbl12 = tk.Label(self.tab30, text="[rad]")
                 self.lbl12.place(x=160,y=320)
                 self.txt10 = tk.Entry(self.tab30, width=5)
                 self.txt10.insert(0, 0.0)
@@ -606,7 +612,7 @@ class Interface():
 
                 self.lbl13 = tk.Label(self.tab30, text="À :")
                 self.lbl13.place(x=70,y=340)
-                self.lbl14 = tk.Label(self.tab30, text="[deg]")
+                self.lbl14 = tk.Label(self.tab30, text="[rad]")
                 self.lbl14.place(x=160,y=340)
                 self.txt11 = tk.Entry(self.tab30, width=5)
                 self.txt11.insert(0, 10.0)
@@ -835,6 +841,9 @@ class InputFILE():
                 txtFILE.write(str("zref= "))
                 txtFILE.write(str(Interface.zref.get()))
                 txtFILE.write("\n")
+                txtFILE.write(str("coeffRef= "))
+                txtFILE.write(str(Interface.coeffRef.get()))
+                txtFILE.write("\n")
                 txtFILE.close()
             else:
                 print('Créer un nouveau fichier')
@@ -918,6 +927,9 @@ class InputFILE():
             txtFILE.write("\n")
             txtFILE.write(str("zref= "))
             txtFILE.write(str(Interface.zref.get()))
+            txtFILE.write("\n")
+            txtFILE.write(str("coeffRef= "))
+            txtFILE.write(str(Interface.coeffRef.get()))
             txtFILE.write("\n")
             txtFILE.close()
         finally:
