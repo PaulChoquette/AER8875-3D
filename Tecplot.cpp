@@ -5,12 +5,10 @@
 #include <fstream>
 #include "main.h"
 #include "Reader.h"
-#include "/home/michaelgagnon/Bureau/TECIO/include/TECXXX.h"
+#include "TECXXX.h"
 #include <iomanip>
 #include <sstream>
-#include <cstdio>
-#include <algorithm>
-#include <iterator>
+
 
 void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename,int world_id, void* p, void* Rho, void* u, void* v, void* w) {
 
@@ -184,8 +182,6 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
 
     outFile.close();
 }
-
-
 void Reader_c::write_tecplot_ASCII_CP(string FileName,double* Cp, int wallFace, int wallNode, double** wallNode_coord, int** elem2face)
 {
 	if (wallFace==0)

@@ -553,6 +553,7 @@ void Reader_c::computePrmt(string filename) {
 		xref = 666;
 		yref = 666;
 		zref = 666;
+		coeffRef = "666";
 
 		//Read file line_2 by line_2
 		while (getline(file_2, line_2))
@@ -647,6 +648,10 @@ void Reader_c::computePrmt(string filename) {
 			}
 			if(zref==666){
 				zref = inputDouble(cline_2, "zref= ");
+				continue;
+			}
+			if(coeffRef=="666"){
+				coeffRef = inputStr(cline_2, "coeffRef= ");
 				continue;
 			}
 		}

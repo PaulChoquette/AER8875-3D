@@ -83,7 +83,7 @@ CXX = mpic++
 CXXFLAGS += -std=c++11 -Wall -Wno-unused-function -Wno-strict-overflow -Wno-unused-variable
 
 DEBUGFLAGS += -Og -g -pg
-#RELEASEFLAGS += -O3 -fopenmp
+RELEASEFLAGS += -O3 -fopenmp
 SHAREDFLAGS += -shared -Wl,--export-dynamic,--no-as-needed -fpic
 
 # Include search paths

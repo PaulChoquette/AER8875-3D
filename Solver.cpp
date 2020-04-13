@@ -24,6 +24,27 @@ solver_c::solver_c(Reader_c& FileContents, double convergeFixLimit_in)
   xref = FileContents.xref;
   yref = FileContents.yref;
   zref = FileContents.zref;
+
+  //Coefficient lift origin
+  if(FileContents.coeffRef=="x")
+  {
+    LiftCoord = 0;
+  }
+  else if(FileContents.coeffRef=="y")
+  {
+    LiftCoord = 1;
+  }
+  else if(FileContents.coeffRef=="z")
+  {
+    LiftCoord = 2;
+  }
+  else
+  {
+    cout << "ERROR IN LIFT COEFFICIENT ORIGIN DEFINITION";
+    exit( 3 );
+  }
+
+  //Stage parameters
   if(FileContents.tempMethod=="Runge-Kutta")
   {
     RK_M=1;
@@ -166,10 +187,12 @@ void solver_c::Compute() {
         UpdateBound();
     }
     time(&end);
-    double time_taken = double(end - start);
-     cout << "Time taken by program is : " << fixed
-          << time_taken << setprecision(5);
-     cout << " sec " << endl;
+    if (World.world_rank==0) {
+      double time_taken = double(end - start);
+       cout << "Time taken by program is : " << fixed
+            << time_taken << setprecision(5);
+       cout << " sec " << endl;
+    }
 }
 // ============================================================================================================================================================================ //
 // =======================================================================    END   =========================================================================================== //
@@ -1383,13 +1406,11 @@ double solver_c::ComputeProjetedArea(){
 void solver_c::ComputeCoefficient() {
     int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
     string BoundType;
-    double Fx=0;
-    double Fy=0;
-    double Fz=0;
+    double Fl=0;
+    double Fd=0;
     double Mz=0;
-    double GlobalFx;
-    double GlobalFy;
-    double GlobalFz;
+    double GlobalFd;
+    double GlobalFl;
     double GlobalMz;
     double Coeff_l;
     double Coeff_d;
@@ -1407,23 +1428,20 @@ void solver_c::ComputeCoefficient() {
           for (ig=indxMin;ig<indxMax;++ig) {
               iface = elem2face[ig][0];
               ir = elem2elem[ig][0];
-              Fx += p[ir]*face2area[iface]*face2norm[iface][0];
-              Fy += p[ir]*face2area[iface]*face2norm[iface][1];
-              Fz += p[ir]*face2area[iface]*face2norm[iface][2];
-              Mtan += -p[ir]*face2area[iface]*(face2norm[iface][1]*(face2midpoint[iface][0]-xref)-face2norm[iface][0]*(face2midpoint[iface][1]-yref));
+              Fd += p[ir]*face2area[iface]*face2norm[iface][0];
+              Fl += p[ir]*face2area[iface]*face2norm[iface][LiftCoord];
+              Mtan += -p[ir]*face2area[iface]*(face2norm[iface][LiftCoord]*(face2midpoint[iface][0]-xref)-face2norm[iface][0]*(face2midpoint[iface][LiftCoord]-yref));
           }
       }
     }
     if (World.world_size>1) {
-        GlobalFx = World.UpdateCoefficient(Fx);
-        GlobalFy = World.UpdateCoefficient(Fy);
-        GlobalFz = World.UpdateCoefficient(Fz);
+        GlobalFd = World.UpdateCoefficient(Fd);
+        GlobalFl = World.UpdateCoefficient(Fl);
         GlobalMz = World.UpdateCoefficient(Mtan);
     }
     else {
-        GlobalFx = Fx;
-        GlobalFy = Fy;
-        GlobalFz = Fz;
+        GlobalFd = Fd;
+        GlobalFl = Fl;
         GlobalMz = Mtan;
     }
 
@@ -1433,8 +1451,8 @@ void solver_c::ComputeCoefficient() {
     else {
       Area = ComputeProjetedArea();
     }
-    Coeff_l = GlobalFy/(Area*q);
-    Coeff_d = GlobalFx/(Area*q);
+    Coeff_l = GlobalFl/(Area*q);
+    Coeff_d = GlobalFd/(Area*q);
     Coeff_mz = GlobalMz/(Area*q);
 
     if (World.world_rank==0){
@@ -1545,7 +1563,6 @@ void solver_c::GetCp_write(Reader_c& FileContents, int Wall_bc_count)
   }
   myfile_airfoil.close();
 }
-
 
 void solver_c::PrintStylz() {
     // Mandatory ascii art

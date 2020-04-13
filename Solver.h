@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include "Comm.h"
 #include "Metric.h"
+
 using namespace std;
+
 class solver_c : public Metric_c {    // TBD wheter public or private
     public:
     int Wall_bc_count,  wallFace;
@@ -23,7 +25,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     // Simulation parametrisation
     string smoothOrNah;
     double mach,AoA,cfl,convergeCrit,Sref,Cref,xref,yref,zref;
-    int Order,RK_step,iterMax;
+    int Order,RK_step,iterMax, LiftCoord;
     double residuRel,convergeFixLimit;          // Residu, limit at which limitors will be fixed
     bool RK_M;
     double* rho;
@@ -78,6 +80,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0,0,0,0,0                     },{0,0,0,0,0}},
         {{0.2742,0.2069,0.5020,0.5142,1.0},{1.0,0.0,0.56,0.0,0.44}}};   //Only order 5 in blasek
+
     //Private methods
     void Initialisation();      // Initialise field to infinity
     void ExchangeMetrics();     // MPI exchange needed metrics for order 2
