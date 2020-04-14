@@ -37,6 +37,7 @@ void compute(string simName, string su2, int partition)
 	ONERA.ComputeMETIS(partition, 3, FileONERA);
 	ONERA.ComputeZoneConnectivity(FileONERA);
 	FileONERA.WriteAllZoneFile(out, FileONERA, ONERA);
+	//FileONERA.write_tecplot_METIS(out, FileONERA, ONERA);
 }
 // ======================================================================================================================================== //
 // ================================================================= MAIN ================================================================= //

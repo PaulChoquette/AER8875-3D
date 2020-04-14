@@ -4,8 +4,8 @@
 
 SimName= CFDsimPI4
 choiceMESH= IMPORT
-su2FilePath= /media/sf_SHARE_FOLDER/GitKraken_folder/AER8875-3D/Execute1/su2_Bank/naca0012_euler_65x65x2_O_1B.su2
-NbrPartition= 4
+su2FilePath= ../su2_bank/CRM_10M.su2
+NbrPartition= 32
 alpha= 0.0
 mach= 1.0
 gamma= 1.4

@@ -111,6 +111,19 @@ void Connect_c::InitializeGlobal(Reader_c& read) {
 	vtk2lpofa[12][4] = new int[4]{ 0,4,7,3}; // face 4
 	vtk2lpofa[12][5] = new int[4]{ 0,1,5,4}; // face 5
 
+
+	// ================ Wedge (vtk = 13) ================
+	vtk2nnofa[13] = new int[5]{ 3,3,4,4,4 };
+	vtk2facevtk[13] = new int[5]{ 5,5,9,9,9 };
+
+	vtk2lpofa[13] = new int* [5];
+	vtk2lpofa[13][0] = new int[3]{ 0,2,1}; // face 0
+	vtk2lpofa[13][1] = new int[3]{ 3,4,5}; // face 1
+	vtk2lpofa[13][2] = new int[4]{ 0,1,4,3}; // face 2
+	vtk2lpofa[13][3] = new int[4]{ 0,3,5,2}; // face 3
+	vtk2lpofa[13][4] = new int[4]{ 1,2,5,4}; // face 4
+
+
 	// ================ Pyramid (vtk = 14) ================		     
 	//					   3 __ 4__ 2
 	//				    	|  /\  |
@@ -168,6 +181,7 @@ void Connect_c::Node2Elements(Reader_c& read) {
 		esup2[ipoin - 1] = esup2[ipoin - 1 - 1];
 	}
 	esup2[0] = 0;
+	//Display1DArray(vtklist,15,"vtklist");
 }
 void Connect_c::Node2Nodes(Reader_c& read) {
 	lpoin = new int[nnode_g]();
@@ -216,7 +230,9 @@ void Connect_c::Element2Elements(Reader_c& read) {
 	elem2elem_g = new int* [ncell_g]();
 	int nnofa, ilpofa, ipoin, jelem, nnofj, icoun, jpoin;
 	vector<int> lhelp;
+
 	for (int ielem = 0; ielem < ncell_g; ielem++) {
+		//cout << ielem << endl;
 		int vtk = read.elem2vtk[ielem];
 		int nfael = vtklookup[ndime-2][vtk][0];
 		elem2elem_g[ielem] = new int[nfael];
@@ -326,10 +342,15 @@ int Connect_c::GetielemArNode(int inode, int ielno) {
 }
 void Connect_c::ComputeGlobalConnectivity(Reader_c& read) {
 	double StartTime = omp_get_wtime();
-	cout << "Global Connectivity \tSTARTING...";
+	cout << "Global Connectivity \tSTARTING..." << endl;
 	Connect_c::InitializeGlobal(read);
+	//Connect_c::Display2DArray(read.elem2node,10000000,6,"elem2node");
+	
+	cout << "\t-Node2Element Starting..." << endl;
 	Connect_c::Node2Elements(read);
+	cout << "\t-Node2nodes Starting..." << endl;
 	Connect_c::Node2Nodes(read);
+	cout << "\t-Element2Element Starting..." << endl;
 	Connect_c::Element2Elements(read);
 	delete[] psup1;
 	delete[] psup2;
