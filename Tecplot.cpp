@@ -90,7 +90,7 @@ void Reader_c::write_tecplot(Reader_c &FileContents, const char* out_filename,in
 				NData[i * 8 + k] = FileContents.elem2node[i][k - nrepeat] + 1;
 			}
 		}
-		elseif(FileContents.elem2vtk[i] == 13) {
+		else if(FileContents.elem2vtk[i] == 13) {
 
 			for (int j = 0; j < 3; j++) {
 				NData[i * 8 + j] = FileContents.elem2node[i][j] + 1;
