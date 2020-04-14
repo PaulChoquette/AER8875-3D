@@ -62,7 +62,7 @@ class Reader_c {
 		//Write Tecplot output
 		void write_tecplot(Reader_c &FileContents, const char* out_filename,int world_id,void* p, void* Rho, void* u, void* v, void* w);
 		void write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,double*v,double*w);
-		void write_tecplot_ASCII_CP(string FileName,double* Cp, int wallFace, int wallNode, double** wallNode_coord, int** elem2face);
+		void write_tecplot_Dist(string what, string FileName,double* Cp, int wallFace, int wallNode, double** wallNode_coord, int** elem2face);
 
 
 

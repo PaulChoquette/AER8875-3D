@@ -59,15 +59,13 @@ int main() {
 	solve.ComputeCoefficient();
 
 	FileContents.write_tecplot(FileContents,"./Tecio",solve.World.world_rank, solve.p, solve.rho, solve.u, solve.v, solve.w);
-	// To change
-	if (solve.World.world_rank==0){
-		solve.PrintStylz();
-	}
 
-	string OFileName = "./AsciiFile"+to_string(solve.World.world_rank)+".dat";
-	FileContents.write_tecplot_ASCII(OFileName,solve.p,solve.rho,solve.u,solve.v,solve.w);
 	solve.GetCp(FileContents);
-	FileContents.write_tecplot_ASCII_CP("./PressurDist"+to_string(solve.World.world_rank)+".dat",solve.Cp, solve.wallFace, solve.wallNode, solve.wallNode_coord, solve.elem2face);
+	FileContents.write_tecplot_Dist("Cp", "./PressurDist"+to_string(solve.World.world_rank)+".dat",solve.Cp, solve.wallFace, solve.wallNode, solve.wallNode_coord, solve.elem2face);
+	FileContents.write_tecplot_Dist("Mach", "./MachDist"+to_string(solve.World.world_rank)+".dat",solve.machDist, solve.wallFace, solve.wallNode, solve.wallNode_coord, solve.elem2face);
+
+
+
 	if (solve.World.world_rank==0){
 		solve.PrintStylz();
 	}

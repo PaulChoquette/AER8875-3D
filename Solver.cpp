@@ -1461,10 +1461,9 @@ void solver_c::ComputeCoefficient() {
       cout<<"Le coefficient de moment en z : "<<fixed<<setprecision(15)<<Coeff_mz<<endl;
   	}
 }
-
 void solver_c::GetCp(Reader_c& FileContents)
 {
-	cout << "Computing and saving CP distribution \tSTARTING...";
+	cout << "Computing and saving Cp and Mach distribution \tSTARTING...";
   double q_inf, P_inf, rho_inf;
   wallNode = 0;  wallFace = 0;
   rho_inf = 1.0;  P_inf = 1.0;
@@ -1479,6 +1478,7 @@ void solver_c::GetCp(Reader_c& FileContents)
     {
         Wall_bc_count = indxMax - indxMin;
         Cp = new double[Wall_bc_count];
+        machDist = new double[Wall_bc_count];
         for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
         {
           iface = elem2face[ig][0];
@@ -1487,6 +1487,7 @@ void solver_c::GetCp(Reader_c& FileContents)
           q_inf = 0.5*rho_inf*inf_speed*inf_speed;
           ir = elem2elem[ig][0];
           Cp[ig - indxMin] = (p[ir] - P_inf)/q_inf;
+          machDist[ig - indxMin] = sqrt(u[ig]*u[ig] + v[ig]*v[ig] + w[ig]*w[ig]);
           //cout << "\nWorld.world_rank : "; cout << World.world_rank; cout << " Wall_bc_count : "; cout << Wall_bc_count; cout << " Cp : "; cout << Cp[ig - indxMin];
         }
         //cout << endl;
@@ -1502,7 +1503,8 @@ void solver_c::GetCp_coord(Reader_c& FileContents, int Wall_bc_count, int wallNo
   string BoundType;
   cp_coord = new double*[Wall_bc_count];
   wallNode_coord = new double*[wallNode];
-  int count = 0;
+  int count_node = 0;
+  int count_elem = 0;
   for (int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
   {
     BoundType = bound2tag[ibc]; // Type de frontiere
@@ -1513,20 +1515,20 @@ void solver_c::GetCp_coord(Reader_c& FileContents, int Wall_bc_count, int wallNo
         for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
         {
           iface = elem2face[ig][0];
-
+          nnode_ = face2nnofa[iface];
           for(int i=0; i<nnode_; ++i)
           {
-            wallNode_coord[count] = new double[FileContents.ndime];
-            wallNode_coord[count][0] = FileContents.coord[face2node[iface][i]][0];
-            wallNode_coord[count][1] = FileContents.coord[face2node[iface][i]][1];
-            wallNode_coord[count][2] = FileContents.coord[face2node[iface][i]][2];
-            count += 1;
+            wallNode_coord[count_node] = new double[FileContents.ndime];
+            wallNode_coord[count_node][0] = FileContents.coord[face2node[iface][i]][0];
+            wallNode_coord[count_node][1] = FileContents.coord[face2node[iface][i]][1];
+            wallNode_coord[count_node][2] = FileContents.coord[face2node[iface][i]][2];
+            count_node += 1;
           }
-          ir = elem2elem[ig][0];
-          cp_coord[ir] = new double[FileContents.ndime];
-          cp_coord[ir][0] = face2midpoint[iface][0];
-          cp_coord[ir][1] = face2midpoint[iface][1];
-          cp_coord[ir][2] = face2midpoint[iface][2];
+          cp_coord[count_elem] = new double[FileContents.ndime];
+          cp_coord[count_elem][0] = face2midpoint[iface][0];
+          cp_coord[count_elem][1] = face2midpoint[iface][1];
+          cp_coord[count_elem][2] = face2midpoint[iface][2];
+          count_elem += 1;
           //cout << "\nWall_bc_count : "; cout << Wall_bc_count; cout << "  cp_coord : "; cout << cp_coord[iface][0]; cout << " "; cout << cp_coord[iface][1]; cout << " "; cout << cp_coord[iface][2];
         }
         //cout << endl;
@@ -1536,6 +1538,7 @@ void solver_c::GetCp_coord(Reader_c& FileContents, int Wall_bc_count, int wallNo
 void solver_c::GetCp_write(Reader_c& FileContents, int Wall_bc_count)
 {
   int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
+  ir = 0;
   string BoundType;
   ofstream myfile_airfoil;
   string name;
@@ -1551,12 +1554,12 @@ void solver_c::GetCp_write(Reader_c& FileContents, int Wall_bc_count)
       // Slipwall
       for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
       {
-        ir = elem2elem[ig][0];
         myfile_airfoil << Cp[ir]; myfile_airfoil << " ";
         myfile_airfoil << cp_coord[ir][0]; myfile_airfoil << " ";
         myfile_airfoil << cp_coord[ir][1]; myfile_airfoil << " ";
         myfile_airfoil << cp_coord[ir][2]; myfile_airfoil << " ";
         myfile_airfoil << "\n";
+        ir += 1;
       }
     }
     //cout << endl;

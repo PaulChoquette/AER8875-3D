@@ -34,6 +34,7 @@ class solver_c : public Metric_c {    // TBD wheter public or private
     double* w;
     double* p;
     double* Cp;
+    double* machDist;
     int iteration;
     //Debugging Methods
     void PrintPress();

@@ -5,10 +5,10 @@
 SimName= CFDsimPI4.txt
 choiceMESH= IMPORT
 su2FilePath= /home/cd/Documents/PI4/GitLocal/MPI_dev/Zone0.su2
-su2pFilePath= ./ONERA_zone
+su2pFilePath= ./su2Bank/ONERA_zone
 NbrPartition= 4
-alpha= 0.087266667
-mach= 0.5
+alpha= 0.0
+mach= 1.5
 gamma= 1.4
 TemporelMethod= Runge-Kutta-H
 stgaeNbr= 5
@@ -17,7 +17,7 @@ ResidualSmooth= Yes
 SpatialMethod= Roe
 SpatialMethodORDER= 1
 grad=
-iterMAX= 1000
+iterMAX= 2
 convergenceCriterea= 1e-3
 graph=
 alpha_0= 0.0
@@ -28,4 +28,3 @@ xref= 0.25
 yref= 0.0
 zref= 0.0
 coeffRef= z
-

@@ -195,14 +195,14 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
 
     outFile.close();
 }
-void Reader_c::write_tecplot_ASCII_CP(string FileName,double* Cp, int wallFace, int wallNode, double** wallNode_coord, int** elem2face)
+void Reader_c::write_tecplot_Dist(string what, string FileName,double* Cp, int wallFace, int wallNode, double** wallNode_coord, int** elem2face)
 {
   int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
   string BoundType;
   ofstream myfile_airfoil;
   string name;
 
-	cout << "Writting CP distribution \tSTARTING...";
+	cout << "Writting " + what +" distribution \tSTARTING...";
 	int vtk = elem2vtk[nelem];
 	string ZONETYPE;
 	if (vtk == 10){		ZONETYPE = "FETETRAHEDRON";	}
@@ -228,7 +228,7 @@ void Reader_c::write_tecplot_ASCII_CP(string FileName,double* Cp, int wallFace, 
 	varstring = varstring + "]";
 	fstream outFile;
 	outFile.open(FileName, ios::out);
-	outFile << "VARIABLES=" << DIME << "\"CP\"" << endl;
+	outFile << "VARIABLES=" << DIME << what << endl;
 
 	//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
 
