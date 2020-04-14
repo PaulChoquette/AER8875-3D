@@ -197,121 +197,111 @@ void Reader_c::write_tecplot_ASCII(string FileName,double*p,double*rho,double*u,
 }
 void Reader_c::write_tecplot_ASCII_CP(string FileName,double* Cp, int wallFace, int wallNode, double** wallNode_coord, int** elem2face)
 {
-	if (wallFace==0)
-	{
-		const char *cstr = FileName.c_str();
-		remove(cstr);
+  int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
+  string BoundType;
+  ofstream myfile_airfoil;
+  string name;
+
+	cout << "Writting CP distribution \tSTARTING...";
+	int vtk = elem2vtk[nelem];
+	string ZONETYPE;
+	if (vtk == 10){		ZONETYPE = "FETETRAHEDRON";	}
+	else if (vtk == 12){		ZONETYPE = "FEBRICK";	}
+	else if (vtk == 9){		ZONETYPE = "FEQUADRILATERAL";	}
+	else if (vtk == 5){		ZONETYPE = "FETRIANGLE";	}
+	else {		ZONETYPE = "FEBRICK";	}
+	string DIME;
+	if (ndime == 2){		DIME = "\"X\",\"Y\",";	}
+	else {		DIME = "\"X\",\"Y\",\"Z\",";	}
+	//ZONETYPE = "FEQUADRILATERAL";
+	int nvar = 1;
+	int *varlocation;
+	varlocation = new int[nvar];
+	varlocation[0] = ndime+1;
+	string varstring = "[" + to_string(varlocation[0]);
+	if (nvar > 1){
+		for (int ivar=1; ivar < nvar; ivar++){
+		varlocation[ivar] = varlocation[ivar-1] + 1;
+		varstring = varstring + "," + to_string(varlocation[ivar]) ;
+		}
 	}
-	else
+	varstring = varstring + "]";
+	fstream outFile;
+	outFile.open(FileName, ios::out);
+	outFile << "VARIABLES=" << DIME << "\"CP\"" << endl;
+
+	//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
+
+	outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
+	//outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
+	outFile << "Nodes=" << npoint << ", Elements=" << wallFace << ", ZONETYPE=" << ZONETYPE << endl;
+	outFile << "DATAPACKING=BLOCK" << endl;
+	outFile << "VARLOCATION = (" << varstring << " = CELLCENTERED)" << endl;
+
+	string a;                      //ecrire les coordonnees de laxe x a la suite
+	for (int j = 0; j < npoint; j++)
 	{
-	  int ig,ir,indxMin,indxMax,iface;// ig = ghost index, ir = real index
-	  string BoundType;
-	  ofstream myfile_airfoil;
-	  string name;
-
-		cout << "Writting CP distribution \tSTARTING...";
-		int vtk = elem2vtk[nelem];
-		string ZONETYPE;
-		if (vtk == 10){		ZONETYPE = "FETETRAHEDRON";	}
-		else if (vtk == 12){		ZONETYPE = "FEBRICK";	}
-		else if (vtk == 9){		ZONETYPE = "FEQUADRILATERAL";	}
-		else if (vtk == 5){		ZONETYPE = "FETRIANGLE";	}
-		else {		ZONETYPE = "FEBRICK";	}
-		string DIME;
-		if (ndime == 2){		DIME = "\"X\",\"Y\",";	}
-		else {		DIME = "\"X\",\"Y\",\"Z\",";	}
-		//ZONETYPE = "FEQUADRILATERAL";
-		int nvar = 1;
-		int *varlocation;
-		varlocation = new int[nvar];
-		varlocation[0] = ndime+1;
-		string varstring = "[" + to_string(varlocation[0]);
-		if (nvar > 1){
-			for (int ivar=1; ivar < nvar; ivar++){
-			varlocation[ivar] = varlocation[ivar-1] + 1;
-			varstring = varstring + "," + to_string(varlocation[ivar]) ;
-			}
-		}
-		varstring = varstring + "]";
-		fstream outFile;
-		outFile.open(FileName, ios::out);
-		outFile << "VARIABLES=" << DIME << "\"CP\"" << endl;
-
-		//outFile << "VARIABLES=\"X\",\"Y\",\"P\",\"U\",\"V\"" << endl;
-
-		outFile << "ZONE T=\"Element0\"" << endl; //Changer le nbr elements
-		//outFile << "Nodes=" << solve.nnode_g << ", Elements=" << solve.nelem_g << ", ZONETYPE=FEBRICK" << endl;
-		outFile << "Nodes=" << npoint << ", Elements=" << wallFace << ", ZONETYPE=" << ZONETYPE << endl;
-		outFile << "DATAPACKING=BLOCK" << endl;
-		outFile << "VARLOCATION = (" << varstring << " = CELLCENTERED)" << endl;
-
-		string a;                      //ecrire les coordonnees de laxe x a la suite
-		for (int j = 0; j < npoint; j++)
-		{
-			a = to_string(coord[j][0]);
-			outFile << a << endl;
-		}
-		string b;                      // ecrire les coordonnees de laxe y a la suite
+		a = to_string(coord[j][0]);
+		outFile << a << endl;
+	}
+	string b;                      // ecrire les coordonnees de laxe y a la suite
+	for (int i = 0; i < npoint; i++)
+	{
+		b = to_string(coord[i][1]);
+		outFile << b << endl;
+	}
+	if (ndime == 3){
+		string z;                      // ecrire les coordonnees de laxe y a la suite
 		for (int i = 0; i < npoint; i++)
 		{
-			b = to_string(coord[i][1]);
-			outFile << b << endl;
+			z = to_string(coord[i][2]);
+			outFile << z << endl;
 		}
-		if (ndime == 3){
-			string z;                      // ecrire les coordonnees de laxe y a la suite
-			for (int i = 0; i < npoint; i++)
-			{
-				z = to_string(coord[i][2]);
-				outFile << z << endl;
+	}
+	string m;
+	for (int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
+	{
+		BoundType = bound2tag[ibc]; // Type de frontiere
+		indxMin = BoundIndex[ibc]; // index de la frontiere actuelle
+		indxMax = BoundIndex[ibc+1]; // index de la frontiere suivante
+		if (BoundType.substr(0,4)=="wall"){ //If slipwall
+				// Slipwall
+				for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
+				{
+					int vtk = elem2vtk[ig];
+					int nnoel = vtklookup[ndime-2][vtk][1];
+					m = to_string(Cp[ig-indxMin]);
+					outFile << m << endl;
 			}
 		}
-		string m;
-		for (int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
-		{
-			BoundType = bound2tag[ibc]; // Type de frontiere
-			indxMin = BoundIndex[ibc]; // index de la frontiere actuelle
-			indxMax = BoundIndex[ibc+1]; // index de la frontiere suivante
-			if (BoundType.substr(0,4)=="wall"){ //If slipwall
-					// Slipwall
-					for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
-					{
-						int vtk = elem2vtk[ig];
-						int nnoel = vtklookup[ndime-2][vtk][1];
-						m = to_string(Cp[ig-indxMin]);
-						outFile << m << endl;
-				}
-			}
-		}
-
-
-		for (int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
-		{
-			BoundType = bound2tag[ibc]; // Type de frontiere
-			indxMin = BoundIndex[ibc]; // index de la frontiere actuelle
-			indxMax = BoundIndex[ibc+1]; // index de la frontiere suivante
-			if (BoundType.substr(0,4)=="wall"){ //If slipwall
-					// Slipwall
-					for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
-					{
-						int vtk = elem2vtk[ig];
-						int nnoel = vtklookup[ndime-2][vtk][1];
-						int jelem = elem2node[ig][nnoel];
-						vtk = elem2vtk[ig];
-						nnoel = vtklookup[ndime-2][vtk][1];
-						for (int icol = 0; icol <= nnoel - 1; icol++)
-						{
-							string icols = to_string(elem2node[ig][icol]+1);
-							outFile << icols << " ";
-						}
-						outFile << endl;
-				}
-			}
-		}
-	  delete[] varlocation;
-		outFile.close();
-
-		cout << "...............DONE" << endl;
 	}
 
 
+	for (int ibc=0;ibc<nbc;++ibc) // Boucle sur les type de frontieres
+	{
+		BoundType = bound2tag[ibc]; // Type de frontiere
+		indxMin = BoundIndex[ibc]; // index de la frontiere actuelle
+		indxMax = BoundIndex[ibc+1]; // index de la frontiere suivante
+		if (BoundType.substr(0,4)=="wall"){ //If slipwall
+				// Slipwall
+				for (ig=indxMin;ig<indxMax;++ig) // Boucle sur tous les wall
+				{
+					int vtk = elem2vtk[ig];
+					int nnoel = vtklookup[ndime-2][vtk][1];
+					int jelem = elem2node[ig][nnoel];
+					vtk = elem2vtk[ig];
+					nnoel = vtklookup[ndime-2][vtk][1];
+					for (int icol = 0; icol <= nnoel - 1; icol++)
+					{
+						string icols = to_string(elem2node[ig][icol]+1);
+						outFile << icols << " ";
+					}
+					outFile << endl;
+			}
+		}
+	}
+  delete[] varlocation;
+	outFile.close();
+
+	cout << "...............DONE" << endl;
 }
