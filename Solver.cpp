@@ -69,8 +69,8 @@ solver_c::solver_c(Reader_c& FileContents, double convergeFixLimit_in)
   convergeCrit = FileContents.convCrit;
   inf_speed = mach*sqrt(1.4);
   inf_speed_x = inf_speed*cos(AoA);
-  inf_speed_y = inf_speed*sin(AoA);
-  inf_speed_z = 0;
+  inf_speed_y = inf_speed*sin(AoA)*double(LiftCoord==1);
+  inf_speed_z = inf_speed*sin(AoA)*double(LiftCoord==2);
   iteration = 0;
   World.Init();    // Initialise MPI
   ofstream myfile ("ResiduLog.txt");  //Flash log
@@ -163,10 +163,10 @@ void solver_c::Compute() {
         ComputeResidu();
         ResiduLocal = CheckConvergence();
         if (World.world_size>1){
-            Residu = World.UpdateConvergence(ResiduLocal);
+            Residu = sqrt(World.UpdateConvergence(ResiduLocal));
         }
         else {
-            Residu = ResiduLocal;
+            Residu = sqrt(ResiduLocal);
         }
         if (iteration==1) {
             Residu_initial = Residu;
@@ -1269,7 +1269,7 @@ double solver_c::CheckConvergence() {
     for (int ielem=0;ielem<nelem;++ielem) {                                                 //Sum of residu in rho
         residuSum += pow((F_lux[ielem][0])/elem2vol[ielem],2);        // CAREFULL WITH SIGN OF DISSIPATIVE F_lux
     }
-    return sqrt(residuSum);
+    return residuSum;
 }
 
 // Conversion from pressure to energy
